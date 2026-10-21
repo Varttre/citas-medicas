@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary">
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-10 col-md-8 col-lg-5">
+      <a href="publico.html" class="d-flex justify-content-center align-items-center gap-2 mb-4 text-decoration-none link-body-emphasis">
+        <i class="bi bi-heart-pulse fs-2 text-primary"></i><span class="fs-5 fw-semibold">Consultorio San Isidro</span>
+      </a>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-1">Iniciar sesión</h1>
+          <p class="text-body-secondary small mb-4">Acceso para pacientes y personal del consultorio.</p>
+          <form action="paciente-inicio.html">
+            <div class="mb-3">
+              <label class="form-label" for="correo">Correo electrónico</label>
+              <input type="email" class="form-control" id="correo" value="lucia.vega@correo.com">
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="clave">Contraseña</label>
+              <input type="password" class="form-control" id="clave" value="secreto123">
+            </div>
+            <div class="alert alert-warning small py-2" role="alert">
+              <i class="bi bi-exclamation-triangle me-1"></i>Correo o contraseña incorrectos. <strong>Te quedan 2 intentos</strong>;
+              después la cuenta se bloquea durante 15 minutos.
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+          </form>
+          <div class="text-center mt-3 small">
+            <a href="recuperar.html">Olvidé mi contraseña</a>
+            <div class="mt-1">¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></div>
+          </div>
+        </div>
+      </div>
+
+<div class="mt-4">
+  <a class="small link-secondary" data-bs-toggle="collapse" href="#bloqueada" role="button" aria-expanded="false">
+    <i class="bi bi-eye me-1"></i>Prototipo · ver estado: cuenta bloqueada
+  </a>
+  <div class="collapse mt-2" id="bloqueada">
+    <div class="border border-2 border-secondary-subtle rounded p-3" style="border-style:dashed !important">
+
+      <div class="alert alert-danger small mb-0"><i class="bi bi-lock me-1"></i>
+        Tu cuenta está bloqueada por intentos fallidos. Podrás volver a intentarlo a las 10:45.</div>
+    </div>
+  </div>
+</div>
+      <div class="card mt-4 border-primary-subtle">
+        <div class="card-body small">
+          <div class="fw-semibold mb-2"><i class="bi bi-info-circle me-1"></i>Prototipo · entrar como</div>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-sm btn-outline-primary" href="paciente-inicio.html">Paciente</a>
+            <a class="btn btn-sm btn-outline-primary" href="medico-inicio.html">Médico</a>
+            <a class="btn btn-sm btn-outline-primary" href="recepcion-inicio.html">Recepción</a>
+            <a class="btn btn-sm btn-outline-primary" href="admin-configuracion.html">Administrador</a>
+          </div>
+          <div class="text-body-secondary mt-2">El sistema redirige a cada perfil según el rol de la cuenta.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

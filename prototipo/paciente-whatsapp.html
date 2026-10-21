@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WhatsApp · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary" data-perfil="paciente" data-seccion="whatsapp">
+<div class="d-lg-flex">
+  <aside id="barra-lateral" class="offcanvas-lg offcanvas-start bg-body border-end" tabindex="-1"></aside>
+
+  <div class="flex-grow-1">
+    <nav class="navbar bg-body border-bottom d-lg-none px-3">
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="fw-semibold">Consultorio San Isidro</span>
+      <span></span>
+    </nav>
+
+    <main class="container-xl p-3 p-lg-4">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">WhatsApp del consultorio</h1><p class="text-body-secondary mb-0">Escríbenos por WhatsApp; el mensaje ya incluye tus datos</p></div>
+        
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card shadow-sm"><div class="card-body p-4">
+            <h2 class="h6 mb-3">¿Sobre qué quieres consultar?</h2>
+            <div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m0" checked><label class="form-check-label" for="m0">Consultar horarios de atención</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m1" ><label class="form-check-label" for="m1">Consultar especialidades y médicos</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m2" ><label class="form-check-label" for="m2">Consultar tarifas</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m3" ><label class="form-check-label" for="m3">Problemas con mi cuenta</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m4" ><label class="form-check-label" for="m4">Otro</label></div>
+            <a href="#" class="btn btn-success mt-3"><i class="bi bi-whatsapp me-1"></i>Abrir WhatsApp</a>
+          </div></div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card shadow-sm"><div class="card-body p-4">
+            <h2 class="h6 mb-3">Mensaje que se enviará</h2>
+            <div class="bg-success-subtle rounded p-3">Hola, soy Lucía Vega Ríos (DNI 45812337). Deseo consultar los horarios de atención.</div>
+            <p class="small text-body-secondary mt-3 mb-0">Si eliges «Otro», el mensaje dirá «Deseo contactar con un agente».</p>
+          </div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

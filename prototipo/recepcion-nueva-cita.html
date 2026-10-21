@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nueva cita · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary" data-perfil="recepcion" data-seccion="nueva-cita">
+<div class="d-lg-flex">
+  <aside id="barra-lateral" class="offcanvas-lg offcanvas-start bg-body border-end" tabindex="-1"></aside>
+
+  <div class="flex-grow-1">
+    <nav class="navbar bg-body border-bottom d-lg-none px-3">
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="fw-semibold">Consultorio San Isidro</span>
+      <span></span>
+    </nav>
+
+    <main class="container-xl p-3 p-lg-4">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Nueva cita</h1><p class="text-body-secondary mb-0">Agendar por teléfono, presencial, WhatsApp o derivación</p></div>
+        
+      </div>
+      <div class="accordion shadow-sm" id="pasos">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p1">
+              <span class="badge rounded-pill text-bg-success me-2">✓</span>
+              <span class="fw-semibold me-2">Paciente</span><span class="small text-body-secondary">Rosa Medina Flores · para Carla Medina (titular)</span>
+            </button>
+          </h2>
+          <div id="p1" class="accordion-collapse collapse ">
+            <div class="accordion-body">
+              <div class="input-group mb-3"><span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input class="form-control" value="10456789" placeholder="Documento, nombre o teléfono"></div>
+              <div class="list-group mb-3">
+                <a href="#" class="list-group-item list-group-item-action active">Rosa Medina Flores · DNI 10456789 · 68 años</a>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-person-plus me-1"></i>Registrar paciente nuevo</button>
+              <div class="border rounded p-3 bg-body-tertiary small">
+                <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="tercero" checked data-muestra="#datos-tercero">
+                  <label class="form-check-label" for="tercero">Se agenda a pedido de una cuenta titular (tercero)</label></div>
+                <div id="datos-tercero" class="row g-2">
+                  <div class="col-md-6"><label class="form-label small">Cuenta titular</label><input class="form-control form-control-sm" value="Carla Medina · carla.medina@correo.com"></div>
+                  <div class="col-md-6 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" checked id="cons"><label class="form-check-label" for="cons">Declara tener el consentimiento del paciente</label></div></div>
+                </div>
+                <div class="mt-2 text-body-secondary">Sin cuenta titular, el contacto es el teléfono del paciente. Si la paciente tiene cuenta propia, verá la cita igual.</div>
+              </div></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2">
+              <span class="badge rounded-pill text-bg-success me-2">✓</span>
+              <span class="fw-semibold me-2">Canal de origen</span><span class="small text-body-secondary">Teléfono</span>
+            </button>
+          </h2>
+          <div id="p2" class="accordion-collapse collapse ">
+            <div class="accordion-body"><div class="form-check mb-2"><input class="form-check-input" type="radio" name="canal" id="canal0" ><label class="form-check-label" for="canal0">Presencial</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="canal" id="canal1" checked><label class="form-check-label" for="canal1">Teléfono</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="canal" id="canal2" ><label class="form-check-label" for="canal2">WhatsApp</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="canal" id="canal3" ><label class="form-check-label" for="canal3">Derivación</label></div><p class="small text-body-secondary mb-0">Obligatorio: es la base de las métricas por canal.</p></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p3">
+              <span class="badge rounded-pill text-bg-success me-2">✓</span>
+              <span class="fw-semibold me-2">Cita indicada pendiente</span><span class="small text-body-secondary">Seguimiento indicado</span>
+            </button>
+          </h2>
+          <div id="p3" class="accordion-collapse collapse ">
+            <div class="accordion-body">
+              <div class="alert alert-info small mb-2">La Dra. Ramírez indicó hoy: <strong>Seguimiento · 30 min · en 1 mes</strong>, vigente hasta el 9 de febrero.</div>
+              <div class="form-check mb-2"><input class="form-check-input" type="radio" name="indicada" id="indicada0" checked><label class="form-check-label" for="indicada0">Agendar el seguimiento indicado</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="indicada" id="indicada1" ><label class="form-check-label" for="indicada1">Otro tipo de consulta (la indicación sigue pendiente)</label></div></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p4">
+              <span class="badge rounded-pill text-bg-success me-2">✓</span>
+              <span class="fw-semibold me-2">Tipo y modalidad</span><span class="small text-body-secondary">Seguimiento · Presencial</span>
+            </button>
+          </h2>
+          <div id="p4" class="accordion-collapse collapse ">
+            <div class="accordion-body">
+              <div class="row g-3"><div class="col-md-6"><label class="form-label">Tipo de consulta</label>
+                <select class="form-select"><option>Primera cita</option><option selected>Seguimiento</option><option>Consulta</option><option>Procedimiento menor</option><option>Ambulatorio</option></select></div>
+                <div class="col-md-6"><label class="form-label">Modalidad</label><select class="form-select"><option selected>Presencial</option><option>Teleconsulta</option></select></div></div>
+              <p class="small text-body-secondary mt-2 mb-0">Recepción ve todos los tipos, también los que no se reservan por web.</p></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p5">
+              <span class="badge rounded-pill text-bg-success me-2">✓</span>
+              <span class="fw-semibold me-2">Médico o especialidad</span><span class="small text-body-secondary">Dra. Carmen Ramírez</span>
+            </button>
+          </h2>
+          <div id="p5" class="accordion-collapse collapse ">
+            <div class="accordion-body">
+              <div class="row g-3"><div class="col-md-6"><label class="form-label">Especialidad</label><select class="form-select"><option>Cardiología</option></select></div>
+                <div class="col-md-6"><label class="form-label">Médico</label><select class="form-select"><option>Dra. Carmen Ramírez</option><option>Dr. Raúl Ochoa</option><option>Cualquiera</option></select></div></div></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#p6">
+              <span class="badge rounded-pill text-bg-primary me-2">6</span>
+              <span class="fw-semibold me-2">Horario</span><span class="small text-body-secondary"></span>
+            </button>
+          </h2>
+          <div id="p6" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <div class="mb-3"><div class="small fw-semibold mb-1">Viernes 11 de diciembre</div><div class="d-flex flex-wrap gap-2"><button class="btn btn-sm btn-outline-primary">09:00</button><button class="btn btn-sm btn-primary">11:30</button><button class="btn btn-sm btn-outline-primary">08:00</button><button class="btn btn-sm btn-outline-secondary">12:00 <i class="bi bi-shield-lock small"></i></button></div></div>
+              <div class="mb-3"><div class="small fw-semibold mb-1">Lunes 14 de diciembre</div><div class="d-flex flex-wrap gap-2"><button class="btn btn-sm btn-outline-primary">10:30</button><button class="btn btn-sm btn-outline-primary">12:30</button><button class="btn btn-sm btn-outline-primary">08:30</button></div></div>
+              <p class="small text-body-secondary">Se ven todos los horarios: primero los de mejor calce; <i class="bi bi-shield-lock"></i> marca un bloque que la política reserva para consultas largas (se puede usar igual).</p>
+              <div class="alert alert-primary small py-2 mb-0"><i class="bi bi-hourglass-split me-1"></i>Viernes 11 de diciembre, 11:30 reservado por <strong data-cuenta-regresiva="274">4:34</strong></div></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#p7">
+              <span class="badge rounded-pill text-bg-primary me-2">7</span>
+              <span class="fw-semibold me-2">Disponibilidad inmediata</span><span class="small text-body-secondary"></span>
+            </button>
+          </h2>
+          <div id="p7" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="di" checked data-muestra="#di-campos">
+                <label class="form-check-label" for="di">La paciente acepta ser llamada si se libera un cupo antes</label></div>
+              <div id="di-campos" class="row g-3">
+                <div class="col-md-4"><label class="form-label small">Alcance</label><select class="form-select form-select-sm"><option>Solo este médico</option><option>Toda la especialidad</option></select></div>
+                <div class="col-md-4"><label class="form-label small">Tiempo mínimo de llegada</label><div class="input-group input-group-sm"><input class="form-control" value="60"><span class="input-group-text">min</span></div></div>
+                <div class="col-md-4"><label class="form-label small">Días previos que acepta</label><div class="input-group input-group-sm"><input class="form-control" value="7"><span class="input-group-text">días</span></div></div>
+              </div>
+              <p class="small text-body-secondary mt-2 mb-0">Con teleconsulta se sugiere 0 como tiempo de llegada.</p></div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#p8">
+              <span class="badge rounded-pill text-bg-primary me-2">8</span>
+              <span class="fw-semibold me-2">Resumen</span><span class="small text-body-secondary"></span>
+            </button>
+          </h2>
+          <div id="p8" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <dl class="row small">
+                <dt class="col-sm-3">Paciente</dt><dd class="col-sm-9">Rosa Medina Flores · DNI 10456789</dd>
+                <dt class="col-sm-3">Contacto</dt><dd class="col-sm-9">Carla Medina (cuenta titular) · 956 221 404</dd>
+                <dt class="col-sm-3">Cita</dt><dd class="col-sm-9">Seguimiento · 30 min · Presencial · Dra. Carmen Ramírez</dd>
+                <dt class="col-sm-3">Fecha</dt><dd class="col-sm-9">Viernes 11 de diciembre de 2026, 11:30</dd>
+                <dt class="col-sm-3">Canal</dt><dd class="col-sm-9 mb-0">Teléfono</dd>
+              </dl>
+              <button class="btn btn-primary">Agendar cita</button>
+<div class="mt-4">
+  <a class="small link-secondary" data-bs-toggle="collapse" href="#ocupado-rec" role="button" aria-expanded="false">
+    <i class="bi bi-eye me-1"></i>Prototipo · ver estado: el horario fue ocupado
+  </a>
+  <div class="collapse mt-2" id="ocupado-rec">
+    <div class="border border-2 border-secondary-subtle rounded p-3" style="border-style:dashed !important">
+
+              <div class="alert alert-warning small mb-0">Ese horario ya fue ocupado. Se recalcularon los horarios y se conservaron los datos cargados.</div>
+    </div>
+  </div>
+</div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

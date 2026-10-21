@@ -1,0 +1,20 @@
+/* Ajustes mínimos sobre Bootstrap 5 (Bootstrap casi puro).
+   Solo lo que Bootstrap no trae: ancho fijo de la barra lateral en escritorio. */
+
+@media (min-width: 992px) {
+  #barra-lateral {
+    width: 260px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+}
+
+/* Botón flotante al índice del prototipo (no es parte del sistema) */
+.indice-prototipo {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1030;
+}

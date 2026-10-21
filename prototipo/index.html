@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototipo · Sistema de Gestión de Citas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary">
+<main class="container py-4 py-lg-5">
+  <header class="mb-4">
+    <p class="text-primary fw-semibold mb-1"><i class="bi bi-heart-pulse me-1"></i>Consultorio San Isidro</p>
+    <h1 class="h2">Sistema de Gestión de Citas y Recuperación de Agenda</h1>
+    <p class="text-body-secondary mb-0">
+      Prototipo navegable de las pantallas por perfil. No hay conexión a base de datos: los datos son de demostración
+      y la fecha simulada es el miércoles 11 de noviembre de 2026.
+    </p>
+  </header>
+  <div id="perfiles" class="row g-4"></div>
+</main>
+
+<script>
+  // hecha: la pantalla ya existe en el prototipo
+  const PANTALLAS = [
+    { perfil: 'Acceso', icono: 'box-arrow-in-right', items: [
+      ['publico.html', 'Página pública del consultorio', true],
+      ['registro.html', 'Registrarse', true],
+      ['login.html', 'Iniciar sesión', true],
+      ['recuperar.html', 'Olvidé mi contraseña', true],
+      ['cambiar-contrasena.html', 'Cambio de contraseña (enlace del correo)', true],
+    ]},
+    { perfil: 'Paciente', icono: 'person', items: [
+      ['paciente-inicio.html', 'Inicio', true],
+      ['paciente-nueva-cita-1.html', 'Nueva cita · 1 ¿Para quién?', true],
+      ['paciente-nueva-cita-1.html?seguimiento', 'Nueva cita · 1 desde [Agendar seguimiento] (paciente fijado)', true],
+      ['paciente-nueva-cita-2.html', 'Nueva cita · 2 ¿Cómo buscar?', true],
+      ['paciente-nueva-cita-3.html', 'Nueva cita · 3 Cita indicada', true],
+      ['paciente-nueva-cita-4.html', 'Nueva cita · 4 Horarios', true],
+      ['paciente-nueva-cita-5.html', 'Nueva cita · 5 Resumen', true],
+      ['paciente-mis-citas.html', 'Mis citas (detalle, reprogramar y cancelar)', true],
+      ['paciente-reprogramar-1.html', 'Reprogramar · 1 Nuevo horario', true],
+      ['paciente-reprogramar-2.html', 'Reprogramar · 2 Confirmar', true],
+      ['paciente-citas-pasadas.html', 'Citas pasadas', true],
+      ['paciente-avisos.html', 'Avisos', true],
+      ['paciente-whatsapp.html', 'WhatsApp del consultorio', true],
+      ['paciente-perfil.html', 'Mi perfil', true],
+    ]},
+    { perfil: 'Médico', icono: 'clipboard2-pulse', items: [
+      ['medico-inicio.html', 'Inicio', true],
+      ['medico-agenda.html', 'Mi agenda (detalle y agendar ahora)', true],
+      ['medico-horario.html', 'Mi horario', true],
+      ['medico-estadisticas.html', 'Mis estadísticas', true],
+    ]},
+    { perfil: 'Recepción', icono: 'headset', items: [
+      ['recepcion-inicio.html', 'Inicio', true],
+      ['recepcion-agenda.html', 'Agenda', true],
+      ['recepcion-nueva-cita.html', 'Nueva cita', true],
+      ['recepcion-confirmaciones.html', 'Confirmaciones', true],
+      ['recepcion-cupos.html', 'Cupos liberados', true],
+      ['recepcion-pendientes.html', 'Citas pendientes', true],
+      ['recepcion-pacientes.html', 'Pacientes (ficha)', true],
+    ]},
+    { perfil: 'Administrador', icono: 'sliders', items: [
+      ['admin-configuracion.html', 'Configuración', true],
+      ['admin-usuarios.html', 'Usuarios', true],
+      ['admin-reportes.html', 'Reportes', true],
+    ]},
+  ];
+
+  document.getElementById('perfiles').innerHTML = PANTALLAS.map(g => `
+    <div class="col-md-6 col-xl-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header fw-semibold"><i class="bi bi-${g.icono} me-2"></i>${g.perfil}</div>
+        <div class="list-group list-group-flush">
+          ${g.items.map(([href, texto, hecha]) => hecha
+            ? `<a href="${href}" class="list-group-item list-group-item-action">${texto}</a>`
+            : `<span class="list-group-item d-flex justify-content-between text-body-secondary">${texto}
+                 <span class="badge text-bg-light border">pendiente</span></span>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+</script>
+</body>
+</html>

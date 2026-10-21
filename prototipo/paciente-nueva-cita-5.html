@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmar cita · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary" data-perfil="paciente" data-seccion="nueva-cita">
+<div class="d-lg-flex">
+  <aside id="barra-lateral" class="offcanvas-lg offcanvas-start bg-body border-end" tabindex="-1"></aside>
+
+  <div class="flex-grow-1">
+    <nav class="navbar bg-body border-bottom d-lg-none px-3">
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="fw-semibold">Consultorio San Isidro</span>
+      <span></span>
+    </nav>
+
+    <main class="container-xl p-3 p-lg-4">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Revisa y agenda</h1></div>
+        
+      </div><ol class="list-unstyled d-flex flex-wrap gap-2 gap-md-3 mb-4"><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">¿Para quién?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">¿Cómo buscar?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">Cita indicada</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">Horarios</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-primary fw-semibold"><span class="badge rounded-pill text-bg-primary">5</span><span class="small">Resumen</span></li></ol>
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold">Resumen de la cita</div>
+            <div class="card-body">
+              <dl class="row mb-0">
+                <dt class="col-sm-4">Paciente</dt><dd class="col-sm-8">Lucía Vega Ríos</dd>
+                <dt class="col-sm-4">Médico</dt><dd class="col-sm-8">Dra. Carmen Ramírez · Cardiología</dd>
+                <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8">Seguimiento (indicado por su médica)</dd>
+                <dt class="col-sm-4">Fecha y hora</dt><dd class="col-sm-8">Miércoles 2 de diciembre de 2026, 10:30 a 11:00</dd>
+                <dt class="col-sm-4">Modalidad</dt><dd class="col-sm-8">Presencial · Av. Camino Real 1234, San Isidro</dd>
+                <dt class="col-sm-4">Te llamaremos al</dt><dd class="col-sm-8 mb-0">987 654 321</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Disponibilidad inmediata</div>
+            <div class="card-body">
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="acepta-di" checked data-muestra="#campos-di">
+                <label class="form-check-label" for="acepta-di">Acepto ser llamado si se libera un cupo antes.</label>
+              </div>
+              <div id="campos-di" class="row g-3">
+                <div class="col-12">
+                  <label class="form-label">¿Con quién aceptas el adelanto?</label>
+                  <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-med" checked><label class="form-check-label" for="al-med">Solo con la Dra. Ramírez</label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-esp"><label class="form-check-label" for="al-esp">Con cualquier médico de Cardiología</label></div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Tiempo mínimo para llegar</label>
+                  <div class="input-group"><input type="number" class="form-control" value="45" min="0"><select class="form-select" style="max-width:8rem"><option selected>minutos</option><option>horas</option></select></div>
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">¿Cuántos días antes aceptas adelantarla?</label>
+                  <div class="input-group"><input type="number" class="form-control" value="3" min="1"><span class="input-group-text">días</span></div>
+                </div>
+                <p class="small text-body-secondary mb-0">Es voluntario y puedes cambiarlo o revocarlo desde Mis citas.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="alert alert-primary small d-flex gap-2 align-items-center">
+                <i class="bi bi-hourglass-split"></i><span>Horario reservado para ti por <strong data-cuenta-regresiva="236">3:56</strong></span>
+              </div>
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="tyc">
+                <label class="form-check-label small" for="tyc">Acepto los términos y condiciones del servicio.</label>
+              </div>
+              <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#agendada">Agendar cita</button>
+              <a href="paciente-nueva-cita-4.html" class="btn btn-outline-secondary w-100 mt-2">Cambiar horario</a>
+            </div>
+          </div>
+
+<div class="mt-4">
+  <a class="small link-secondary" data-bs-toggle="collapse" href="#ocupado" role="button" aria-expanded="false">
+    <i class="bi bi-eye me-1"></i>Prototipo · ver estado: el horario fue ocupado por otra persona
+  </a>
+  <div class="collapse mt-2" id="ocupado">
+    <div class="border border-2 border-secondary-subtle rounded p-3" style="border-style:dashed !important">
+
+          <div class="alert alert-warning small mb-2"><i class="bi bi-exclamation-triangle me-1"></i>
+            Ese horario acaba de ser ocupado. Actualizamos los horarios disponibles y conservamos los datos que ingresaste.</div>
+          <a href="paciente-nueva-cita-4.html" class="btn btn-sm btn-outline-primary">Elegir otro horario</a>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="agendada" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+          <div class="modal-body text-center p-4">
+            <i class="bi bi-check-circle text-success display-5"></i>
+            <h2 class="h5 mt-3">Cita agendada</h2>
+            <p class="mb-1">Miércoles 2 de diciembre, 10:30 · Dra. Carmen Ramírez</p>
+            <p class="small text-body-secondary">El consultorio te llamará para confirmarla antes de la fecha.</p>
+            <a href="paciente-mis-citas.html" class="btn btn-primary">Ver mis citas</a>
+          </div>
+        </div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

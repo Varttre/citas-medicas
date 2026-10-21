@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Usuarios · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary" data-perfil="admin" data-seccion="usuarios">
+<div class="d-lg-flex">
+  <aside id="barra-lateral" class="offcanvas-lg offcanvas-start bg-body border-end" tabindex="-1"></aside>
+
+  <div class="flex-grow-1">
+    <nav class="navbar bg-body border-bottom d-lg-none px-3">
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="fw-semibold">Consultorio San Isidro</span>
+      <span></span>
+    </nav>
+
+    <main class="container-xl p-3 p-lg-4">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Usuarios</h1><p class="text-body-secondary mb-0">Cuentas del personal del consultorio</p></div>
+        <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#alta"><i class="bi bi-person-plus me-1"></i>Nuevo usuario</button>
+      </div>
+      <div class="alert alert-warning d-flex gap-2 align-items-start">
+        <i class="bi bi-exclamation-triangle mt-1"></i>
+        <div><strong>La Dra. Patricia Núñez todavía no puede recibir citas:</strong> falta cargar sus duraciones por tipo de consulta.
+          <a href="#" class="alert-link" data-bs-toggle="offcanvas" data-bs-target="#alta">Completar</a></div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <input class="form-control" style="max-width:18rem" placeholder="Buscar por nombre o correo">
+        <select class="form-select" style="max-width:12rem"><option>Todos los roles</option><option>Médico</option><option>Recepción</option><option>Administrador</option></select>
+        <select class="form-select" style="max-width:12rem"><option>Todos los estados</option><option>Activa</option><option>Bloqueada</option><option>Baja</option></select>
+      </div>
+      <div class="card shadow-sm"><div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light"><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Especialidad</th><th>Estado</th><th>Último acceso</th><th></th></tr></thead>
+          <tbody>
+              <tr><td class="fw-semibold">Dra. Carmen Ramírez</td><td class="small">c.ramirez@sanisidro.pe</td><td>Médico</td><td>Cardiología</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Hoy 07:52</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Dr. Raúl Ochoa</td><td class="small">r.ochoa@sanisidro.pe</td><td>Médico</td><td>Cardiología</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Hoy 08:05</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Dr. Luis Salas</td><td class="small">l.salas@sanisidro.pe</td><td>Médico</td><td>Dermatología</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Ayer 18:40</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Dra. Elena Cueva</td><td class="small">e.cueva@sanisidro.pe</td><td>Médico</td><td>Pediatría</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Hoy 08:47</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Dr. Andrés Ponce</td><td class="small">a.ponce@sanisidro.pe</td><td>Médico</td><td>Medicina General</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Hoy 07:58</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Dra. Patricia Núñez</td><td class="small">p.nunez@sanisidro.pe</td><td>Médico</td><td>Ginecología</td><td><span class="badge text-bg-warning">Sin duraciones</span></td><td class="small">—</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Ana Quispe</td><td class="small">a.quispe@sanisidro.pe</td><td>Recepción</td><td>—</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Hoy 07:30</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Miguel Torres</td><td class="small">m.torres@sanisidro.pe</td><td>Recepción</td><td>—</td><td><span class="badge text-bg-danger">Bloqueada</span></td><td class="small">3 nov 19:02</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Desbloquear</button>
+                </td></tr>
+              <tr><td class="fw-semibold">Jorge Salinas</td><td class="small">j.salinas@sanisidro.pe</td><td>Administrador</td><td>—</td><td><span class="badge text-bg-success">Activa</span></td><td class="small">Hoy 09:15</td>
+                <td class="text-end text-nowrap">
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#accesos" title="Historial de accesos"><i class="bi bi-clock-history"></i></button>
+                  <button class="btn btn-sm btn-outline-secondary">Bloquear</button>
+                </td></tr></tbody>
+        </table>
+      </div></div>
+      <p class="small text-body-secondary mt-2">Un médico que además administra usa dos cuentas: los permisos de cada rol están definidos en el sistema y no se editan aquí.</p>
+
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="alta" style="--bs-offcanvas-width: 30rem">
+        <div class="offcanvas-header border-bottom"><h2 class="offcanvas-title h5">Nuevo usuario</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button></div>
+        <div class="offcanvas-body">
+          <div class="mb-3"><label class="form-label">Rol</label>
+            <div class="d-flex gap-3">
+              <div class="form-check"><input class="form-check-input" type="radio" name="rol" id="r-med" checked data-muestra="#solo-medico"><label class="form-check-label" for="r-med">Médico</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="rol" id="r-rec" data-oculta="#solo-medico"><label class="form-check-label" for="r-rec">Recepción</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="rol" id="r-adm" data-oculta="#solo-medico"><label class="form-check-label" for="r-adm">Administrador</label></div>
+            </div></div>
+          <div class="mb-3"><label class="form-label">Nombre que se mostrará</label><input class="form-control" value="Dra. Patricia Núñez">
+            <div class="form-text">Aparece en los registros de llamadas y cambios.</div></div>
+          <div class="mb-3"><label class="form-label">Correo</label><input class="form-control" value="p.nunez@sanisidro.pe"></div>
+          <div id="solo-medico">
+            <div class="mb-3"><label class="form-label">Especialidades</label>
+              <select class="form-select" multiple size="3"><option>Cardiología</option><option selected>Ginecología</option><option>Medicina General</option></select></div>
+            <h3 class="h6 mt-4">Duraciones por tipo de consulta <span class="text-danger">*</span></h3>
+            <p class="small text-body-secondary">Obligatorias: sin ellas el sistema no puede calcular sus horarios.</p>
+            <table class="table table-sm align-middle">
+              <tbody>
+                <tr><td>Primera cita</td><td><select class="form-select form-select-sm"><option>30 min</option><option selected>45 min</option><option>60 min</option></select></td></tr>
+                <tr><td>Seguimiento</td><td><select class="form-select form-select-sm"><option selected>30 min</option><option>45 min</option></select></td></tr>
+                <tr><td>Consulta</td><td><select class="form-select form-select-sm"><option selected>30 min</option><option>45 min</option></select></td></tr>
+                <tr><td>Procedimiento menor</td><td><select class="form-select form-select-sm"><option>No atiende</option><option selected>60 min</option></select></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn btn-primary w-100 mt-2" data-bs-dismiss="offcanvas">Guardar</button>
+          <p class="small text-body-secondary mt-2 mb-0">Se enviará un enlace al correo para que el usuario cree su contraseña.</p>
+        </div>
+      </div>
+
+      <div class="modal fade" id="accesos" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+          <div class="modal-header"><h2 class="modal-title h5">Historial de accesos · Miguel Torres</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+          <div class="modal-body">
+            <table class="table table-sm small mb-0">
+              <thead><tr><th>Fecha</th><th>Evento</th></tr></thead>
+              <tbody>
+                <tr><td>3 nov 19:02</td><td>Cuenta bloqueada por el administrador</td></tr>
+                <tr><td>3 nov 18:55</td><td>5 intentos fallidos · bloqueo temporal de 15 min</td></tr>
+                <tr><td>3 nov 07:31</td><td>Inicio de sesión</td></tr>
+                <tr><td>2 nov 07:28</td><td>Inicio de sesión</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

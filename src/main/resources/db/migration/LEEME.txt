@@ -1,0 +1,6 @@
+Migraciones de Flyway, en orden.
+
+V1__modelo_inicial.sql  Extensión btree_gist y las 25 tablas con sus claves, CHECK, UNIQUE, EXCLUDE y FK.
+V2__datos_iniciales.sql Roles, especialidades, tipos de consulta, parámetros y plazos (tarea D2 de PLAN-MVP.md).
+
+Una migración ya fusionada en main no se edita: cualquier cambio de esquema va en la siguiente (V3__..., V4__...).

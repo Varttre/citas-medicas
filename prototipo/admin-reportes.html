@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reportes · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary" data-perfil="admin" data-seccion="reportes">
+<div class="d-lg-flex">
+  <aside id="barra-lateral" class="offcanvas-lg offcanvas-start bg-body border-end" tabindex="-1"></aside>
+
+  <div class="flex-grow-1">
+    <nav class="navbar bg-body border-bottom d-lg-none px-3">
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="fw-semibold">Consultorio San Isidro</span>
+      <span></span>
+    </nav>
+
+    <main class="container-xl p-3 p-lg-4">
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Reportes del consultorio</h1><p class="text-body-secondary mb-0">Del 24 de agosto al 11 de noviembre de 2026 · todos los médicos</p></div>
+        <div class="d-flex gap-2"><select class="form-select"><option>Últimos 3 meses</option><option>Este año</option></select><button class="btn btn-success text-nowrap"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar a Excel</button></div>
+      </div>
+      <h2 class="h5 mb-3">Recuperación de capacidad</h2>
+      <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">1</span>Bloques recuperados</div>
+            <div class="fs-2 fw-semibold mt-1">63 %</div><div class="small text-body-secondary">84 de 134 bloques liberados por cancelación</div>
+          </div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">2</span>Tiempo para cubrir un bloque</div>
+            <div class="fs-2 fw-semibold mt-1">3 h 40</div><div class="small text-body-secondary">Promedio desde que se libera</div>
+          </div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">3</span>Ofertas aceptadas</div>
+            <div class="fs-2 fw-semibold mt-1">41 %</div><div class="small text-body-secondary">De las llamadas de cupos liberados</div>
+          </div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">8</span>Minutos en residuos no vendibles</div>
+            <div class="fs-2 fw-semibold mt-1">1 280 min</div><div class="small text-body-secondary">Sobrantes menores al hueco mínimo útil</div>
+          </div></div></div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Bloques recuperados por semana</span>
+          <a class="small" data-bs-toggle="collapse" href="#tabla-semanas">Ver tabla</a>
+        </div>
+        <div class="card-body"><svg viewBox="0 0 720 240" class="w-100" role="img" aria-label="Porcentaje de bloques liberados que se recuperaron, por semana" style="font-size:11px;fill:var(--bs-secondary-color)">
+              <style>.barra:hover path{opacity:.75}</style><line x1="40" x2="720" y1="212.0" y2="212.0" stroke="var(--bs-border-color)" stroke-width="1"/><text x="34" y="216.0" text-anchor="end">0 %</text><line x1="40" x2="720" y1="112.0" y2="112.0" stroke="var(--bs-border-color)" stroke-width="1"/><text x="34" y="116.0" text-anchor="end">50 %</text><line x1="40" x2="720" y1="12.0" y2="12.0" stroke="var(--bs-border-color)" stroke-width="1"/><text x="34" y="16.0" text-anchor="end">100 %</text><g class="barra"><rect x="40.0" y="12" width="56.7" height="200" fill="transparent"/><path d="M54.2,212 V128.0 Q54.2,124.0 58.2,124.0 H78.5 Q82.5,124.0 82.5,128.0 V212 Z" fill="var(--bs-primary)"/><title>S3: 44 % recuperado (4 de 9 bloques)</title></g><g class="barra"><rect x="96.7" y="12" width="56.7" height="200" fill="transparent"/><path d="M110.8,212 V106.0 Q110.8,102.0 114.8,102.0 H135.2 Q139.2,102.0 139.2,106.0 V212 Z" fill="var(--bs-primary)"/><title>S4: 55 % recuperado (6 de 11 bloques)</title></g><g class="barra"><rect x="153.3" y="12" width="56.7" height="200" fill="transparent"/><path d="M167.5,212 V92.0 Q167.5,88.0 171.5,88.0 H191.8 Q195.8,88.0 195.8,92.0 V212 Z" fill="var(--bs-primary)"/><title>S5: 62 % recuperado (5 de 8 bloques)</title></g><g class="barra"><rect x="210.0" y="12" width="56.7" height="200" fill="transparent"/><path d="M224.2,212 V100.0 Q224.2,96.0 228.2,96.0 H248.5 Q252.5,96.0 252.5,100.0 V212 Z" fill="var(--bs-primary)"/><title>S6: 58 % recuperado (7 de 12 bloques)</title></g><g class="barra"><rect x="266.7" y="12" width="56.7" height="200" fill="transparent"/><path d="M280.8,212 V96.0 Q280.8,92.0 284.8,92.0 H305.2 Q309.2,92.0 309.2,96.0 V212 Z" fill="var(--bs-primary)"/><title>S7: 60 % recuperado (6 de 10 bloques)</title></g><g class="barra"><rect x="323.3" y="12" width="56.7" height="200" fill="transparent"/><path d="M337.5,212 V88.0 Q337.5,84.0 341.5,84.0 H361.8 Q365.8,84.0 365.8,88.0 V212 Z" fill="var(--bs-primary)"/><title>S8: 64 % recuperado (9 de 14 bloques)</title></g><g class="barra"><rect x="380.0" y="12" width="56.7" height="200" fill="transparent"/><path d="M394.2,212 V82.0 Q394.2,78.0 398.2,78.0 H418.5 Q422.5,78.0 422.5,82.0 V212 Z" fill="var(--bs-primary)"/><title>S9: 67 % recuperado (6 de 9 bloques)</title></g><g class="barra"><rect x="436.7" y="12" width="56.7" height="200" fill="transparent"/><path d="M450.8,212 V78.0 Q450.8,74.0 454.8,74.0 H475.2 Q479.2,74.0 479.2,78.0 V212 Z" fill="var(--bs-primary)"/><title>S10: 69 % recuperado (9 de 13 bloques)</title></g><g class="barra"><rect x="493.3" y="12" width="56.7" height="200" fill="transparent"/><path d="M507.5,212 V88.0 Q507.5,84.0 511.5,84.0 H531.8 Q535.8,84.0 535.8,88.0 V212 Z" fill="var(--bs-primary)"/><title>S11: 64 % recuperado (7 de 11 bloques)</title></g><g class="barra"><rect x="550.0" y="12" width="56.7" height="200" fill="transparent"/><path d="M564.2,212 V82.0 Q564.2,78.0 568.2,78.0 H588.5 Q592.5,78.0 592.5,82.0 V212 Z" fill="var(--bs-primary)"/><title>S12: 67 % recuperado (10 de 15 bloques)</title></g><g class="barra"><rect x="606.7" y="12" width="56.7" height="200" fill="transparent"/><path d="M620.8,212 V82.0 Q620.8,78.0 624.8,78.0 H645.2 Q649.2,78.0 649.2,82.0 V212 Z" fill="var(--bs-primary)"/><title>S13: 67 % recuperado (8 de 12 bloques)</title></g><g class="barra"><rect x="663.3" y="12" width="56.7" height="200" fill="transparent"/><path d="M677.5,212 V76.0 Q677.5,72.0 681.5,72.0 H701.8 Q705.8,72.0 705.8,76.0 V212 Z" fill="var(--bs-primary)"/><title>S14: 70 % recuperado (7 de 10 bloques)</title></g><text x="68.3" y="232" text-anchor="middle">S3</text><text x="125.0" y="232" text-anchor="middle">S4</text><text x="181.7" y="232" text-anchor="middle">S5</text><text x="238.3" y="232" text-anchor="middle">S6</text><text x="295.0" y="232" text-anchor="middle">S7</text><text x="351.7" y="232" text-anchor="middle">S8</text><text x="408.3" y="232" text-anchor="middle">S9</text><text x="465.0" y="232" text-anchor="middle">S10</text><text x="521.7" y="232" text-anchor="middle">S11</text><text x="578.3" y="232" text-anchor="middle">S12</text><text x="635.0" y="232" text-anchor="middle">S13</text><text x="691.7" y="232" text-anchor="middle">S14</text></svg>
+          <div class="collapse mt-3" id="tabla-semanas">
+            <table class="table table-sm small mb-0"><thead><tr><th>Semana</th><th>Liberados</th><th>Cubiertos</th><th>Recuperado</th></tr></thead><tbody><tr><td>S3</td><td>9</td><td>4</td><td>44 %</td></tr><tr><td>S4</td><td>11</td><td>6</td><td>55 %</td></tr><tr><td>S5</td><td>8</td><td>5</td><td>62 %</td></tr><tr><td>S6</td><td>12</td><td>7</td><td>58 %</td></tr><tr><td>S7</td><td>10</td><td>6</td><td>60 %</td></tr><tr><td>S8</td><td>14</td><td>9</td><td>64 %</td></tr><tr><td>S9</td><td>9</td><td>6</td><td>67 %</td></tr><tr><td>S10</td><td>13</td><td>9</td><td>69 %</td></tr><tr><td>S11</td><td>11</td><td>7</td><td>64 %</td></tr><tr><td>S12</td><td>15</td><td>10</td><td>67 %</td></tr><tr><td>S13</td><td>12</td><td>8</td><td>67 %</td></tr><tr><td>S14</td><td>10</td><td>7</td><td>70 %</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="h5 mb-3">Funcionamiento de los mecanismos</h2>
+      <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">4</span>Posición del candidato que aceptó</div>
+            <div class="fs-2 fw-semibold mt-1">1,7</div><div class="small text-body-secondary">Si suele ser el 4.º o 5.º, la priorización no funciona</div>
+          </div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">7</span>Citas indicadas agendadas</div>
+            <div class="fs-2 fw-semibold mt-1">58 %</div><div class="small text-body-secondary">Dentro de su vigencia</div>
+          </div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">9</span>Reprogramaciones por cita</div>
+            <div class="fs-2 fw-semibold mt-1">0,3</div><div class="small text-body-secondary">Calculable porque la cita conserva su identificador</div>
+          </div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
+            <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">6</span>Duración real frente a la prevista</div>
+            <div class="fs-2 fw-semibold mt-1">+6 min</div><div class="small text-body-secondary">Promedio del consultorio (detalle abajo)</div>
+          </div></div></div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-xl-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><span class="badge text-bg-light border me-1">5</span>No asistencia por médico y horario</div>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+              <thead class="table-light"><tr><th>Médico</th><th>Especialidad</th><th class="text-end">Mañana</th><th class="text-end">Tarde</th><th class="text-end">Total</th></tr></thead>
+              <tbody>
+                <tr><td>Dra. Ramírez</td><td>Cardiología</td><td class="text-end">7 %</td><td class="text-end">12 %</td><td class="text-end fw-semibold">9 %</td></tr>
+                <tr><td>Dr. Ochoa</td><td>Cardiología</td><td class="text-end">11 %</td><td class="text-end">19 %</td><td class="text-end fw-semibold">15 %</td></tr>
+                <tr><td>Dr. Salas</td><td>Dermatología</td><td class="text-end">6 %</td><td class="text-end">8 %</td><td class="text-end fw-semibold">7 %</td></tr>
+                <tr><td>Dra. Cueva</td><td>Pediatría</td><td class="text-end">5 %</td><td class="text-end">6 %</td><td class="text-end fw-semibold">5 %</td></tr>
+                <tr><td>Dr. Ponce</td><td>Medicina General</td><td class="text-end">9 %</td><td class="text-end">14 %</td><td class="text-end fw-semibold">11 %</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+        <div class="col-xl-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><span class="badge text-bg-light border me-1">6</span>Duración real frente a la prevista</div>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+              <thead class="table-light"><tr><th>Médico</th><th>Tipo</th><th class="text-end">Prevista</th><th class="text-end">Real (mediana)</th><th class="text-end">Desvío</th></tr></thead>
+              <tbody>
+                <tr><td>Dra. Ramírez</td><td>Seguimiento</td><td class="text-end">30</td><td class="text-end">38</td><td class="text-end fw-semibold">+8</td></tr>
+                <tr><td>Dra. Ramírez</td><td>Procedimiento menor</td><td class="text-end">60</td><td class="text-end">57</td><td class="text-end fw-semibold">−3</td></tr>
+                <tr><td>Dr. Ochoa</td><td>Consulta</td><td class="text-end">30</td><td class="text-end">34</td><td class="text-end fw-semibold">+4</td></tr>
+                <tr><td>Dr. Ponce</td><td>Consulta</td><td class="text-end">30</td><td class="text-end">41</td><td class="text-end fw-semibold">+11</td></tr>
+                <tr><td>Dra. Cueva</td><td>Consulta</td><td class="text-end">30</td><td class="text-end">29</td><td class="text-end fw-semibold">−1</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+      <p class="small text-body-secondary mt-4 mb-0">Los números de cada tarjeta corresponden a las métricas de la sección 13 del documento del proyecto. Toda métrica se calcula desde el historial de eventos; la exportación genera una hoja de cálculo con el detalle que respalda cada cifra.</p>
+    </main>
+  </div>
+</div>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

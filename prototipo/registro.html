@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registrarse · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="assets/app.css" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary">
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-10 col-md-8 col-lg-6">
+      <a href="publico.html" class="d-flex justify-content-center align-items-center gap-2 mb-4 text-decoration-none link-body-emphasis">
+        <i class="bi bi-heart-pulse fs-2 text-primary"></i><span class="fs-5 fw-semibold">Consultorio San Isidro</span>
+      </a>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-1">Crear cuenta</h1>
+          <p class="text-body-secondary small mb-4">Tu cuenta también te registra como paciente. El teléfono que indiques es al que te llamaremos por todas las citas que agendes.</p>
+          <form action="paciente-inicio.html">
+            <h2 class="h6 text-body-secondary text-uppercase small">Acceso</h2>
+            <div class="row g-3 mb-4">
+              <div class="col-12"><label class="form-label">Correo electrónico</label><input type="email" class="form-control" placeholder="nombre@correo.com"></div>
+              <div class="col-sm-6"><label class="form-label">Contraseña</label><input type="password" class="form-control"></div>
+              <div class="col-sm-6"><label class="form-label">Repetir contraseña</label><input type="password" class="form-control"></div>
+            </div>
+            <h2 class="h6 text-body-secondary text-uppercase small">Tus datos como paciente</h2>
+            <div class="row g-3">
+              <div class="col-sm-5"><label class="form-label">Tipo de documento</label>
+                <select class="form-select"><option>DNI</option><option>Carné de extranjería</option><option>Pasaporte</option></select></div>
+              <div class="col-sm-7"><label class="form-label">Número de documento</label><input class="form-control" inputmode="numeric"></div>
+              <div class="col-sm-6"><label class="form-label">Nombres</label><input class="form-control"></div>
+              <div class="col-sm-6"><label class="form-label">Apellidos</label><input class="form-control"></div>
+              <div class="col-sm-6"><label class="form-label">Fecha de nacimiento</label><input type="date" class="form-control"></div>
+              <div class="col-sm-6"><label class="form-label">Teléfono</label><input type="tel" class="form-control" placeholder="9 dígitos"></div>
+            </div>
+            <div class="form-check mt-4">
+              <input class="form-check-input" type="checkbox" id="terminos">
+              <label class="form-check-label small" for="terminos">Acepto los términos y condiciones y la política de protección de datos personales.</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Crear cuenta</button>
+          </form>
+          <p class="text-center small mt-3 mb-0">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+        </div>
+      </div>
+      <div class="alert alert-light border small mt-3">
+        <i class="bi bi-info-circle me-1"></i>Si ya te atendiste en el consultorio, usa el mismo documento, fecha de nacimiento y teléfono que diste en recepción: así verás también tus citas anteriores.
+      </div>
+
+<div class="mt-4">
+  <a class="small link-secondary" data-bs-toggle="collapse" href="#no-valida" role="button" aria-expanded="false">
+    <i class="bi bi-eye me-1"></i>Prototipo · ver estado: los datos no coinciden con un paciente ya registrado
+  </a>
+  <div class="collapse mt-2" id="no-valida">
+    <div class="border border-2 border-secondary-subtle rounded p-3" style="border-style:dashed !important">
+
+      <div class="alert alert-danger small mb-0"><i class="bi bi-x-circle me-1"></i>
+        No pudimos validar tus datos. Comunícate con el consultorio.</div>
+      <p class="small text-body-secondary mt-2 mb-0">El mensaje es el mismo exista o no el documento, para no revelar quién es paciente del consultorio.</p>
+    </div>
+  </div>
+</div>
+<div class="mt-4">
+  <a class="small link-secondary" data-bs-toggle="collapse" href="#ya-tiene" role="button" aria-expanded="false">
+    <i class="bi bi-eye me-1"></i>Prototipo · ver estado: el paciente ya tiene cuenta
+  </a>
+  <div class="collapse mt-2" id="ya-tiene">
+    <div class="border border-2 border-secondary-subtle rounded p-3" style="border-style:dashed !important">
+
+      <div class="alert alert-info small mb-0"><i class="bi bi-person-check me-1"></i>
+        Ya existe una cuenta para estos datos. <a href="recuperar.html" class="alert-link">Recupera tu contraseña</a>.</div>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+</main>
+
+<a href="index.html" class="btn btn-dark btn-sm rounded-pill shadow indice-prototipo"><i class="bi bi-grid me-1"></i>Índice de pantallas</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
