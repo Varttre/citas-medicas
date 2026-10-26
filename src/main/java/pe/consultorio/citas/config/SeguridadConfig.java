@@ -8,10 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Seguridad web: sesión de servidor con formulario de inicio de sesión.
- * Las rutas de cada perfil se protegen por rol; el aislamiento entre médicos se aplica
- * además en los servicios y repositorios, no solo aquí.
- */
+Seguridad web: sesión de servidor con formulario de inicio de sesión.
+Las rutas de cada perfil se protegen por rol; el aislamiento entre médicos se aplica
+además en los servicios y repositorios, no solo aquí.
+*/
 @Configuration
 public class SeguridadConfig {
 
@@ -19,7 +19,7 @@ public class SeguridadConfig {
     SecurityFilterChain filtros(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/registro", "/recuperar/**", "/css/**", "/js/**", "/img/**").permitAll()
+                .requestMatchers("/", "/registro", "/recuperar/**", "/error", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/paciente/**").hasRole("PACIENTE")
                 .requestMatchers("/medico/**").hasRole("MEDICO")
                 .requestMatchers("/recepcion/**").hasAnyRole("RECEPCION", "ADMINISTRADOR")
