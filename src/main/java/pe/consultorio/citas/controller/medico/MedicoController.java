@@ -34,11 +34,6 @@ public class MedicoController {
         return "medico/inicio";
     }
 
-    @GetMapping("/agenda")
-    public String agenda() {
-        return "medico/agenda";
-    }
-
     @GetMapping("/estadisticas")
     public String estadisticas() {
         return "medico/estadisticas";

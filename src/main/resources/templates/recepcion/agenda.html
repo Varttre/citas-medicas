@@ -12,165 +12,58 @@
       <div th:replace="~{fragmentos/base :: mensajes}"></div>
 
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div><h1 class="h3 mb-0">Agenda del día</h1><p class="text-body-secondary mb-0">Miércoles 11 de noviembre · todos los médicos</p></div>
-        <div class="btn-group"><button class="btn btn-outline-secondary active">Columnas</button><button class="btn btn-outline-secondary">Lista</button></div>
+        <div><h1 class="h3 mb-0">Agenda del día</h1>
+          <p class="text-body-secondary mb-0" th:text="|${#temporals.format(fecha, 'EEEE d ''de'' MMMM')} · ${medico == null ? 'todos los médicos' : 'un médico'}|">Día</p></div>
+        <a th:href="@{/recepcion/cita/nueva}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
       </div>
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <input type="date" class="form-control" style="max-width:11rem" value="2026-11-11">
-        <select class="form-select" style="max-width:12rem"><option>Todas las especialidades</option><option>Cardiología</option><option>Pediatría</option></select>
-        <select class="form-select" style="max-width:12rem"><option>Todos los médicos</option></select>
-        <select class="form-select" style="max-width:11rem"><option>Todos los estados</option></select>
-        <select class="form-select" style="max-width:11rem"><option>Toda modalidad</option></select>
-      </div>
-      <div class="overflow-x-auto pb-2">
-        <div class="row flex-nowrap g-3">
-          <div class="col" style="min-width: 15rem">
-            <div class="fw-semibold">Dra. Carmen Ramírez</div><div class="small text-body-secondary mb-2">Cardiología</div>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">08:00</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Marcos Torres</div><div class="text-body-secondary">Seguimiento · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">08:30</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Julia Ríos</div><div class="text-body-secondary">Primera cita · 45 min</div>
-                </div></a><div class="border border-dashed rounded p-2 mb-2 small text-body-secondary bg-body-tertiary" style="border-style:dashed !important">09:15 · libre 15 min</div>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">09:30</span><span class="badge text-bg-info">En atención</span></div>
-                  <div class="link-body-emphasis">Rosa Medina Flores</div><div class="text-body-secondary">Seguimiento · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:00</span><span class="badge text-bg-info">Asistió</span></div>
-                  <div class="link-body-emphasis">Jorge Paredes Luna</div><div class="text-body-secondary">Primera cita · 45 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:45</span><span class="badge text-bg-success">Confirmada</span></div>
-                  <div class="link-body-emphasis">Silvia Campos</div><div class="text-body-secondary">Seguimiento · 30 min</div>
-                </div></a><div class="border border-dashed rounded p-2 mb-2 small text-body-secondary bg-body-tertiary" style="border-style:dashed !important">11:15 · libre 45 min</div>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">12:00</span><span class="badge text-bg-success">Confirmada</span></div>
-                  <div class="link-body-emphasis">Pedro Díaz</div><div class="text-body-secondary">Procedimiento menor · 60 min</div>
-                </div></a>
-          </div>
-          <div class="col" style="min-width: 15rem">
-            <div class="fw-semibold">Dr. Raúl Ochoa</div><div class="small text-body-secondary mb-2">Cardiología</div>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">08:30</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Teresa Gómez</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">09:30</span><span class="badge text-bg-danger">No asistió</span></div>
-                  <div class="link-body-emphasis">Iván Rojas</div><div class="text-body-secondary">Seguimiento · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:00</span><span class="badge text-bg-info">Asistió</span></div>
-                  <div class="link-body-emphasis">Nora Castillo</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:30</span><span class="badge text-bg-secondary">Programada</span></div>
-                  <div class="link-body-emphasis">Walter Fuentes</div><div class="text-body-secondary">Primera cita · 45 min</div>
-                </div></a><div class="border border-dashed rounded p-2 mb-2 small text-body-secondary bg-body-tertiary" style="border-style:dashed !important">11:15 · libre 1 h 45</div>
-          </div>
-          <div class="col" style="min-width: 15rem">
-            <div class="fw-semibold">Dra. Elena Cueva</div><div class="small text-body-secondary mb-2">Pediatría</div>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">09:00</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Sofía Lara</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">09:30</span><span class="badge text-bg-info">Asistió</span></div>
-                  <div class="link-body-emphasis">Diego Huamán</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:00</span><span class="badge text-bg-info">Asistió</span></div>
-                  <div class="link-body-emphasis">Valeria Soto</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:30</span><span class="badge text-bg-success">Confirmada</span></div>
-                  <div class="link-body-emphasis">Tomás Quiroz</div><div class="text-body-secondary">Consulta · 30 min · teleconsulta</div>
-                </div></a>
-          </div>
-          <div class="col" style="min-width: 15rem">
-            <div class="fw-semibold">Dr. Andrés Ponce</div><div class="small text-body-secondary mb-2">Medicina General</div>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">08:00</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Rubén Aliaga</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">08:30</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Elsa Paz</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">09:00</span><span class="badge text-bg-primary">Realizada</span></div>
-                  <div class="link-body-emphasis">Mario León</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:00</span><span class="badge text-bg-info">En atención</span></div>
-                  <div class="link-body-emphasis">Luis Tapia</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-              <a href="#" class="card mb-2 text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#detalle-cita">
-                <div class="card-body p-2 small">
-                  <div class="d-flex justify-content-between"><span class="fw-semibold">10:30</span><span class="badge text-bg-secondary">Programada</span></div>
-                  <div class="link-body-emphasis">Karen Díaz</div><div class="text-body-secondary">Consulta · 30 min</div>
-                </div></a>
-          </div>
-        </div>
-      </div>
-      <p class="small text-body-secondary mt-2">Toca una cita para ver su detalle. A diferencia del médico, recepción ve a todos los médicos.</p>
-      <div class="offcanvas offcanvas-end" tabindex="-1" id="detalle-cita" style="--bs-offcanvas-width: 28rem">
-        <div class="offcanvas-header border-bottom">
-          <div><div class="fw-semibold">10:30 · Walter Fuentes</div><div class="small text-body-secondary">Dr. Raúl Ochoa · Primera cita · 45 min · Presencial</div></div>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-        </div>
-        <div class="offcanvas-body">
-          <dl class="row small">
-            <dt class="col-5">Estado</dt><dd class="col-7"><span class="badge text-bg-secondary">Programada</span></dd>
-            <dt class="col-5">Teléfono de contacto</dt><dd class="col-7">944 310 877</dd>
-            <dt class="col-5">Canal de origen</dt><dd class="col-7">Teléfono</dd>
-            <dt class="col-5">Reprogramaciones</dt><dd class="col-7">1</dd>
-          </dl>
-          <div class="d-grid gap-2 mb-4">
-            <button class="btn btn-primary"><i class="bi bi-person-check me-1"></i>Marcar llegada</button>
-            <div class="dropdown d-grid">
-              <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Cambiar estado</button>
-              <ul class="dropdown-menu w-100">
-                <li><a class="dropdown-item" href="#">Cancelada por el paciente (motivo)</a></li>
-                <li><a class="dropdown-item" href="#">Cancelada por la clínica (motivo)</a></li>
-                <li><span class="dropdown-item disabled">No asistió · disponible desde las 10:35</span></li>
-              </ul>
-            </div>
-            <a th:href="@{/recepcion/cita/nueva}" class="btn btn-outline-secondary">Reprogramar</a>
-          </div>
-          <p class="small text-body-secondary">Confirmar una cita solo se hace desde la cola de Confirmaciones, con la llamada registrada. Reprogramar conserva la cita y la devuelve a «programada» sin confirmación.</p>
-          <h3 class="h6 mt-3">Ajustar duración</h3>
-          <select class="form-select form-select-sm mb-3" style="max-width:10rem"><option>30 min</option><option selected>45 min</option><option>60 min</option></select>
-          <h3 class="h6">Indicaciones administrativas</h3>
-          <textarea class="form-control form-control-sm mb-1" rows="2">Traer DNI y orden de referencia.</textarea>
-          <p class="small text-body-secondary">Se guardan aparte de las del médico; el paciente ve ambas.</p>
+      <form class="d-flex flex-wrap gap-2 mb-3" th:action="@{/recepcion/agenda}" method="get">
+        <input type="date" class="form-control" style="max-width:11rem" name="fecha" th:value="${fecha}">
+        <select class="form-select" style="max-width:16rem" name="medico">
+          <option value="">Todos los médicos</option>
+          <option th:each="m : ${medicos}" th:value="${m.idMedico}" th:text="|${m.nombre} · ${m.especialidad}|" th:selected="${medico == m.idMedico}">Médico</option>
+        </select>
+        <button class="btn btn-outline-primary">Ver</button>
+      </form>
 
-        </div>
-      </div>
+      <div class="card shadow-sm"><div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light"><tr><th>Hora</th><th>Médico</th><th>Paciente</th><th>Tipo</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+          <tbody>
+            <tr th:each="c : ${citas}">
+              <td class="fw-semibold text-nowrap" th:text="|${#temporals.format(c.inicio, 'HH:mm')}–${#temporals.format(c.fin, 'HH:mm')}|">08:00</td>
+              <td><div th:text="${c.medico}">Médico</div><div class="small text-body-secondary" th:text="${c.especialidad}">Esp</div></td>
+              <td><div th:text="${c.paciente}">Paciente</div><div class="small text-body-secondary" th:text="${c.documento}">DNI</div></td>
+              <td><div th:text="${c.tipo}">Tipo</div><div class="small text-body-secondary" th:text="|${c.duracionMin()} min · ${c.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">30 min</div></td>
+              <td><span class="badge" th:classappend="${c.vigente()} ? 'text-bg-secondary' : (${c.asistio()} ? 'text-bg-info' : 'text-bg-light border')" th:text="${c.atencionIniciada and c.asistio()} ? 'En atención' : ${c.estado}">Programada</span></td>
+              <td class="text-end text-nowrap">
+                <form th:if="${c.vigente()}" class="d-inline" method="post" th:action="@{/recepcion/citas/{id}/llegada(id=${c.idCita})}">
+                  <input type="hidden" name="fecha" th:value="${fecha}">
+                  <button class="btn btn-sm btn-outline-success">Llegó</button></form>
+                <form th:if="${c.vigente()}" class="d-inline" method="post" th:action="@{/recepcion/citas/{id}/estado(id=${c.idCita})}">
+                  <input type="hidden" name="fecha" th:value="${fecha}"><input type="hidden" name="nuevoEstado" value="NO_ASISTIO">
+                  <button class="btn btn-sm btn-outline-secondary">No asistió</button></form>
+                <form th:if="${c.asistio() and !c.atencionIniciada}" class="d-inline-flex gap-1" method="post" th:action="@{/recepcion/citas/{id}/estado(id=${c.idCita})}">
+                  <input type="hidden" name="fecha" th:value="${fecha}"><input type="hidden" name="nuevoEstado" value="NO_ASISTIO"><input type="hidden" name="asistio" value="true">
+                  <input class="form-control form-control-sm" name="motivo" placeholder="Motivo del retiro" style="width:10rem" required>
+                  <button class="btn btn-sm btn-outline-warning">Se retiró</button></form>
+                <form th:if="${c.vigente()}" class="d-inline-flex gap-1" method="post" th:action="@{/recepcion/citas/{id}/estado(id=${c.idCita})}">
+                  <input type="hidden" name="fecha" th:value="${fecha}">
+                  <select class="form-select form-select-sm" name="nuevoEstado" style="width:9rem">
+                    <option value="CANCELADA_POR_PACIENTE">Cancela el paciente</option>
+                    <option value="CANCELADA_POR_CLINICA">Cancela el consultorio</option>
+                  </select>
+                  <input class="form-control form-control-sm" name="motivo" placeholder="Motivo" style="width:8rem" required>
+                  <button class="btn btn-sm btn-outline-danger">Cancelar</button></form>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(citas)}"><td colspan="6" class="text-center text-body-secondary">No hay citas para este día.</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+      <p class="small text-body-secondary mt-2">La llegada se registra desde 30 minutos antes de la cita; la inasistencia, desde 5 minutos después del inicio.</p>
     </main>
   </div>
 </div>
-
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
 </body>

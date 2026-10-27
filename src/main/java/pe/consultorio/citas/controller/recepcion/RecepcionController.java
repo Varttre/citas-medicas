@@ -17,11 +17,6 @@ public class RecepcionController {
         return "recepcion/inicio";
     }
 
-    @GetMapping("/agenda")
-    public String agenda() {
-        return "recepcion/agenda";
-    }
-
     @GetMapping("/cita/nueva")
     public String nuevaCita() {
         return "recepcion/nueva-cita";

@@ -34,4 +34,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     @Query("select c from Cita c join fetch c.medico join fetch c.tipoConsulta "
         + "where c.paciente.idPaciente = :idPaciente order by c.inicio desc")
     List<Cita> delPaciente(@Param("idPaciente") Long idPaciente);
+
+    /** Citas que empiezan en {@code [desde, hasta)}, con médico, paciente, especialidad y tipo cargados. */
+    @Query("select c from Cita c join fetch c.medico join fetch c.paciente join fetch c.especialidad "
+        + "join fetch c.tipoConsulta where c.inicio >= :desde and c.inicio < :hasta order by c.inicio")
+    List<Cita> delDia(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 }
