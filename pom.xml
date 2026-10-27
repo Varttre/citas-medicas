@@ -37,7 +37,7 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Seguridad: sesión de servidor, roles y CSRF (decisión 3.10) -->
+        <!-- Seguridad: sesión de servidor, roles y CSRF -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -70,7 +70,7 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
-        <!-- Librerías del motor y de los reportes (entrega del 30 %) -->
+        <!-- Guava para el cálculo de horarios libres; Apache POI para exportar reportes a Excel -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
