@@ -6,33 +6,55 @@
   <div class="row justify-content-center">
     <div class="col-sm-10 col-md-8 col-lg-6">
       <a th:href="@{/}" class="d-flex justify-content-center align-items-center gap-2 mb-4 text-decoration-none link-body-emphasis">
-        <i class="bi bi-heart-pulse fs-2 text-primary"></i><span class="fs-5 fw-semibold">Consultorio San Isidro</span>
+        <i class="bi bi-heart-pulse fs-2 text-primary"></i><span class="fs-5 fw-semibold" th:text="${consultorio}">Consultorio</span>
       </a>
 
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <h1 class="h4 mb-1">Crear cuenta</h1>
           <p class="text-body-secondary small mb-4">Tu cuenta también te registra como paciente. El teléfono que indiques es al que te llamaremos por todas las citas que agendes.</p>
-          <form th:action="@{/paciente/inicio}">
+          <div th:if="${error}" class="alert alert-danger small py-2" role="alert">
+            <i class="bi bi-exclamation-octagon me-1"></i><span th:text="${error}"></span>
+          </div>
+          <form th:action="@{/registro}" method="post" th:object="${form}" novalidate>
             <h2 class="h6 text-body-secondary text-uppercase small">Acceso</h2>
             <div class="row g-3 mb-4">
-              <div class="col-12"><label class="form-label">Correo electrónico</label><input type="email" class="form-control" placeholder="nombre@correo.com"></div>
-              <div class="col-sm-6"><label class="form-label">Contraseña</label><input type="password" class="form-control"></div>
-              <div class="col-sm-6"><label class="form-label">Repetir contraseña</label><input type="password" class="form-control"></div>
+              <div class="col-12"><label class="form-label" for="correo">Correo electrónico</label>
+                <input type="email" class="form-control" th:field="*{correo}" th:errorclass="is-invalid" placeholder="nombre@correo.com">
+                <div class="invalid-feedback" th:errors="*{correo}"></div></div>
+              <div class="col-sm-6"><label class="form-label" for="contrasena">Contraseña</label>
+                <input type="password" class="form-control" th:field="*{contrasena}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{contrasena}"></div></div>
+              <div class="col-sm-6"><label class="form-label" for="confirmacion">Repetir contraseña</label>
+                <input type="password" class="form-control" th:field="*{confirmacion}" th:classappend="${#fields.hasErrors('confirmacionValida')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:errors="*{confirmacionValida}"></div></div>
             </div>
             <h2 class="h6 text-body-secondary text-uppercase small">Tus datos como paciente</h2>
             <div class="row g-3">
-              <div class="col-sm-5"><label class="form-label">Tipo de documento</label>
-                <select class="form-select"><option>DNI</option><option>Carné de extranjería</option><option>Pasaporte</option></select></div>
-              <div class="col-sm-7"><label class="form-label">Número de documento</label><input class="form-control" inputmode="numeric"></div>
-              <div class="col-sm-6"><label class="form-label">Nombres</label><input class="form-control"></div>
-              <div class="col-sm-6"><label class="form-label">Apellidos</label><input class="form-control"></div>
-              <div class="col-sm-6"><label class="form-label">Fecha de nacimiento</label><input type="date" class="form-control"></div>
-              <div class="col-sm-6"><label class="form-label">Teléfono</label><input type="tel" class="form-control" placeholder="9 dígitos"></div>
+              <div class="col-sm-5"><label class="form-label" for="tipoDocumento">Tipo de documento</label>
+                <select class="form-select" th:field="*{tipoDocumento}">
+                  <option value="DNI">DNI</option><option value="CE">Carné de extranjería</option><option value="PASAPORTE">Pasaporte</option>
+                </select></div>
+              <div class="col-sm-7"><label class="form-label" for="nroDocumento">Número de documento</label>
+                <input class="form-control" inputmode="numeric" th:field="*{nroDocumento}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{nroDocumento}"></div></div>
+              <div class="col-sm-6"><label class="form-label" for="nombres">Nombres</label>
+                <input class="form-control" th:field="*{nombres}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{nombres}"></div></div>
+              <div class="col-sm-6"><label class="form-label" for="apellidos">Apellidos</label>
+                <input class="form-control" th:field="*{apellidos}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{apellidos}"></div></div>
+              <div class="col-sm-6"><label class="form-label" for="fechaNacimiento">Fecha de nacimiento</label>
+                <input type="date" class="form-control" th:field="*{fechaNacimiento}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{fechaNacimiento}"></div></div>
+              <div class="col-sm-6"><label class="form-label" for="telefono">Teléfono</label>
+                <input type="tel" class="form-control" placeholder="9 dígitos" th:field="*{telefono}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{telefono}"></div></div>
             </div>
             <div class="form-check mt-4">
-              <input class="form-check-input" type="checkbox" id="terminos">
-              <label class="form-check-label small" for="terminos">Acepto los términos y condiciones y la política de protección de datos personales.</label>
+              <input class="form-check-input" type="checkbox" th:field="*{aceptaTerminos}" th:errorclass="is-invalid">
+              <label class="form-check-label small" th:for="${#ids.prev('aceptaTerminos')}">Acepto los términos y condiciones y la política de protección de datos personales.</label>
+              <div class="invalid-feedback" th:errors="*{aceptaTerminos}"></div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-3">Crear cuenta</button>
           </form>
@@ -42,11 +64,9 @@
       <div class="alert alert-light border small mt-3">
         <i class="bi bi-info-circle me-1"></i>Si ya te atendiste en el consultorio, usa el mismo documento, fecha de nacimiento y teléfono que diste en recepción: así verás también tus citas anteriores.
       </div>
-
     </div>
   </div>
 </main>
-
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
 </body>
