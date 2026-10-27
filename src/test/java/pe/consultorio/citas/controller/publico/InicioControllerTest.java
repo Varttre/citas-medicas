@@ -8,16 +8,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import pe.consultorio.citas.config.ManejadorLoginExitoso;
+import pe.consultorio.citas.config.ManejadorLoginFallido;
 import pe.consultorio.citas.config.SeguridadConfig;
+import pe.consultorio.citas.service.CuentaService;
 
 /** Prueba de la capa web sin base de datos: la página pública es accesible sin sesión. */
 @WebMvcTest(InicioController.class)
-@Import(SeguridadConfig.class)
+@Import({SeguridadConfig.class, ManejadorLoginExitoso.class, ManejadorLoginFallido.class})
 class InicioControllerTest {
 
     @Autowired
     MockMvc mvc;
+
+    @MockitoBean
+    CuentaService cuentaService;
 
     @Test
     void laPaginaPublicaNoPideSesion() throws Exception {

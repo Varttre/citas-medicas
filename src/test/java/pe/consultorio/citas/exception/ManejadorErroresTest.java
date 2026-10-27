@@ -11,15 +11,23 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Controller;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
+import pe.consultorio.citas.config.ManejadorLoginExitoso;
+import pe.consultorio.citas.config.ManejadorLoginFallido;
 import pe.consultorio.citas.config.SeguridadConfig;
+import pe.consultorio.citas.service.CuentaService;
 
 /** Comprueba qué página de error ve el usuario en cada caso. */
 @WebMvcTest(ManejadorErroresTest.ControladorDePrueba.class)
-@Import({ SeguridadConfig.class, ManejadorErroresTest.ControladorDePrueba.class })
+@Import({ SeguridadConfig.class, ManejadorLoginExitoso.class, ManejadorLoginFallido.class,
+    ManejadorErroresTest.ControladorDePrueba.class })
 @WithMockUser
 class ManejadorErroresTest {
+
+    @MockitoBean
+    CuentaService cuentaService;
 
     @Autowired
     MockMvc mvc;
