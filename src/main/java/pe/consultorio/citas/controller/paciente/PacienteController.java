@@ -88,9 +88,4 @@ public class PacienteController {
     public String whatsapp() {
         return "paciente/whatsapp";
     }
-
-    @GetMapping("/perfil")
-    public String perfil() {
-        return "paciente/perfil";
-    }
 }

@@ -14,40 +14,46 @@
       <a th:href="@{/paciente/inicio}" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-arrow-left me-1"></i>Atrás</a>
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <h1 class="h3 mb-0">Mi perfil</h1>
-        <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target=".edicion"><i class="bi bi-pencil me-1"></i>Editar</button>
       </div>
-      <div class="card shadow-sm" style="max-width: 48rem">
+      <div class="card shadow-sm mb-4" style="max-width: 48rem">
         <div class="card-body p-4">
           <h2 class="h6 text-body-secondary text-uppercase small">Datos personales</h2>
           <dl class="row mb-4">
-            <dt class="col-sm-4">Documento</dt><dd class="col-sm-8">DNI 45812337</dd>
-            <dt class="col-sm-4">Nombres</dt><dd class="col-sm-8">Lucía</dd>
-            <dt class="col-sm-4">Apellidos</dt><dd class="col-sm-8">Vega Ríos</dd>
-            <dt class="col-sm-4">Fecha de nacimiento</dt><dd class="col-sm-8 mb-0">3 de marzo de 1992</dd>
+            <dt class="col-sm-4">Documento</dt><dd class="col-sm-8" th:text="${perfil.documento}">DNI</dd>
+            <dt class="col-sm-4">Nombres</dt><dd class="col-sm-8" th:text="${perfil.nombres}">Nombres</dd>
+            <dt class="col-sm-4">Apellidos</dt><dd class="col-sm-8" th:text="${perfil.apellidos}">Apellidos</dd>
+            <dt class="col-sm-4">Fecha de nacimiento</dt><dd class="col-sm-8 mb-0" th:text="${#temporals.format(perfil.fechaNacimiento, 'd ''de'' MMMM ''de'' yyyy')}">fecha</dd>
           </dl>
-          <h2 class="h6 text-body-secondary text-uppercase small">Contacto y acceso</h2>
-          <dl class="row mb-0">
-            <dt class="col-sm-4">Teléfono</dt>
-            <dd class="col-sm-8"><span class="edicion collapse show">987 654 321</span>
-              <input class="form-control form-control-sm edicion collapse" value="987654321"></dd>
-            <dt class="col-sm-4">Correo</dt>
-            <dd class="col-sm-8"><span class="edicion collapse show">lucia.vega@correo.com</span>
-              <input class="form-control form-control-sm edicion collapse" value="lucia.vega@correo.com"></dd>
-            <dt class="col-sm-4">Contraseña</dt>
-            <dd class="col-sm-8 mb-0"><span class="edicion collapse show">••••••••</span>
-              <input type="password" class="form-control form-control-sm edicion collapse" placeholder="Nueva contraseña"></dd>
-          </dl>
-          <div class="edicion collapse mt-3">
-            <button class="btn btn-primary btn-sm">Guardar</button>
-            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target=".edicion">Descartar</button>
-          </div>
+          <h2 class="h6 text-body-secondary text-uppercase small">Contacto</h2>
+          <form class="row g-3" th:action="@{/paciente/perfil/datos}" method="post">
+            <div class="col-sm-6"><label class="form-label" for="telefono">Teléfono</label>
+              <input class="form-control" id="telefono" name="telefono" th:value="${perfil.telefono}" required></div>
+            <div class="col-sm-6"><label class="form-label" for="correo">Correo</label>
+              <input type="email" class="form-control" id="correo" name="correo" th:value="${perfil.correo}" required></div>
+            <div class="col-12"><button class="btn btn-primary btn-sm">Guardar</button>
+              <span class="small text-body-secondary ms-2">Si cambias el correo, tendrás que volver a iniciar sesión.</span></div>
+          </form>
           <p class="small text-body-secondary mt-4 mb-0">Para corregir tu documento, nombres o fecha de nacimiento, comunícate con recepción: son los datos con los que el consultorio te identifica.</p>
+        </div>
+      </div>
+      <div class="card shadow-sm" style="max-width: 48rem">
+        <div class="card-body p-4">
+          <h2 class="h6 text-body-secondary text-uppercase small">Cambiar contraseña</h2>
+          <form class="row g-3" th:action="@{/paciente/perfil/contrasena}" method="post">
+            <div class="col-sm-4"><label class="form-label" for="actual">Actual</label>
+              <input type="password" class="form-control" id="actual" name="actual" required></div>
+            <div class="col-sm-4"><label class="form-label" for="nueva">Nueva</label>
+              <input type="password" class="form-control" id="nueva" name="nueva" minlength="8" maxlength="72" required></div>
+            <div class="col-sm-4"><label class="form-label" for="confirmacion">Repetir nueva</label>
+              <input type="password" class="form-control" id="confirmacion" name="confirmacion" required></div>
+            <div class="col-12"><button class="btn btn-outline-primary btn-sm">Cambiar contraseña</button>
+              <span class="small text-body-secondary ms-2">Se cerrarán tus sesiones abiertas.</span></div>
+          </form>
         </div>
       </div>
     </main>
   </div>
 </div>
-
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
 </body>
