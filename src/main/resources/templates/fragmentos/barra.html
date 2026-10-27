@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!--
+Barra lateral dibujada en el servidor según el rol de la sesión.
+Parámetro: seccion = id de la entrada marcada como activa (inicio, agenda, nueva-cita, ...).
+-->
+<aside th:fragment="barra(seccion)" id="barra-lateral" class="offcanvas-lg offcanvas-start bg-body border-end" tabindex="-1">
+  <div class="offcanvas-header border-bottom">
+    <span class="fw-semibold"><i class="bi bi-heart-pulse text-primary me-2"></i><span th:text="${consultorio}"></span></span>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#barra-lateral" aria-label="Cerrar"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    <a th:href="@{/}" class="d-none d-lg-flex align-items-center gap-2 px-3 py-3 border-bottom text-decoration-none link-body-emphasis">
+      <i class="bi bi-heart-pulse fs-4 text-primary"></i>
+      <span class="fw-semibold lh-sm" th:text="${consultorio}"></span>
+    </a>
+
+    <ul class="nav nav-pills flex-column gap-1 p-2 flex-grow-1">
+      <!-- Paciente -->
+      <th:block sec:authorize="hasRole('PACIENTE')">
+        <li th:replace="~{:: item('inicio', 'Inicio', 'house', @{/paciente/inicio})}"></li>
+        <li th:replace="~{:: item('nueva-cita', 'Nueva cita', 'plus-circle', @{/paciente/cita/nueva})}"></li>
+        <li th:replace="~{:: item('mis-citas', 'Mis citas', 'calendar-check', @{/paciente/citas})}"></li>
+        <li th:replace="~{:: item('avisos', 'Avisos', 'megaphone', @{/paciente/avisos})}"></li>
+        <th:block th:if="${whatsappDisponible}">
+          <li th:replace="~{:: item('whatsapp', 'WhatsApp del consultorio', 'whatsapp', @{/paciente/whatsapp})}"></li>
+        </th:block>
+      </th:block>
+
+      <!-- Médico -->
+      <th:block sec:authorize="hasRole('MEDICO')">
+        <li th:replace="~{:: item('inicio', 'Inicio', 'house', @{/medico/inicio})}"></li>
+        <li th:replace="~{:: item('agenda', 'Mi agenda', 'calendar3', @{/medico/agenda})}"></li>
+        <li th:replace="~{:: item('horario', 'Mi horario', 'clock', @{/medico/horario})}"></li>
+        <li th:replace="~{:: item('estadisticas', 'Mis estadísticas', 'bar-chart', @{/medico/estadisticas})}"></li>
+      </th:block>
+
+      <!-- Recepción (también la ven el administrador y el superadministrador) -->
+      <th:block sec:authorize="hasAnyRole('RECEPCION', 'ADMINISTRADOR', 'SUPERADMIN')">
+        <li th:replace="~{:: item('inicio', 'Inicio', 'house', @{/recepcion/inicio})}"></li>
+        <li th:replace="~{:: item('agenda', 'Agenda', 'calendar3', @{/recepcion/agenda})}"></li>
+        <li th:replace="~{:: item('nueva-cita', 'Nueva cita', 'plus-circle', @{/recepcion/cita/nueva})}"></li>
+        <li th:replace="~{:: item('confirmaciones', 'Confirmaciones', 'telephone', @{/recepcion/confirmaciones})}"></li>
+        <li th:replace="~{:: item('cupos', 'Cupos liberados', 'calendar2-plus', @{/recepcion/cupos})}"></li>
+        <li th:replace="~{:: item('pendientes', 'Citas pendientes', 'clipboard-check', @{/recepcion/pendientes})}"></li>
+        <li th:replace="~{:: item('pacientes', 'Pacientes', 'people', @{/recepcion/pacientes})}"></li>
+      </th:block>
+
+      <!-- Administración -->
+      <th:block sec:authorize="hasAnyRole('ADMINISTRADOR', 'SUPERADMIN')">
+        <li class="nav-item mt-3 mb-1 px-3 small text-uppercase text-body-secondary fw-semibold">Administración</li>
+        <li th:replace="~{:: item('configuracion', 'Configuración', 'sliders', @{/admin/configuracion})}"></li>
+        <li th:replace="~{:: item('usuarios', 'Usuarios', 'person-gear', @{/admin/usuarios})}"></li>
+        <li th:replace="~{:: item('reportes', 'Reportes', 'graph-up', @{/admin/reportes})}"></li>
+      </th:block>
+    </ul>
+
+    <div class="dropdown border-top p-2">
+      <a href="#" class="d-flex align-items-center gap-2 p-2 rounded text-decoration-none link-body-emphasis dropdown-toggle"
+         th:classappend="${seccion == 'cuenta'} ? 'bg-body-secondary'" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-person-circle fs-4"></i>
+        <span class="lh-sm">
+          <span class="d-block fw-semibold small" th:text="${usuarioSesion != null} ? ${usuarioSesion.nombreMostrado} : ${#authentication?.name}">Usuario</span>
+          <span class="d-block small text-body-secondary" th:text="${rolMostrado}">Rol</span>
+        </span>
+      </a>
+      <ul class="dropdown-menu shadow-sm">
+        <li sec:authorize="hasRole('PACIENTE')"><a class="dropdown-item" th:href="@{/paciente/perfil}"><i class="bi bi-person me-2"></i>Mi perfil</a></li>
+        <li>
+          <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</aside>
+
+<!-- Una entrada del menú -->
+<li th:fragment="item(id, texto, icono, href)" class="nav-item">
+  <a class="nav-link d-flex align-items-center gap-2" th:href="${href}"
+     th:classappend="${id == seccion} ? 'active' : 'link-body-emphasis'" th:attr="aria-current=${id == seccion} ? 'page'">
+    <i th:class="'bi bi-' + ${icono}"></i><span th:text="${texto}"></span>
+  </a>
+</li>
+</body>
+</html>

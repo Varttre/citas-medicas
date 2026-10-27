@@ -1,1 +1,0 @@
-JavaScript propio mínimo (contador del bloqueo temporal, etc.).

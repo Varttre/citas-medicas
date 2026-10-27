@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import pe.consultorio.citas.config.ManejadorLoginExitoso;
 import pe.consultorio.citas.config.ManejadorLoginFallido;
 import pe.consultorio.citas.config.SeguridadConfig;
+import pe.consultorio.citas.service.ConfiguracionService;
 import pe.consultorio.citas.service.CuentaService;
 
 /** Prueba de la capa web sin base de datos: la página pública es accesible sin sesión. */
@@ -25,6 +26,9 @@ class InicioControllerTest {
 
     @MockitoBean
     CuentaService cuentaService;
+
+    @MockitoBean
+    ConfiguracionService configuracionService;
 
     @Test
     void laPaginaPublicaNoPideSesion() throws Exception {

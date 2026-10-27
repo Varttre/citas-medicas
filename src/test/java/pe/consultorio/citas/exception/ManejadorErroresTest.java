@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import pe.consultorio.citas.config.ManejadorLoginExitoso;
 import pe.consultorio.citas.config.ManejadorLoginFallido;
 import pe.consultorio.citas.config.SeguridadConfig;
+import pe.consultorio.citas.service.ConfiguracionService;
 import pe.consultorio.citas.service.CuentaService;
 
 /** Comprueba qué página de error ve el usuario en cada caso. */
@@ -28,6 +29,9 @@ class ManejadorErroresTest {
 
     @MockitoBean
     CuentaService cuentaService;
+
+    @MockitoBean
+    ConfiguracionService configuracionService;
 
     @Autowired
     MockMvc mvc;

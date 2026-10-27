@@ -1,1 +1,12 @@
 /* Ajustes mínimos sobre Bootstrap 5, los mismos del prototipo (prototipo/assets/app.css). */
+
+/* Ancho fijo de la barra lateral en escritorio */
+@media (min-width: 992px) {
+  #barra-lateral {
+    width: 260px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+}
