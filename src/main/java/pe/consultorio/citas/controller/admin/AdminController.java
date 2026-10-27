@@ -16,9 +16,4 @@ public class AdminController {
     public String configuracion() {
         return "admin/configuracion";
     }
-
-    @GetMapping("/reportes")
-    public String reportes() {
-        return "admin/reportes";
-    }
 }
