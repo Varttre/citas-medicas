@@ -5,15 +5,19 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import java.util.List;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import pe.consultorio.citas.config.UsuarioSesion;
+import pe.consultorio.citas.service.PortalPacienteService;
 
 /**
-Pantallas del portal del paciente. Por ahora muestran el diseño del prototipo con datos de ejemplo; la nueva cita,
-mis citas, la reprogramación y el perfil se conectan a sus servicios en las tareas C4 a C9.
+Pantallas del portal del paciente. Mis citas y citas pasadas muestran datos reales; la reprogramación, los avisos y
+el perfil muestran por ahora el diseño del prototipo y se conectan en las tareas C4, C5 y C9.
 */
 @Controller
 @RequestMapping("/paciente")
@@ -23,9 +27,11 @@ public class PacienteController {
         Locale.forLanguageTag("es-PE"));
 
     private final Clock reloj;
+    private final PortalPacienteService portal;
 
-    public PacienteController(Clock reloj) {
+    public PacienteController(Clock reloj, PortalPacienteService portal) {
         this.reloj = reloj;
+        this.portal = portal;
     }
 
     @GetMapping("/inicio")
@@ -35,24 +41,31 @@ public class PacienteController {
         return "paciente/inicio";
     }
 
-    /** Nueva cita en cinco pasos: paciente, especialidad, médico, horario y confirmación. */
+    /**
+    Nueva cita, paso 1 (¿para quién?) y paso 3 (cita indicada). Los pasos 2, 4 y 5 los atiende
+    NuevaCitaController.
+    */
     @GetMapping("/cita/nueva")
     public String nuevaCita() {
         return "paciente/nueva-cita-1";
     }
 
-    @GetMapping("/cita/nueva/{paso:[2-5]}")
-    public String nuevaCitaPaso(@PathVariable int paso) {
-        return "paciente/nueva-cita-" + paso;
+    @GetMapping("/cita/nueva/3")
+    public String nuevaCitaIndicada() {
+        return "paciente/nueva-cita-3";
     }
 
     @GetMapping("/citas")
-    public String misCitas() {
+    public String misCitas(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
+        model.addAttribute("citas", usuario == null || usuario.getIdPacientePropio() == null ? List.of()
+            : portal.proximas(usuario.getIdPacientePropio()));
         return "paciente/mis-citas";
     }
 
     @GetMapping("/citas/pasadas")
-    public String citasPasadas() {
+    public String citasPasadas(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
+        model.addAttribute("citas", usuario == null || usuario.getIdPacientePropio() == null ? List.of()
+            : portal.pasadas(usuario.getIdPacientePropio()));
         return "paciente/citas-pasadas";
     }
 

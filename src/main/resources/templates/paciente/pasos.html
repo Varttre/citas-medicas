@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Indicador de pasos de la nueva cita. Parámetro: actual = número del paso en curso (1 a 5). -->
+<ol th:fragment="pasos(actual)" class="list-unstyled d-flex flex-wrap gap-2 gap-md-3 mb-4">
+  <th:block th:each="p, i : ${ {'¿Para quién?', '¿Cómo buscar?', 'Cita indicada', 'Horarios', 'Resumen'} }">
+    <li th:if="${i.index > 0}" class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li>
+    <li th:if="${i.count < actual}" class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small" th:text="${p}"></span></li>
+    <li th:if="${i.count == actual}" class="d-flex align-items-center gap-1 text-primary fw-semibold"><span class="badge rounded-pill text-bg-primary" th:text="${i.count}"></span><span class="small" th:text="${p}"></span></li>
+    <li th:if="${i.count > actual}" class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border" th:text="${i.count}"></span><span class="small" th:text="${p}"></span></li>
+  </th:block>
+</ol>
+</body>
+</html>

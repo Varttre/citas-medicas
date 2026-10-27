@@ -19,7 +19,7 @@ import pe.consultorio.citas.PostgresTestConfig;
 class PantallasPacienteTest {
 
     static final String[] RUTAS = {"/paciente/inicio", "/paciente/cita/nueva", "/paciente/cita/nueva/2",
-        "/paciente/cita/nueva/3", "/paciente/cita/nueva/4", "/paciente/cita/nueva/5", "/paciente/citas",
+        "/paciente/cita/nueva/3", "/paciente/citas",
         "/paciente/citas/pasadas", "/paciente/citas/reprogramar", "/paciente/citas/reprogramar/2",
         "/paciente/avisos", "/paciente/whatsapp", "/paciente/perfil"};
 
