@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Avisos')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('avisos')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Avisos</h1><p class="text-body-secondary mb-0">Novedades del consultorio</p></div>
+        
+      </div><div class="row g-4">
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100">
+            <div class="bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center rounded-top" style="height: 9rem"><i class="bi bi-heart-pulse display-4"></i></div>
+            <div class="card-body">
+              <span class="badge text-bg-light border mb-2">Campaña</span>
+              <h2 class="h5 card-title">Despistaje gratuito de hipertensión</h2>
+              <p class="card-text">Del 16 al 21 de noviembre, toma de presión sin costo para pacientes registrados. Solo presentando tu documento de identidad en recepción, de 8:00 a 12:00.</p>
+            </div>
+            <div class="card-footer bg-body border-0 pb-3"><a href="#" target="_blank" class="btn btn-outline-primary">Conocer más <i class="bi bi-box-arrow-up-right ms-1"></i></a></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100">
+            <div class="bg-primary-subtle text-primary-emphasis d-flex align-items-center justify-content-center rounded-top" style="height: 9rem"><i class="bi bi-calendar-week display-4"></i></div>
+            <div class="card-body">
+              <span class="badge text-bg-light border mb-2">Horario</span>
+              <h2 class="h5 card-title">Atención los sábados por la mañana</h2>
+              <p class="card-text">Desde diciembre atendemos también los sábados de 8:00 a 13:00 en Medicina General y Pediatría. Puedes agendar desde tu cuenta como cualquier otro día.</p>
+            </div>
+            <div class="card-footer bg-body border-0 pb-3"><a href="#" target="_blank" class="btn btn-outline-primary">Conocer más <i class="bi bi-box-arrow-up-right ms-1"></i></a></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100">
+            <div class="bg-success-subtle text-success-emphasis d-flex align-items-center justify-content-center rounded-top" style="height: 9rem"><i class="bi bi-camera-video display-4"></i></div>
+            <div class="card-body">
+              <span class="badge text-bg-light border mb-2">Servicio</span>
+              <h2 class="h5 card-title">Teleconsulta en más especialidades</h2>
+              <p class="card-text">Cardiología y Dermatología ya ofrecen citas de seguimiento por teleconsulta. Elige la pestaña Teleconsulta al buscar horarios.</p>
+            </div>
+            <div class="card-footer bg-body border-0 pb-3"><a href="#" target="_blank" class="btn btn-outline-primary">Conocer más <i class="bi bi-box-arrow-up-right ms-1"></i></a></div>
+          </div>
+        </div></div>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

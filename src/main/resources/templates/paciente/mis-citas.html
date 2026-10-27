@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Mis citas')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('mis-citas')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Mis citas</h1><p class="text-body-secondary mb-0">3 próximas citas</p></div>
+        <div class="d-flex gap-2"><a th:href="@{/paciente/citas/pasadas}" class="btn btn-outline-secondary"><i class="bi bi-clock-history me-1"></i>Citas pasadas</a><a th:href="@{/paciente/cita/nueva}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a></div>
+      </div>
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex flex-wrap justify-content-between gap-2">
+                <div>
+                  <div class="fw-semibold">Medicina General · Dr. Andrés Ponce</div>
+                  <div class="small text-body-secondary">Jueves 12 de noviembre, 08:30 · Presencial</div>
+                </div>
+                <span class="badge text-bg-secondary align-self-start">Programada</span>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#c1"><i class="bi bi-chevron-down me-1"></i>Expandir</button>
+                <a th:href="@{/paciente/citas/reprogramar}" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar2-event me-1"></i>Reprogramar</a>
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelar" data-cita="12/11 08:30">Cancelar</button>
+              </div>
+              <div class="collapse" id="c1">
+                <div class="border-top mt-3 pt-3">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <h3 class="h6">Datos de la cita</h3>
+                      <dl class="row small mb-0">
+                        <dt class="col-5">Paciente</dt><dd class="col-7">Lucía Vega Ríos</dd>
+                        <dt class="col-5">Tipo</dt><dd class="col-7">Consulta · 30 min</dd>
+                        <dt class="col-5">Modalidad</dt><dd class="col-7">Presencial · consultorio 3</dd>
+                        <dt class="col-5">Agendada</dt><dd class="col-7">6 de noviembre, por ti</dd>
+                      </dl>
+                    </div>
+                    <div class="col-md-6">
+                      <h3 class="h6">Indicaciones y observaciones</h3>
+                      <p class="small mb-1"><span class="fw-semibold">De tu médico:</span> Acudir en ayunas de 8 horas.</p>
+                      <p class="small mb-0"><span class="fw-semibold">Del consultorio:</span> Presentarse 15 minutos antes para el registro.</p>
+                    </div>
+                  </div>
+                  <div class="bg-body-tertiary rounded p-3 mt-3">
+                    <h3 class="h6">Disponibilidad inmediata</h3>
+                    <p class="small">Aceptaste que te llamemos si se libera un cupo antes de esta cita. Aquí cambias las condiciones de ese adelanto; <strong>no cambia la fecha de tu cita</strong>: para eso usa Reprogramar.</p>
+                    <div class="row g-2 align-items-end">
+                      <div class="col-sm-4"><label class="form-label small">Alcance</label>
+                        <select class="form-select form-select-sm"><option>Solo con el Dr. Ponce</option><option>Cualquier médico de Medicina General</option></select></div>
+                      <div class="col-sm-4"><label class="form-label small">Tiempo para llegar</label>
+                        <div class="input-group input-group-sm"><input class="form-control" value="45"><span class="input-group-text">min</span></div></div>
+                      <div class="col-sm-4"><label class="form-label small">Días antes que aceptas</label>
+                        <div class="input-group input-group-sm"><input class="form-control" value="3"><span class="input-group-text">días</span></div></div>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                      <button class="btn btn-sm btn-primary">Guardar cambios</button>
+                      <button class="btn btn-sm btn-outline-danger">Revocar</button>
+                    </div>
+                  </div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex flex-wrap justify-content-between gap-2">
+                <div>
+                  <div class="fw-semibold">Dermatología · Dr. Luis Salas</div>
+                  <div class="small text-body-secondary">Lunes 16 de noviembre, 16:00 · Presencial</div>
+                </div>
+                <span class="badge text-bg-success align-self-start">Confirmada</span>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#c2"><i class="bi bi-chevron-down me-1"></i>Expandir</button>
+                <a th:href="@{/paciente/citas/reprogramar}" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar2-event me-1"></i>Reprogramar</a>
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelar" data-cita="16/11 16:00">Cancelar</button>
+              </div>
+              <div class="collapse" id="c2">
+                <div class="border-top mt-3 pt-3">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <h3 class="h6">Datos de la cita</h3>
+                      <dl class="row small mb-0">
+                        <dt class="col-5">Paciente</dt><dd class="col-7">Lucía Vega Ríos</dd>
+                        <dt class="col-5">Tipo</dt><dd class="col-7">Primera cita · 45 min</dd>
+                        <dt class="col-5">Modalidad</dt><dd class="col-7">Presencial</dd>
+                        <dt class="col-5">Agendada</dt><dd class="col-7">2 de noviembre, por recepción (teléfono)</dd>
+                      </dl>
+                    </div>
+                    <div class="col-md-6">
+                      <h3 class="h6">Indicaciones y observaciones</h3>
+                      <p class="small text-body-secondary mb-0">No hay indicaciones u observaciones para esta cita.</p>
+                    </div>
+                  </div>
+                  <div class="bg-body-tertiary rounded p-3 mt-3 small">
+                    No aceptaste disponibilidad inmediata para esta cita. <a href="#">Activarla</a>
+                  </div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex flex-wrap justify-content-between gap-2">
+                <div>
+                  <div class="fw-semibold">Pediatría · Dra. Elena Cueva</div>
+                  <div class="small text-body-secondary">Martes 17 de noviembre, 10:00 · Teleconsulta</div><div class="small mt-1"><i class="bi bi-person me-1"></i>Paciente: Mateo Vega Ríos</div>
+                </div>
+                <span class="badge text-bg-secondary align-self-start">Programada</span>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#c3"><i class="bi bi-chevron-down me-1"></i>Expandir</button>
+                <a th:href="@{/paciente/citas/reprogramar}" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar2-event me-1"></i>Reprogramar</a>
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelar" data-cita="17/11 10:00">Cancelar</button>
+              </div>
+              <div class="collapse" id="c3">
+                <div class="border-top mt-3 pt-3">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <h3 class="h6">Datos de la cita</h3>
+                      <dl class="row small mb-0">
+                        <dt class="col-5">Paciente</dt><dd class="col-7">Mateo Vega Ríos</dd>
+                        <dt class="col-5">Tipo</dt><dd class="col-7">Consulta · 30 min</dd>
+                        <dt class="col-5">Modalidad</dt><dd class="col-7">Teleconsulta (recibirás el enlace)</dd>
+                        <dt class="col-5">Agendada</dt><dd class="col-7">9 de noviembre, por ti</dd>
+                      </dl>
+                    </div>
+                    <div class="col-md-6">
+                      <h3 class="h6">Indicaciones y observaciones</h3>
+                      <p class="small text-body-secondary mb-0">No hay indicaciones u observaciones para esta cita.</p>
+                    </div>
+                  </div></div>
+              </div>
+            </div>
+          </div>
+      <p class="small text-body-secondary mb-1">Ves todas tus citas —también las que agendó recepción— y las que agendaste para otras personas.</p>
+      <p class="small text-body-secondary"><strong>Reprogramar</strong> mueve la misma cita a otra fecha u hora, sin plazo. <strong>Cancelar</strong> la anula. La disponibilidad inmediata (dentro de Expandir) solo cambia las condiciones para aceptar un adelanto.</p>
+
+      <div class="modal fade" id="cancelar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+          <div class="modal-header"><h2 class="modal-title h5">¿Cancelar esta cita?</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+          <div class="modal-body">
+            <p class="mb-2"><strong>Medicina General · Dr. Andrés Ponce</strong><br>Jueves 12 de noviembre, 08:30 · Presencial</p>
+            <div class="alert alert-light border small mb-2"><i class="bi bi-clock me-1"></i>Puedes cancelar hasta las <strong>08:30 del 12/11</strong>.</div>
+            <p class="small text-body-secondary mb-0">Al cancelar, el horario se ofrece de inmediato a otros pacientes y ya no recibirás la llamada de confirmación.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Mantener cita</button>
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar cita</button>
+          </div>
+        </div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

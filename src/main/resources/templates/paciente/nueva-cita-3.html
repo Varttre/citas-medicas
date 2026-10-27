@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Nueva cita')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('nueva-cita')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Nueva cita</h1><p class="text-body-secondary mb-0">Dra. Carmen Ramírez · Cardiología</p></div>
+        
+      </div><ol class="list-unstyled d-flex flex-wrap gap-2 gap-md-3 mb-4"><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">¿Para quién?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">¿Cómo buscar?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-primary fw-semibold"><span class="badge rounded-pill text-bg-primary">3</span><span class="small">Cita indicada</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">4</span><span class="small">Horarios</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">5</span><span class="small">Resumen</span></li></ol>
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-1">Tu médica te indicó una cita</h2>
+          <p class="text-body-secondary small">La Dra. Ramírez dejó indicada una cita de seguimiento. Puedes agendarla ahora o pedir una consulta distinta.</p>
+          <dl class="row mb-0 border rounded p-3 bg-body-tertiary">
+            <dt class="col-sm-4">Tipo de consulta</dt><dd class="col-sm-8">Seguimiento</dd>
+            <dt class="col-sm-4">Duración</dt><dd class="col-sm-8">30 minutos</dd>
+            <dt class="col-sm-4">Ventana recomendada</dt><dd class="col-sm-8">A partir del 1 de diciembre (en 3 semanas)</dd>
+            <dt class="col-sm-4">Vigente hasta</dt><dd class="col-sm-8">28 de febrero de 2027</dd>
+            <dt class="col-sm-4">Indicaciones</dt><dd class="col-sm-8 mb-0">Traer el registro diario de presión arterial de las últimas dos semanas.</dd>
+          </dl>
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <a th:href="@{/paciente/cita/nueva/4}" class="btn btn-primary">Agendar el seguimiento indicado</a>
+            <a th:href="@{/paciente/cita/nueva/4}" class="btn btn-outline-primary">Agendar una consulta nueva</a>
+          </div>
+          <p class="small text-body-secondary mt-2 mb-0">Si eliges una consulta nueva, la indicación sigue pendiente hasta que la agendes o venza. La cita de seguimiento es solo para ti, el paciente al que se le indicó.</p>
+
+          <div class="mt-4"><a th:href="@{/paciente/cita/nueva/2}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Atrás</a></div>
+        </div>
+      </div>
+      <p class="small text-body-secondary mt-3">Este paso solo aparece si el paciente elegido tiene una cita indicada pendiente y vigente cuyo tipo de consulta atiende el médico elegido.</p>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>
