@@ -33,6 +33,9 @@
           <div th:if="${param.contrasenaCambiada}" class="alert alert-success small py-2" role="alert">
             <i class="bi bi-check-circle me-1"></i>Contraseña actualizada. Inicia sesión con la nueva.
           </div>
+          <div th:if="${param.correoCambiado}" class="alert alert-success small py-2" role="alert">
+            <i class="bi bi-check-circle me-1"></i>Correo actualizado. Inicia sesión con el nuevo.
+          </div>
           <div th:if="${param.logout}" class="alert alert-info small py-2" role="alert">
             Cerraste sesión.
           </div>
