@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · Consultorio San Isidro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body class="bg-body-tertiary">
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-10 col-md-8 col-lg-5">
+      <a th:href="@{/}" class="d-flex justify-content-center align-items-center gap-2 mb-4 text-decoration-none link-body-emphasis">
+        <i class="bi bi-heart-pulse fs-2 text-primary"></i><span class="fs-5 fw-semibold">Consultorio San Isidro</span>
+      </a>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-1">Iniciar sesión</h1>
+          <p class="text-body-secondary small mb-4">Acceso para pacientes y personal del consultorio.</p>
+
+          <div th:if="${param.error}" class="alert alert-warning small py-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i>Correo o contraseña incorrectos.
+          </div>
+          <div th:if="${param.bloqueado}" class="alert alert-danger small py-2" role="alert">
+            <i class="bi bi-lock me-1"></i>Tu cuenta está bloqueada temporalmente. Inténtalo de nuevo en unos minutos.
+          </div>
+          <div th:if="${param.registrado}" class="alert alert-success small py-2" role="alert">
+            <i class="bi bi-check-circle me-1"></i>Cuenta creada. Ya puedes iniciar sesión.
+          </div>
+          <div th:if="${param.contrasenaCambiada}" class="alert alert-success small py-2" role="alert">
+            <i class="bi bi-check-circle me-1"></i>Contraseña actualizada. Inicia sesión con la nueva.
+          </div>
+          <div th:if="${param.logout}" class="alert alert-info small py-2" role="alert">
+            Cerraste sesión.
+          </div>
+
+          <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+              <label class="form-label" for="correo">Correo electrónico</label>
+              <input type="email" class="form-control" id="correo" name="correo" required autofocus>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="contrasena">Contraseña</label>
+              <input type="password" class="form-control" id="contrasena" name="contrasena" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+          </form>
+          <div class="text-center mt-3 small">
+            <a th:href="@{/recuperar}">Olvidé mi contraseña</a>
+            <div class="mt-1">¿No tienes cuenta? <a th:href="@{/registro}">Regístrate aquí</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
