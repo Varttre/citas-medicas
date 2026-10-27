@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Citas pendientes')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('pendientes')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Citas pendientes por agendar</h1><p class="text-body-secondary mb-0">Indicaciones médicas sin agendar, ordenadas por vencimiento</p></div>
+        <span class="badge text-bg-primary fs-6">7 pendientes</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <input type="date" class="form-control" style="max-width:11rem" >
+        <select class="form-select" style="max-width:12rem"><option>Todos los médicos</option></select>
+        <select class="form-select" style="max-width:12rem"><option>Todas las especialidades</option></select>
+      </div>
+      <div class="card shadow-sm"><div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light"><tr><th>Paciente</th><th>Teléfono de contacto</th><th>Indicó</th><th>Tipo</th><th>Ventana recomendada</th><th>Vigencia</th><th></th></tr></thead>
+          <tbody>
+              <tr class="table-warning"><td class="fw-semibold">Martín Salazar</td><td>923 118 560</td><td>Dra. Ramírez</td><td>Seguimiento</td><td>Desde el 1 de octubre</td><td><span class="text-danger fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>vence en 9 días</span></td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+              <tr class=""><td class="fw-semibold">Olga Ramos</td><td>934 551 902</td><td>Dr. Ponce</td><td>Consulta</td><td>Desde el 20 de octubre</td><td>vence en 23 días</td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+              <tr class=""><td class="fw-semibold">Tomás Quiroz</td><td>987 220 145</td><td>Dra. Cueva</td><td>Consulta</td><td>Desde el 25 de noviembre</td><td>vence en 41 días</td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+              <tr class=""><td class="fw-semibold">Alicia Bravo</td><td>951 663 207</td><td>Dr. Salas</td><td>Seguimiento</td><td>Desde el 1 de diciembre</td><td>vence en 60 días</td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+              <tr class=""><td class="fw-semibold">Rosa Medina Flores</td><td>956 221 404</td><td>Dra. Ramírez</td><td>Seguimiento</td><td>Desde el 11 de diciembre</td><td>vence en 90 días</td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+              <tr class=""><td class="fw-semibold">Lucía Vega Ríos</td><td>987 654 321</td><td>Dra. Ramírez</td><td>Seguimiento</td><td>Desde el 1 de diciembre</td><td>vence en 109 días</td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+              <tr class=""><td class="fw-semibold">Hugo Cárdenas</td><td>968 300 771</td><td>Dra. Ramírez</td><td>Procedimiento menor</td><td>Desde el 1 de febrero</td><td>vence en 114 días</td>
+                <td class="text-end"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamar">Llamar y registrar</button></td></tr>
+          </tbody>
+        </table>
+      </div></div>
+      <div class="modal fade" id="llamar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered "><div class="modal-content">
+          <div class="modal-header"><h2 class="modal-title h5">Resultado de la llamada · Martín Salazar</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+          <div class="modal-body">
+            <p class="small text-body-secondary">Seguimiento indicado por la Dra. Ramírez · vence el 20 de noviembre</p><div class="form-check mb-2"><input class="form-check-input" type="radio" name="pd" id="pd0" checked><label class="form-check-label" for="pd0">Agendó → abre Nueva cita con los datos de la indicación</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="pd" id="pd1" ><label class="form-check-label" for="pd1">No contestó</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="pd" id="pd2" ><label class="form-check-label" for="pd2">No le interesa → la indicación queda descartada (motivo)</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="pd" id="pd3" ><label class="form-check-label" for="pd3">Número inválido</label></div>
+            <label class="form-label small mt-2">Motivo (si no le interesa)</label><input class="form-control form-control-sm"></div>
+          <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><a th:href="@{/recepcion/cita/nueva}" class="btn btn-primary">Guardar</a></div>
+        </div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

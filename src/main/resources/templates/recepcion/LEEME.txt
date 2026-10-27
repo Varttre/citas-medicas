@@ -1,1 +1,0 @@
-Vistas de recepción (también las usa el administrador).
