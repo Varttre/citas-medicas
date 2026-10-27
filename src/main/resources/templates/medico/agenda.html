@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Mi agenda')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('agenda')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Mi agenda</h1><p class="text-body-secondary mb-0">Miércoles 11 de noviembre · horario vigente 08:00–13:00 y 15:00–18:00</p></div>
+        
+      </div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <ul class="nav nav-pills">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#dia">Día</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#semana">Semana</button></li>
+        </ul>
+        <input type="date" class="form-control ms-md-auto" style="max-width:11rem" value="2026-11-11">
+        <select class="form-select" style="max-width:11rem"><option>Todos los estados</option><option>Programada</option><option>Confirmada</option><option>Asistió</option><option>Realizada</option><option>No asistió</option></select>
+        <select class="form-select" style="max-width:11rem"><option>Toda modalidad</option><option>Presencial</option><option>Teleconsulta</option></select>
+      </div>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="dia">
+          <div class="row g-4">
+            <div class="col-xl-6">
+              <div class="list-group shadow-sm">
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 " >
+                <span class="fw-semibold" style="width:3.5rem">08:00</span>
+                <span class="flex-grow-1">Marcos Torres<div class="small opacity-75">Seguimiento · 30 min · Presencial</div></span><span class="badge text-bg-primary ms-auto align-self-start">Realizada</span>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 " >
+                <span class="fw-semibold" style="width:3.5rem">08:30</span>
+                <span class="flex-grow-1">Julia Ríos<div class="small opacity-75">Primera cita · 45 min · Presencial</div></span><span class="badge text-bg-primary ms-auto align-self-start">Realizada</span>
+              </a>
+              <div class="list-group-item d-flex gap-3 bg-body-tertiary text-body-secondary small">
+                <span class="fw-semibold" style="width:3.5rem">09:15</span><span><i class="bi bi-dash-circle me-1"></i>Libre · 15 min</span>
+              </div>
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 active" aria-current="true">
+                <span class="fw-semibold" style="width:3.5rem">09:30</span>
+                <span class="flex-grow-1">Rosa Medina Flores<div class="small opacity-75">Seguimiento · 30 min · Presencial · inició 09:38</div></span><span class="badge text-bg-light ms-auto align-self-start">En atención</span>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 " >
+                <span class="fw-semibold" style="width:3.5rem">10:00</span>
+                <span class="flex-grow-1">Jorge Paredes Luna<div class="small text-body-secondary">Primera cita · 45 min · Presencial</div></span><span class="badge text-bg-info ms-auto align-self-start">En sala</span>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 " >
+                <span class="fw-semibold" style="width:3.5rem">10:45</span>
+                <span class="flex-grow-1">Silvia Campos<div class="small text-body-secondary">Seguimiento · 30 min · Presencial</div></span><span class="badge text-bg-success ms-auto align-self-start">Confirmada</span>
+              </a>
+              <div class="list-group-item d-flex gap-3 bg-body-tertiary text-body-secondary small">
+                <span class="fw-semibold" style="width:3.5rem">11:15</span><span><i class="bi bi-dash-circle me-1"></i>Libre · 45 min (bloque unido tras una cancelación)</span>
+              </div>
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 " >
+                <span class="fw-semibold" style="width:3.5rem">12:00</span>
+                <span class="flex-grow-1">Pedro Díaz<div class="small text-body-secondary">Procedimiento menor · 60 min · Presencial</div></span><span class="badge text-bg-success ms-auto align-self-start">Confirmada</span>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action d-flex gap-3 " >
+                <span class="fw-semibold" style="width:3.5rem">13:00</span>
+                <span class="flex-grow-1">Ana Beltrán<div class="small text-body-secondary">Seguimiento · 30 min · Teleconsulta</div><div class="small text-warning-emphasis"><i class="bi bi-exclamation-triangle me-1"></i>Fuera del horario vigente</div></span><span class="badge text-bg-secondary ms-auto align-self-start">Programada</span>
+              </a>
+              <div class="list-group-item d-flex gap-3 bg-body-tertiary text-body-secondary small">
+                <span class="fw-semibold" style="width:3.5rem">15:00</span><span><i class="bi bi-dash-circle me-1"></i>Libre · 3 h (franja de la tarde)</span>
+              </div>
+              </div>
+              <p class="small text-body-secondary mt-2">Solo ves tus citas. La agenda une tu horario vigente con las citas existentes: una cita que quedó fuera del horario sigue apareciendo.</p>
+            </div>
+            <div class="col-xl-6">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">09:30 · Rosa Medina Flores</span><span class="badge text-bg-primary">En atención</span>
+            </div>
+            <div class="card-body">
+              <h3 class="h6">Datos</h3>
+              <dl class="row small mb-3">
+                <dt class="col-5">Documento</dt><dd class="col-7">DNI 10456789 · 68 años</dd>
+                <dt class="col-5">Teléfono de contacto</dt><dd class="col-7">956 221 404</dd>
+                <dt class="col-5">Agendada por</dt><dd class="col-7">Carla Medina (cuenta de un familiar)</dd>
+                <dt class="col-5">Tipo</dt><dd class="col-7">Seguimiento · 30 min · Presencial</dd>
+                <dt class="col-5">Canal de origen</dt><dd class="col-7">Portal web</dd>
+                <dt class="col-5">Proviene de</dt><dd class="col-7 mb-0">Cita indicada el 14 de octubre</dd>
+              </dl>
+
+              <h3 class="h6">Acciones de atención</h3>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button class="btn btn-sm btn-outline-secondary" disabled>Iniciar atención</button>
+                <button class="btn btn-sm btn-primary">Finalizar atención</button>
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="La paciente ya llegó: solo recepción puede marcar que se retiró.">
+                  <button class="btn btn-sm btn-outline-secondary" disabled>Marcar no asistió</button></span>
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelar">Cancelar cita</button>
+              </div>
+
+              <h3 class="h6">Ajuste de duración</h3>
+              <div class="d-flex gap-2 align-items-center mb-1">
+                <select class="form-select form-select-sm" style="max-width:10rem"><option>15 min</option><option selected>30 min</option><option>45 min</option><option>60 min</option></select>
+                <button class="btn btn-sm btn-outline-primary">Aplicar</button>
+              </div>
+              <p class="small text-body-secondary">Ampliar a 45 min no cabe: la siguiente cita empieza a las 10:00. <a href="#">Ver horarios alternativos</a></p>
+
+              <h3 class="h6">Indicaciones y observaciones</h3>
+              <textarea class="form-control form-control-sm mb-1" rows="2">Continuar con el tratamiento. Control de presión dos veces al día.</textarea>
+              <p class="small text-body-secondary">La paciente las verá al expandir la cita en su portal.</p>
+
+              <div class="border rounded p-3 bg-body-tertiary">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="requiere" checked data-muestra="#siguiente">
+                  <label class="form-check-label fw-semibold" for="requiere">Requiere siguiente cita</label>
+                </div>
+                <div id="siguiente" class="row g-2">
+                  <div class="col-sm-6"><label class="form-label small">Tipo de consulta</label>
+                    <select class="form-select form-select-sm"><option selected>Seguimiento</option><option>Procedimiento menor</option><option>Consulta</option></select></div>
+                  <div class="col-sm-6"><label class="form-label small">Duración</label>
+                    <select class="form-select form-select-sm"><option>15 min</option><option selected>30 min</option><option>45 min</option></select></div>
+                  <div class="col-sm-6"><label class="form-label small">Ventana recomendada</label>
+                    <select class="form-select form-select-sm"><option>En 1 semana</option><option>En 15 días</option><option selected>En 1 mes</option><option>En 3 meses</option><option>Otro</option></select></div>
+                  <div class="col-sm-6"><label class="form-label small">Vigente hasta</label>
+                    <input type="date" class="form-control form-control-sm" value="2027-02-09"></div>
+                  <div class="col-12"><label class="form-label small">Indicaciones <span class="text-body-secondary">(opcional)</span></label>
+                    <input class="form-control form-control-sm" value="Traer resultados del perfil lipídico."></div>
+                  <div class="col-12 d-flex gap-2 mt-2">
+                    <button class="btn btn-sm btn-outline-primary">Guardar indicación</button>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#agendar-ahora">Agendar ahora</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="semana">
+          <div class="table-responsive">
+            <table class="table table-bordered bg-body text-center small mb-0">
+              <thead class="table-light"><tr><th></th><th>Lun 9</th><th>Mar 10</th><th class="table-primary">Mié 11</th><th>Jue 12</th><th>Vie 13</th></tr></thead>
+              <tbody>
+                <tr><th class="text-start">Mañana</th><td>8 citas</td><td>7 citas</td><td class="table-primary">7 citas</td><td>6 citas</td><td>8 citas</td></tr>
+                <tr><th class="text-start">Tarde</th><td>—</td><td>5 citas</td><td class="table-primary">0 citas</td><td>4 citas</td><td>—</td></tr>
+                <tr><th class="text-start">Libre</th><td>0 h 30</td><td>1 h 15</td><td class="table-primary">4 h</td><td>2 h</td><td>0 h 45</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="agendar-ahora" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+          <div class="modal-header"><h2 class="modal-title h5">Agendar ahora · Rosa Medina Flores</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+          <div class="modal-body">
+            <h3 class="h6"><span class="badge rounded-pill text-bg-primary me-1">1</span>Tipo y duración</h3>
+            <div class="row g-2 mb-4">
+              <div class="col-sm-6"><select class="form-select form-select-sm"><option selected>Seguimiento</option><option>Procedimiento menor</option></select></div>
+              <div class="col-sm-6"><select class="form-select form-select-sm"><option selected>30 min</option><option>45 min</option></select></div>
+            </div>
+
+            <h3 class="h6"><span class="badge rounded-pill text-bg-primary me-1">2</span>Horario <span class="small text-body-secondary fw-normal">(desde el 11 de diciembre, ventana recomendada)</span></h3>
+            <div class="mb-2"><div class="small fw-semibold mb-1">Viernes 11 de diciembre</div><div class="d-flex flex-wrap gap-2"><button class="btn btn-sm btn-primary">09:00</button><button class="btn btn-sm btn-outline-primary">11:30</button><button class="btn btn-sm btn-outline-primary">08:00</button><button class="btn btn-sm btn-outline-secondary">12:00 <i class="bi bi-shield-lock small" title="Bloque protegido para consultas largas"></i></button></div></div>
+            <div class="mb-2"><div class="small fw-semibold mb-1">Lunes 14 de diciembre</div><div class="d-flex flex-wrap gap-2"><button class="btn btn-sm btn-outline-primary">10:30</button><button class="btn btn-sm btn-outline-primary">12:30</button><button class="btn btn-sm btn-outline-primary">08:30</button></div></div>
+            <p class="small text-body-secondary">Ves todos los horarios. Los primeros de cada día son los de mejor calce; <i class="bi bi-shield-lock"></i> marca un bloque que la política reserva para consultas largas (puedes usarlo igual).</p>
+            <div class="alert alert-primary small py-2"><i class="bi bi-hourglass-split me-1"></i>Viernes 11 de diciembre, 09:00 reservado por <strong data-cuenta-regresiva="287">4:47</strong></div>
+
+            <h3 class="h6 mt-4"><span class="badge rounded-pill text-bg-primary me-1">3</span>Autorización</h3>
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="autoriza" checked>
+              <label class="form-check-label" for="autoriza">El paciente autoriza verbalmente esta cita.</label>
+              <div class="small text-body-secondary">Queda registrado con tu usuario y la hora.</div>
+            </div>
+
+            <h3 class="h6"><span class="badge rounded-pill text-bg-primary me-1">4</span>Confirmar</h3>
+            <p class="small mb-0">La cita se registra con canal de origen <strong>consulta médica</strong> y la indicación pasa a «agendada».</p>
+
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button class="btn btn-primary" data-bs-dismiss="modal">Confirmar</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="modal fade" id="cancelar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+          <div class="modal-header"><h2 class="modal-title h5">Cancelar cita (por la clínica)</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+          <div class="modal-body">
+            <p class="small">Rosa Medina Flores · hoy 09:30. El horario quedará libre y se buscarán pacientes para ocuparlo.</p>
+            <label class="form-label">Motivo <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="2" required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+            <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar cita</button>
+          </div>
+        </div></div>
+      </div>
+      <script>document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(e => new bootstrap.Tooltip(e)));</script>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

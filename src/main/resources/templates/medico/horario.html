@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Mi horario')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('horario')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Mi horario</h1></div>
+      </div>
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#versiones">Versiones de horario</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#excepciones">Excepciones</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#duraciones">Duraciones por tipo</button></li>
+      </ul>
+      <div class="tab-content">
+        <!-- Versiones -->
+        <div class="tab-pane fade show active" id="versiones">
+          <div class="row g-4">
+            <div class="col-lg-4">
+              <div class="list-group shadow-sm mb-2">
+                <div th:each="v : ${horario.versiones}" class="list-group-item"
+                     th:classappend="${v.estado == 'VIGENTE'} ? 'active' : (${v.estado == 'ANTERIOR'} ? 'text-body-secondary')">
+                  <div class="fw-semibold" th:text="${v.estado == 'VIGENTE'} ? 'Vigente' : (${v.estado == 'ANTERIOR'} ? 'Anterior' : 'Programada')">Vigente</div>
+                  <div class="small" th:text="${v.vigenteHasta == null} ? |Desde el ${#temporals.format(v.vigenteDesde, 'dd/MM/yyyy')}| : |${#temporals.format(v.vigenteDesde, 'dd/MM/yyyy')} al ${#temporals.format(v.vigenteHasta, 'dd/MM/yyyy')}|">Desde</div>
+                </div>
+                <div th:if="${#lists.isEmpty(horario.versiones)}" class="list-group-item text-body-secondary">Aún no tienes horario.</div>
+              </div>
+              <p class="small text-body-secondary mt-3">Una versión cambia tu horario de forma permanente desde una fecha. Para ausencias puntuales usa Excepciones.</p>
+            </div>
+            <div class="col-lg-8">
+              <div th:each="v : ${horario.versiones}" th:if="${v.estado != 'ANTERIOR'}" class="card shadow-sm mb-3">
+                <div class="card-header fw-semibold" th:text="|Horario ${v.estado == 'VIGENTE' ? 'vigente' : 'programado'} desde el ${#temporals.format(v.vigenteDesde, 'dd/MM/yyyy')}|">Horario</div>
+                <div class="table-responsive"><table class="table align-middle mb-0">
+                  <tr th:each="d : ${#numbers.sequence(1, 7)}">
+                    <th class="text-nowrap" th:text="${dias[d - 1]}">Lunes</th>
+                    <td>
+                      <th:block th:each="f : ${v.franjas}" th:if="${f.diaSemana == d}">
+                        <span class="badge text-bg-light border me-1" th:text="|${f.inicio}–${f.fin}|">08:00–13:00</span>
+                      </th:block>
+                      <span th:if="${#lists.isEmpty(v.franjas.?[diaSemana == __${d}__])}" class="text-body-secondary small">No atiende</span>
+                    </td>
+                  </tr>
+                </table></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Excepciones -->
+        <div class="tab-pane fade" id="excepciones">
+          <form class="card shadow-sm mb-4" th:action="@{/medico/horario/excepciones}" method="post">
+            <div class="card-header fw-semibold">Nueva excepción</div>
+            <div class="card-body row g-3 align-items-end">
+              <div class="col-md-2"><label class="form-label">Desde</label><input type="date" name="desde" class="form-control" required></div>
+              <div class="col-md-2"><label class="form-label">Hasta</label><input type="date" name="hasta" class="form-control" required></div>
+              <div class="col-md-2"><label class="form-label">Hora inicio</label><input type="time" name="horaInicio" step="900" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Hora fin</label><input type="time" name="horaFin" step="900" class="form-control"></div>
+              <div class="col-md-4"><label class="form-label">Motivo</label><input name="motivo" class="form-control" required maxlength="255"></div>
+              <div class="col-12"><button class="btn btn-primary">Agregar excepción</button>
+                <span class="small text-body-secondary ms-2">Sin horas = día completo.</span></div>
+            </div>
+          </form>
+          <table class="table bg-body shadow-sm">
+            <thead class="table-light"><tr><th>Fecha</th><th>Alcance</th><th>Motivo</th><th></th></tr></thead>
+            <tbody>
+              <tr th:each="e : ${horario.excepciones}">
+                <td th:text="${e.fechaInicio == e.fechaFin} ? ${#temporals.format(e.fechaInicio, 'dd/MM/yyyy')} : |${#temporals.format(e.fechaInicio, 'dd/MM/yyyy')} al ${#temporals.format(e.fechaFin, 'dd/MM/yyyy')}|">Fecha</td>
+                <td th:text="${e.diaCompleto()} ? 'Día completo' : |${e.horaInicio}–${e.horaFin}|">Alcance</td>
+                <td th:text="${e.motivo}">Motivo</td>
+                <td class="text-end">
+                  <form th:action="@{/medico/horario/excepciones/{id}/quitar(id=${e.idExcepcion})}" method="post">
+                    <button class="btn btn-sm btn-outline-danger">Quitar</button>
+                  </form>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(horario.excepciones)}"><td colspan="4" class="text-body-secondary text-center">Sin excepciones.</td></tr>
+            </tbody>
+          </table>
+          <p class="small text-body-secondary">Si una excepción cubre citas ya agendadas, se rechaza: primero hay que reprogramarlas.</p>
+        </div>
+
+        <!-- Duraciones -->
+        <div class="tab-pane fade" id="duraciones">
+          <table class="table bg-body shadow-sm align-middle">
+            <thead class="table-light"><tr><th>Tipo de consulta</th><th>Del consultorio</th><th>Tu duración</th></tr></thead>
+            <tbody>
+              <tr th:each="d : ${horario.duraciones}">
+                <td th:text="${d.tipo}">Consulta</td>
+                <td th:text="|${d.duracionConsultorio} min|">30 min</td>
+                <td>
+                  <form class="d-flex gap-2" th:action="@{/medico/horario/duraciones/{id}(id=${d.idTipoConsulta})}" method="post">
+                    <select name="minutos" class="form-select form-select-sm" style="max-width:8rem">
+                      <option th:each="m : ${#numbers.sequence(15, 240, 15)}" th:value="${m}" th:text="|${m} min|"
+                              th:selected="${m == d.duracionMin}">30 min</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-primary">Guardar</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="small text-body-secondary">Las duraciones van en múltiplos de 15 minutos.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>
