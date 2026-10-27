@@ -13,66 +13,78 @@
 
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div><h1 class="h3 mb-0">Pacientes</h1></div>
-        
+        <a th:href="@{/recepcion/pacientes/nuevo}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Registrar paciente</a>
       </div>
-      <div class="input-group mb-3" style="max-width: 36rem"><span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input class="form-control" value="Medina" placeholder="Documento, nombre o teléfono"></div>
-      <div class="list-group shadow-sm mb-4" style="max-width: 36rem">
-        <a href="#" class="list-group-item list-group-item-action active">Rosa Medina Flores · DNI 10456789</a>
-        <a href="#" class="list-group-item list-group-item-action">Carla Medina Flores · DNI 44120987</a>
+      <form th:action="@{/recepcion/pacientes}" method="get" class="input-group mb-3" style="max-width: 36rem">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" name="q" th:value="${q}" placeholder="Documento, nombre o teléfono">
+        <button class="btn btn-outline-primary">Buscar</button>
+      </form>
+      <div class="list-group shadow-sm mb-4" style="max-width: 36rem" th:if="${!#lists.isEmpty(resultados)}">
+        <a th:each="r : ${resultados}" th:href="@{/recepcion/pacientes/{id}(id=${r.idPaciente}, q=${q})}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${ficha != null and ficha.idPaciente == r.idPaciente} ? 'active'"
+           th:text="|${r.nombreCompleto} · ${r.documento}|">Paciente · DNI</a>
       </div>
+      <p th:if="${q != null and !#strings.isEmpty(q) and #lists.isEmpty(resultados)}" class="text-body-secondary">
+        No se encontraron pacientes con «<span th:text="${q}"></span>».</p>
 
-      <div class="card shadow-sm">
+      <div class="card shadow-sm" th:if="${ficha != null}">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <span class="fs-5 fw-semibold">Rosa Medina Flores</span>
-          <a th:href="@{/recepcion/cita/nueva}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+          <span class="fs-5 fw-semibold" th:text="${ficha.nombreCompleto()}">Paciente</span>
+          <div class="d-flex gap-2">
+            <a th:href="@{/recepcion/pacientes/{id}/editar(id=${ficha.idPaciente})}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil me-1"></i>Editar</a>
+            <a th:href="@{/recepcion/cita/nueva}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+          </div>
         </div>
         <div class="card-body">
           <div class="row g-4">
             <div class="col-lg-6">
               <h2 class="h6">Datos personales y de contacto</h2>
               <dl class="row small mb-0">
-                <dt class="col-5">Documento</dt><dd class="col-7">DNI 10456789</dd>
-                <dt class="col-5">Fecha de nacimiento</dt><dd class="col-7">14 de mayo de 1958 (68 años)</dd>
-                <dt class="col-5">Teléfono</dt><dd class="col-7">944 870 112 <a href="#" class="ms-1 small">Editar</a></dd>
-                <dt class="col-5">Cuenta propia</dt><dd class="col-7">No tiene</dd>
+                <dt class="col-5">Documento</dt><dd class="col-7" th:text="|${ficha.tipoDocumento} ${ficha.nroDocumento}|">DNI</dd>
+                <dt class="col-5">Fecha de nacimiento</dt><dd class="col-7" th:text="|${#temporals.format(ficha.fechaNacimiento, 'dd/MM/yyyy')} (${ficha.edad} años)|">fecha</dd>
+                <dt class="col-5">Teléfono</dt><dd class="col-7" th:text="${ficha.telefono ?: 'No registrado'}">tel</dd>
+                <dt class="col-5">Correo</dt><dd class="col-7" th:text="${ficha.correo ?: 'No registrado'}">correo</dd>
+                <dt class="col-5">Cuenta propia</dt><dd class="col-7" th:text="${ficha.cuentaPropia ?: 'No tiene'}">No tiene</dd>
               </dl>
             </div>
             <div class="col-lg-6">
               <h2 class="h6">Cuentas que agendan en su nombre</h2>
               <ul class="list-unstyled small mb-2">
-                <li><i class="bi bi-person me-1"></i>Carla Medina · consentimiento declarado el 2 de octubre de 2026</li>
-                <li><i class="bi bi-person me-1"></i>Jorge Medina · consentimiento declarado el 5 de noviembre de 2026</li>
+                <li th:each="c : ${ficha.cuentas}" class="d-flex align-items-center gap-2 mb-1">
+                  <i class="bi bi-person"></i>
+                  <span th:text="|${c.correo} · consentimiento del ${#temporals.format(c.consentimientoEn, 'dd/MM/yyyy')}|">cuenta</span>
+                  <span th:if="${c.revocadoEn != null}" class="badge text-bg-light border">Revocada</span>
+                  <form th:if="${c.revocadoEn == null}" th:action="@{/recepcion/pacientes/{id}/cuentas/{c}/revocar(id=${ficha.idPaciente}, c=${c.idCuenta})}" method="post" class="m-0">
+                    <button class="btn btn-sm btn-link text-danger p-0">Revocar</button>
+                  </form>
+                </li>
+                <li th:if="${#lists.isEmpty(ficha.cuentas)}" class="text-body-secondary">Ninguna.</li>
               </ul>
-              <div class="alert alert-warning small py-2 mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Posible duplicado: dos cuentas agendaron Cardiología para la primera semana de diciembre.</div>
             </div>
             <div class="col-12">
               <h2 class="h6">Indicadores</h2>
               <div class="row g-2 text-center small">
-                <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="fs-5 fw-semibold">0 %</div>No asistencia</div></div>
-                <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="fs-5 fw-semibold">14 %</div>Cancelación</div></div>
-                <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="fs-5 fw-semibold">1 vez</div>Usó disponibilidad inmediata</div></div>
-                <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="fs-5 fw-semibold">Hoy</div>Última cita</div></div>
+                <div class="col-6 col-md-4"><div class="border rounded p-2"><div class="fs-5 fw-semibold" th:text="${ficha.indicadores.noAsistenciaPct != null} ? |${ficha.indicadores.noAsistenciaPct} %| : '—'">0 %</div>No asistencia</div></div>
+                <div class="col-6 col-md-4"><div class="border rounded p-2"><div class="fs-5 fw-semibold" th:text="${ficha.indicadores.cancelacionPct != null} ? |${ficha.indicadores.cancelacionPct} %| : '—'">0 %</div>Cancelación</div></div>
+                <div class="col-12 col-md-4"><div class="border rounded p-2"><div class="fs-5 fw-semibold" th:text="${ficha.indicadores.diasDesdeUltimaCita == null} ? '—' : (${ficha.indicadores.diasDesdeUltimaCita == 0} ? 'Hoy' : |Hace ${ficha.indicadores.diasDesdeUltimaCita} días|)">Hoy</div>Última cita</div></div>
               </div>
             </div>
-            <div class="col-lg-7">
+            <div class="col-12">
               <h2 class="h6">Historial de citas</h2>
               <table class="table table-sm small">
                 <thead><tr><th>Fecha</th><th>Médico</th><th>Tipo</th><th>Estado</th></tr></thead>
                 <tbody>
-                  <tr><td>11 nov 2026</td><td>Dra. Ramírez</td><td>Seguimiento</td><td><span class="badge text-bg-info">En atención</span></td></tr>
-                  <tr><td>14 oct 2026</td><td>Dra. Ramírez</td><td>Primera cita</td><td><span class="badge text-bg-primary">Realizada</span></td></tr>
-                  <tr><td>2 set 2026</td><td>Dr. Ponce</td><td>Consulta</td><td><span class="badge text-bg-light border">Cancelada por el paciente</span></td></tr>
+                  <tr th:each="c : ${ficha.citas}">
+                    <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}">fecha</td>
+                    <td th:text="${c.medico}">médico</td>
+                    <td th:text="${c.tipo}">tipo</td>
+                    <td><span class="badge text-bg-light border" th:text="${c.estado}">estado</span></td>
+                  </tr>
+                  <tr th:if="${#lists.isEmpty(ficha.citas)}"><td colspan="4" class="text-body-secondary">Sin citas registradas.</td></tr>
                 </tbody>
               </table>
-            </div>
-            <div class="col-lg-5">
-              <h2 class="h6">Preferencias de disponibilidad inmediata</h2>
-              <p class="small mb-1">Activa · solo Dra. Ramírez · llega en 60 min · hasta 7 días antes</p>
-              <button class="btn btn-sm btn-outline-secondary mb-3">Editar preferencias</button>
-              <h2 class="h6">Indicaciones médicas</h2>
-              <p class="small mb-1"><span class="badge text-bg-warning">Pendiente</span> Seguimiento · Dra. Ramírez · vence el 9 de febrero</p>
-              <p class="small mb-0"><span class="badge text-bg-light border">Vencida</span> Consulta · Dr. Ponce · venció el 30 de setiembre</p>
             </div>
           </div>
           <p class="small text-body-secondary mt-3 mb-0"><i class="bi bi-info-circle me-1"></i>La ficha no contiene información clínica.</p>
@@ -81,7 +93,6 @@
     </main>
   </div>
 </div>
-
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
 </body>

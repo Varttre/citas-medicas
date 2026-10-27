@@ -41,9 +41,4 @@ public class RecepcionController {
     public String pendientes() {
         return "recepcion/pendientes";
     }
-
-    @GetMapping("/pacientes")
-    public String pacientes() {
-        return "recepcion/pacientes";
-    }
 }

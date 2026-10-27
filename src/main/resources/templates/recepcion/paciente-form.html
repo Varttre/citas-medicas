@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head(${idPaciente == null} ? 'Registrar paciente' : 'Editar paciente')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('pacientes')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <h1 class="h3 mb-4" th:text="${idPaciente == null} ? 'Registrar paciente' : 'Editar paciente'">Paciente</h1>
+
+      <form class="card shadow-sm" style="max-width: 48rem" method="post" th:object="${form}"
+            th:action="${idPaciente == null} ? @{/recepcion/pacientes} : @{/recepcion/pacientes/{id}(id=${idPaciente})}">
+        <div class="card-body row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="tipoDocumento">Tipo de documento</label>
+            <select class="form-select" th:field="*{tipoDocumento}">
+              <option th:each="t : ${tiposDocumento}" th:value="${t}" th:text="${t}">DNI</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label" for="nroDocumento">Número de documento</label>
+            <input class="form-control" th:field="*{nroDocumento}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{nroDocumento}"></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="nombres">Nombres</label>
+            <input class="form-control" th:field="*{nombres}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{nombres}"></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="apellidos">Apellidos</label>
+            <input class="form-control" th:field="*{apellidos}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{apellidos}"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="fechaNacimiento">Fecha de nacimiento</label>
+            <input type="date" class="form-control" th:field="*{fechaNacimiento}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{fechaNacimiento}"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="telefono">Teléfono</label>
+            <input class="form-control" th:field="*{telefono}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{telefono}"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="correo">Correo (opcional)</label>
+            <input type="email" class="form-control" th:field="*{correo}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{correo}"></div>
+          </div>
+        </div>
+        <div class="card-footer d-flex gap-2">
+          <button class="btn btn-primary">Guardar</button>
+          <a class="btn btn-outline-secondary" th:href="${idPaciente == null} ? @{/recepcion/pacientes} : @{/recepcion/pacientes/{id}(id=${idPaciente})}">Cancelar</a>
+        </div>
+      </form>
+    </main>
+  </div>
+</div>
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

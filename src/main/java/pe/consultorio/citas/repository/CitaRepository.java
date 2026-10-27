@@ -29,4 +29,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
         + "and c.estado not in :excluidos order by c.inicio")
     List<Cita> delMedicoQueCruzan(@Param("idMedico") Long idMedico, @Param("desde") LocalDateTime desde,
             @Param("hasta") LocalDateTime hasta, @Param("excluidos") Collection<EstadoCita> excluidos);
+
+    /** Historial completo del paciente, de la más reciente a la más antigua, con médico y tipo cargados. */
+    @Query("select c from Cita c join fetch c.medico join fetch c.tipoConsulta "
+        + "where c.paciente.idPaciente = :idPaciente order by c.inicio desc")
+    List<Cita> delPaciente(@Param("idPaciente") Long idPaciente);
 }
