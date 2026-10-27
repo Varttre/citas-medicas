@@ -13,57 +13,29 @@
 
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div><h1 class="h3 mb-0">Nueva cita</h1></div>
-        
-      </div><ol class="list-unstyled d-flex flex-wrap gap-2 gap-md-3 mb-4"><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">¿Para quién?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-primary fw-semibold"><span class="badge rounded-pill text-bg-primary">2</span><span class="small">¿Cómo buscar?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">3</span><span class="small">Cita indicada</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">4</span><span class="small">Horarios</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">5</span><span class="small">Resumen</span></li></ol>
+      </div>
+      <ol th:replace="~{paciente/pasos :: pasos(2)}"></ol>
+
       <div class="card shadow-sm">
         <div class="card-body p-4">
-          <h2 class="h5 mb-3">¿Cómo quieres buscar?</h2>
-          <ul class="nav nav-tabs mb-4" role="tablist">
-            <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#por-medico" type="button">Por médico</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#por-especialidad" type="button">Por especialidad</button></li>
-          </ul>
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="por-medico">
-              <div class="input-group mb-4">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input class="form-control" placeholder="Buscar médico por nombre">
-              </div>
-              <h3 class="h6 text-body-secondary">Médicos de tus consultas recientes</h3>
-              <div class="list-group">
-              <a th:href="@{/paciente/cita/nueva/3}" class="list-group-item list-group-item-action d-flex align-items-center gap-3">
-                <i class="bi bi-person-badge fs-4 text-primary"></i>
-                <div class="flex-grow-1"><div class="fw-semibold">Dra. Carmen Ramírez <span class="badge text-bg-info-subtle border border-info-subtle text-info-emphasis ms-1">Indicó tu seguimiento</span></div><div class="small text-body-secondary">Cardiología</div></div>
-                <span class="small text-body-secondary">Última cita: 14 de octubre</span><i class="bi bi-chevron-right"></i>
-              </a>
-              <a th:href="@{/paciente/cita/nueva/3}" class="list-group-item list-group-item-action d-flex align-items-center gap-3">
-                <i class="bi bi-person-badge fs-4 text-primary"></i>
-                <div class="flex-grow-1"><div class="fw-semibold">Dr. Luis Salas</div><div class="small text-body-secondary">Dermatología</div></div>
-                <span class="small text-body-secondary">Cita próxima: 16 de noviembre</span><i class="bi bi-chevron-right"></i>
-              </a>
-              </div>
-            </div>
-            <div class="tab-pane fade" id="por-especialidad">
-              <div class="row g-3 mb-4">
-                <div class="col-md-6"><label class="form-label">Especialidad</label>
-                  <select class="form-select"><option>Cardiología</option><option>Dermatología</option><option>Ginecología</option><option>Medicina General</option><option>Pediatría</option></select></div>
-                <div class="col-md-6"><label class="form-label">Fecha <span class="text-body-secondary">(opcional)</span></label>
-                  <div class="input-group"><input type="date" class="form-control" value="2026-11-13"><button class="btn btn-outline-secondary" type="button">Limpiar</button></div></div>
-              </div>
-              <h3 class="h6 text-body-secondary">Médicos con horarios el viernes 13 de noviembre</h3>
-              <p class="small text-body-secondary">Tu seguimiento indicado también puede atenderlo otro médico de Cardiología que ofrezca ese tipo de consulta.</p>
-              <div class="list-group">
-              <a th:href="@{/paciente/cita/nueva/3}" class="list-group-item list-group-item-action d-flex align-items-center gap-3">
-                <i class="bi bi-person-badge fs-4 text-primary"></i>
-                <div class="flex-grow-1"><div class="fw-semibold">Dra. Carmen Ramírez</div><div class="small text-body-secondary">Cardiología</div></div>
-                <span class="small text-body-secondary"></span><i class="bi bi-chevron-right"></i>
-              </a>
-              <a th:href="@{/paciente/cita/nueva/3}" class="list-group-item list-group-item-action d-flex align-items-center gap-3">
-                <i class="bi bi-person-badge fs-4 text-primary"></i>
-                <div class="flex-grow-1"><div class="fw-semibold">Dr. Raúl Ochoa</div><div class="small text-body-secondary">Cardiología</div></div>
-                <span class="small text-body-secondary"></span><i class="bi bi-chevron-right"></i>
-              </a>
-              </div>
-            </div>
+          <h2 class="h5 mb-3">Elige especialidad y médico</h2>
+          <form class="row g-3 mb-4" th:action="@{/paciente/cita/nueva/2}" method="get">
+            <div class="col-md-6"><label class="form-label" for="especialidad">Especialidad</label>
+              <select class="form-select" id="especialidad" name="especialidad" onchange="this.form.submit()">
+                <option value="">Todas</option>
+                <option th:each="e : ${especialidades}" th:value="${e.idEspecialidad}" th:text="${e.nombre}"
+                        th:selected="${especialidad == e.idEspecialidad}">Cardiología</option>
+              </select></div>
+          </form>
+          <div class="list-group">
+            <a th:each="m : ${medicos}" th:href="@{/paciente/cita/nueva/4(medico=${m.idMedico}, especialidad=${m.idEspecialidad})}"
+               class="list-group-item list-group-item-action d-flex align-items-center gap-3">
+              <i class="bi bi-person-badge fs-4 text-primary"></i>
+              <div class="flex-grow-1"><div class="fw-semibold" th:text="${m.nombre}">Médico</div>
+                <div class="small text-body-secondary" th:text="${m.especialidad}">Especialidad</div></div>
+              <i class="bi bi-chevron-right"></i>
+            </a>
+            <div th:if="${#lists.isEmpty(medicos)}" class="list-group-item text-body-secondary">No hay médicos para esa especialidad.</div>
           </div>
           <div class="d-flex justify-content-between mt-4">
             <a th:href="@{/paciente/cita/nueva}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Atrás</a>
@@ -73,7 +45,6 @@
     </main>
   </div>
 </div>
-
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
 </body>
