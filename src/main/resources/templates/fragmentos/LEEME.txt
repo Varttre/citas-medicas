@@ -1,1 +1,0 @@
-Fragmentos Thymeleaf compartidos: cabecera, barra lateral por perfil, pie.
