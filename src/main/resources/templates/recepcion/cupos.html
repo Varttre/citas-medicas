@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Cupos liberados')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('cupos')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Cupos liberados sin cubrir</h1><p class="text-body-secondary mb-0">Ordenados por urgencia: primero los que empiezan antes</p></div>
+        
+      </div>
+      <div class="row g-4">
+        <div class="col-xl-3">
+          <div class="list-group shadow-sm">
+              <a href="#" class="list-group-item list-group-item-action active">
+                <div class="fw-semibold">Dra. Carmen Ramírez</div><div class="small">Hoy · 11:15 a 12:00</div>
+                <div class="d-flex gap-2 mt-1 small"><span class="badge text-bg-light">45 min</span><span>Empieza en 1 h 05</span></div>
+                <div class="small ">4 candidatos</div>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action ">
+                <div class="fw-semibold">Dr. Luis Salas</div><div class="small">Hoy · 16:30 a 17:30</div>
+                <div class="d-flex gap-2 mt-1 small"><span class="badge text-bg-secondary">60 min</span><span>Empieza en 6 h 20</span></div>
+                <div class="small text-body-secondary">2 candidatos</div>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action ">
+                <div class="fw-semibold">Dra. Elena Cueva</div><div class="small">Jueves 12 · 09:00 a 10:30</div>
+                <div class="d-flex gap-2 mt-1 small"><span class="badge text-bg-secondary">90 min</span><span>Empieza en 22 h 50</span></div>
+                <div class="small text-body-secondary">5 candidatos</div>
+              </a>
+          </div>
+        </div>
+        <div class="col-xl-9">
+          <div class="alert alert-light border small">
+            <strong>Bloque de 45 minutos, no de 30.</strong> Se canceló la cita de 11:30 a 12:00 y el tramo de 11:15 a 11:30 ya estaba libre: el sistema une ambos y ofrece el bloque completo.
+          </div>
+          <div class="card shadow-sm"><div class="table-responsive">
+            <table class="table align-middle mb-0 small">
+              <thead class="table-light"><tr><th></th><th>Candidato</th><th>Alcance</th><th>Llegada</th><th>Necesita</th><th>Calce</th><th>Inscrito</th><th>Modalidad</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge rounded-pill text-bg-primary">1</span></td>
+                  <td><div class="fw-semibold">Beatriz Olano</div><div class="small text-body-secondary">915 223 118</div></td>
+                  <td>Médico</td><td>20 min</td><td>45 min</td><td><span class="badge text-bg-success">Exacto</span></td><td class="small">hace 12 días</td><td>Presencial</td>
+                  <td class="text-end text-nowrap"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamada">Registrar</button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Mover al final"><i class="bi bi-arrow-down"></i></button></td></tr>
+                <tr><td><span class="badge rounded-pill text-bg-primary">2</span></td>
+                  <td><div class="fw-semibold">Héctor Vidal</div><div class="small text-body-secondary">977 330 412</div></td>
+                  <td>Especialidad</td><td>0 min</td><td>30 min</td><td><span class="badge text-bg-warning">Deja 15 min</span></td><td class="small">hace 20 días</td><td>Teleconsulta</td>
+                  <td class="text-end text-nowrap"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamada">Registrar</button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Mover al final"><i class="bi bi-arrow-down"></i></button></td></tr>
+                <tr><td><span class="badge rounded-pill text-bg-primary">3</span></td>
+                  <td><div class="fw-semibold">Gloria Pinto</div><div class="small text-body-secondary">912 776 003</div></td>
+                  <td>Médico</td><td>40 min</td><td>30 min</td><td><span class="badge text-bg-warning">Deja 15 min</span></td><td class="small">hace 8 días</td><td>Presencial</td>
+                  <td class="text-end text-nowrap"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamada">Registrar</button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Mover al final"><i class="bi bi-arrow-down"></i></button></td></tr>
+                <tr><td><span class="badge rounded-pill text-bg-primary">4</span></td>
+                  <td><div class="fw-semibold">Carlos Núñez</div><div class="small text-body-secondary">955 402 118</div></td>
+                  <td>Especialidad</td><td>75 min</td><td>30 min</td><td><span class="badge text-bg-warning">Deja 15 min</span></td><td class="small">hace 4 días</td><td>Presencial</td>
+                  <td class="text-end text-nowrap"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#llamada">Registrar</button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Mover al final"><i class="bi bi-arrow-down"></i></button></td></tr>
+              </tbody>
+            </table>
+          </div></div>
+          <p class="small text-body-secondary mt-2">Un candidato es elegible si puede llegar antes del fin del bloque menos su duración, no antes del inicio: por eso Carlos Núñez, que necesita 75 min para llegar y 30 min de consulta, aún entra en un bloque que empieza en 1 h 05 (llegaría 11:25, antes de 12:00 − 30 min). Si se cubre solo parte del bloque, el remanente vuelve a esta cola. «Mover al final» no cambia su fecha real de inscripción.</p>
+        </div>
+      </div>
+      <div class="modal fade" id="llamada" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered "><div class="modal-content">
+          <div class="modal-header"><h2 class="modal-title h5">Resultado de la llamada · Beatriz Olano</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+          <div class="modal-body">
+            <p class="small text-body-secondary">Bloque de hoy 11:15 a 12:00 · Dra. Carmen Ramírez · contacto 915 223 118</p><div class="form-check mb-2"><input class="form-check-input" type="radio" name="ll" id="ll0" checked><label class="form-check-label" for="ll0">Aceptó → su cita del 18 de noviembre se adelanta a hoy 11:15 conservando la misma cita; el horario anterior se libera como otro cupo</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="ll" id="ll1" ><label class="form-check-label" for="ll1">Rechazó</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="ll" id="ll2" ><label class="form-check-label" for="ll2">No contestó</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="ll" id="ll3" ><label class="form-check-label" for="ll3">No puede llegar a tiempo</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="ll" id="ll4" ><label class="form-check-label" for="ll4">Número inválido</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="ll" id="ll5" ><label class="form-check-label" for="ll5">Otro</label></div>
+            <p class="small text-body-secondary mt-3 mb-0">Se registra quién llamó y a qué hora.</p></div>
+          <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-primary" data-bs-dismiss="modal">Guardar</button></div>
+        </div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

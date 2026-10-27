@@ -1,8 +1,10 @@
 package pe.consultorio.citas.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import pe.consultorio.citas.service.ConfiguracionService;
@@ -46,6 +48,17 @@ public class AtributosGlobales {
             case ADMINISTRADOR -> "Administrador";
             case SUPERADMIN -> "Superadministrador";
         };
+    }
+
+    /**
+    Genera el token CSRF antes de dibujar la vista. Si se pidiera recién al llegar al formulario de «Cerrar sesión»
+    (al final de la barra), en una página larga la respuesta ya estaría enviada y no se podría crear la sesión.
+    */
+    @ModelAttribute
+    public void prepararCsrf(HttpServletRequest request) {
+        if (request.getAttribute(CsrfToken.class.getName()) instanceof CsrfToken token) {
+            token.getToken();
+        }
     }
 
     /** El enlace de WhatsApp solo aparece si el administrador configuró un número. */
