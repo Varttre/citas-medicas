@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Nueva cita')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('nueva-cita')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Nueva cita</h1></div>
+        
+      </div><ol class="list-unstyled d-flex flex-wrap gap-2 gap-md-3 mb-4"><li class="d-flex align-items-center gap-1 text-primary fw-semibold"><span class="badge rounded-pill text-bg-primary">1</span><span class="small">¿Para quién?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">2</span><span class="small">¿Cómo buscar?</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">3</span><span class="small">Cita indicada</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">4</span><span class="small">Horarios</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border">5</span><span class="small">Resumen</span></li></ol>
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <div id="seguimiento-fijo" class="d-none">
+            <h2 class="h5 mb-1">Cita de seguimiento para Lucía Vega Ríos</h2>
+            <p class="text-body-secondary small">La Dra. Ramírez indicó esta cita de seguimiento para ti, así que el paciente no se puede cambiar. Si necesitas una cita para otra persona, usa <a th:href="@{/paciente/cita/nueva}">Nueva cita</a>.</p>
+            <div class="border rounded p-3 bg-body-tertiary d-flex align-items-center gap-3">
+              <i class="bi bi-person-check fs-3 text-primary"></i>
+              <div><div class="fw-semibold">Lucía Vega Ríos</div><div class="small text-body-secondary">Paciente indicado · DNI 45678912</div></div>
+              <span class="badge text-bg-light border ms-auto">No se puede cambiar</span>
+            </div>
+          </div>
+          <div id="elige-paciente">
+          <h2 class="h5 mb-3">¿Para quién es la cita?</h2>
+          <div class="row g-3 mb-2">
+            <div class="col-md-6">
+              <input type="radio" class="btn-check" name="paraquien" id="pq-mi" checked data-oculta="#otra-persona">
+              <label class="btn btn-outline-primary w-100 text-start p-3" for="pq-mi">
+                <i class="bi bi-person fs-4 d-block mb-1"></i><span class="fw-semibold">Para mí</span>
+                <span class="d-block small">Lucía Vega Ríos</span>
+              </label>
+            </div>
+            <div class="col-md-6">
+              <input type="radio" class="btn-check" name="paraquien" id="pq-otra" data-muestra="#otra-persona">
+              <label class="btn btn-outline-primary w-100 text-start p-3" for="pq-otra">
+                <i class="bi bi-people fs-4 d-block mb-1"></i><span class="fw-semibold">Para otra persona</span>
+                <span class="d-block small">Un familiar o alguien a tu cargo</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="otra-persona" class="d-none border-top pt-4 mt-4">
+            <h3 class="h6">Datos del paciente</h3>
+            <div class="row g-3">
+              <div class="col-sm-5 col-lg-3"><label class="form-label">Tipo de documento</label>
+                <select class="form-select"><option>DNI</option><option>Carné de extranjería</option><option>Pasaporte</option></select></div>
+              <div class="col-sm-7 col-lg-3"><label class="form-label">Número de documento</label><input class="form-control" value="78123456"></div>
+              <div class="col-sm-6 col-lg-3"><label class="form-label">Nombres</label><input class="form-control" value="Mateo"></div>
+              <div class="col-sm-6 col-lg-3"><label class="form-label">Apellidos</label><input class="form-control" value="Vega Ríos"></div>
+              <div class="col-sm-6 col-lg-3"><label class="form-label">Fecha de nacimiento</label><input type="date" class="form-control" value="2019-04-08"></div>
+              <div class="col-sm-6 col-lg-3"><label class="form-label">Teléfono <span class="text-body-secondary">(opcional)</span></label><input type="tel" class="form-control"></div>
+            </div>
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="consentimiento" checked>
+              <label class="form-check-label" for="consentimiento">Declaro tener el consentimiento del paciente para agendar citas a su nombre.</label>
+            </div>
+            <p class="small text-body-secondary mt-2 mb-0"><i class="bi bi-telephone me-1"></i>Por las citas que agendes para esta persona, el consultorio te llamará a ti.</p>
+
+          </div>
+
+          </div>
+
+          <div class="d-flex justify-content-end mt-4">
+            <a th:href="@{/paciente/cita/nueva/2}" class="btn btn-primary">Continuar<i class="bi bi-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+<script>
+  /* Desde [Agendar seguimiento] el paciente llega fijado: la cita indicada es solo para quien la recibió. */
+  if (new URLSearchParams(location.search).has('seguimiento')) {
+    document.getElementById('elige-paciente').classList.add('d-none');
+    document.getElementById('seguimiento-fijo').classList.remove('d-none');
+  }
+</script>
+</body>
+</html>

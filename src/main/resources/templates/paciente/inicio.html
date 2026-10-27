@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Inicio')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('inicio')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+          <h1 class="h3 mb-0" th:text="|Hola, ${usuarioSesion?.nombreMostrado}|">Hola</h1>
+          <p class="text-body-secondary mb-0" th:text="${fechaHoy}">Hoy</p>
+        </div>
+        <a th:href="@{/paciente/cita/nueva}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+      </div>
+
+      <!-- Cita indicada pendiente -->
+      <div class="alert alert-info d-flex flex-wrap align-items-center gap-3" role="alert">
+        <i class="bi bi-clipboard2-pulse fs-3"></i>
+        <div class="flex-grow-1">
+          <div class="fw-semibold">La Dra. Ramírez indicó una cita de seguimiento.</div>
+          <div class="small">Para ti · Seguimiento · 30 min · a partir del 1 de diciembre. Vigente hasta el 28 de febrero de 2027.</div>
+        </div>
+        <a th:href="@{/paciente/cita/nueva?seguimiento}" class="btn btn-info">Agendar seguimiento</a>
+      </div>
+
+      <div class="row g-4">
+        <!-- Próximas citas -->
+        <section class="col-lg-7">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h5 mb-0">Próximas citas</h2>
+            <a th:href="@{/paciente/citas}" class="small">Ver todas</a>
+          </div>
+
+          <div class="list-group shadow-sm">
+            <a th:href="@{/paciente/citas}" class="list-group-item list-group-item-action py-3">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-semibold">Jueves 12 de noviembre · 08:30</div>
+                  <div>Medicina General · Dr. Andrés Ponce</div>
+                  <div class="small text-body-secondary">Consulta · 30 min · Presencial</div>
+                </div>
+                <span class="badge text-bg-secondary">Programada</span>
+              </div>
+            </a>
+            <a th:href="@{/paciente/citas}" class="list-group-item list-group-item-action py-3">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-semibold">Lunes 16 de noviembre · 16:00</div>
+                  <div>Dermatología · Dr. Luis Salas</div>
+                  <div class="small text-body-secondary">Primera cita · 45 min · Presencial</div>
+                </div>
+                <span class="badge text-bg-success">Confirmada</span>
+              </div>
+            </a>
+            <a th:href="@{/paciente/citas}" class="list-group-item list-group-item-action py-3">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-semibold">Martes 17 de noviembre · 10:00</div>
+                  <div>Pediatría · Dra. Elena Cueva</div>
+                  <div class="small text-body-secondary">Consulta · 30 min · Teleconsulta</div>
+                  <div class="small mt-1"><i class="bi bi-person me-1"></i>Paciente: Mateo Vega Ríos</div>
+                </div>
+                <span class="badge text-bg-secondary">Programada</span>
+              </div>
+            </a>
+          </div>
+          <p class="small text-body-secondary mt-2 mb-0">
+            Ves todas tus citas, también las que agendó recepción, y las que agendaste para otras personas.
+          </p>
+        </section>
+
+        <!-- Avisos del consultorio -->
+        <section class="col-lg-5">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h5 mb-0">Avisos</h2>
+            <a th:href="@{/paciente/avisos}" class="small">Ver todos</a>
+          </div>
+
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <span class="badge text-bg-warning mb-2">Campaña</span>
+              <h3 class="h6 card-title">Despistaje gratuito de hipertensión</h3>
+              <p class="card-text small text-body-secondary">Del 16 al 21 de noviembre, toma de presión sin costo para pacientes registrados. Solo presentando tu documento.</p>
+              <a th:href="@{/paciente/avisos}" class="btn btn-sm btn-outline-primary">Conocer más</a>
+            </div>
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <span class="badge text-bg-light border mb-2">Horario</span>
+              <h3 class="h6 card-title">Atención los sábados por la mañana</h3>
+              <p class="card-text small text-body-secondary">Desde diciembre atendemos también los sábados de 8:00 a 13:00 en Medicina General y Pediatría.</p>
+              <a th:href="@{/paciente/avisos}" class="btn btn-sm btn-outline-primary">Conocer más</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>
