@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.consultorio.citas.dto.VentanaPlazo;
@@ -15,14 +16,21 @@ import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCita;
 import pe.consultorio.citas.entity.NombreRol;
 import pe.consultorio.citas.entity.PlazoTransicion;
+import pe.consultorio.citas.entity.RegistroLlamada;
+import pe.consultorio.citas.entity.ResultadoLlamada;
+import pe.consultorio.citas.entity.TipoCola;
+import pe.consultorio.citas.entity.TipoConsulta;
 import pe.consultorio.citas.entity.TipoEvento;
 import pe.consultorio.citas.entity.Transicion;
+import pe.consultorio.citas.exception.ErroresBaseDatos;
+import pe.consultorio.citas.exception.HorarioOcupadoException;
 import pe.consultorio.citas.exception.PlazoVencidoException;
 import pe.consultorio.citas.exception.RecursoNoEncontradoException;
 import pe.consultorio.citas.exception.ReglaNegocioException;
 import pe.consultorio.citas.repository.CitaEventoRepository;
 import pe.consultorio.citas.repository.CitaRepository;
 import pe.consultorio.citas.repository.CuentaRepository;
+import pe.consultorio.citas.repository.RegistroLlamadaRepository;
 
 /**
 Cambios de estado de una cita. Cada transición comprueba el estado de origen y su plazo (tabla plazo_transicion), y
@@ -33,25 +41,55 @@ public class CitaEstadoService {
 
     private static final Set<EstadoCita> VIGENTES = EnumSet.of(EstadoCita.PROGRAMADA, EstadoCita.CONFIRMADA);
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm 'del' dd/MM");
+    private static final int DURACION_MAXIMA_MIN = 240;
 
     private final CitaRepository citas;
     private final CitaEventoRepository eventos;
     private final CuentaRepository cuentas;
+    private final RegistroLlamadaRepository llamadas;
     private final ConfiguracionService configuracion;
     private final Clock reloj;
 
     public CitaEstadoService(CitaRepository citas, CitaEventoRepository eventos, CuentaRepository cuentas,
-            ConfiguracionService configuracion, Clock reloj) {
+            RegistroLlamadaRepository llamadas, ConfiguracionService configuracion, Clock reloj) {
         this.citas = citas;
         this.eventos = eventos;
         this.cuentas = cuentas;
+        this.llamadas = llamadas;
         this.configuracion = configuracion;
         this.reloj = reloj;
     }
 
-    /** Confirmación desde la cola de llamadas: se completa con la cola de confirmaciones (B2). */
+    /**
+    Confirma una cita desde la cola de confirmaciones. Exige la llamada en la que el paciente confirmó (la base no
+    acepta una confirmación sin llamada), que la cita ya esté en la cola (desde anticipacion_confirm_h horas antes del
+    inicio) y que aún no haya empezado.
+    */
+    @Transactional
     public void confirmar(Long idCita, Long idLlamada, Long actor) {
-        throw new UnsupportedOperationException("Pendiente: B2");
+        Cita c = cita(idCita, actor);
+        if (c.getEstado() != EstadoCita.PROGRAMADA) {
+            throw new ReglaNegocioException("Solo se confirma una cita programada.");
+        }
+        LocalDateTime entraACola = c.getInicio().minusHours(configuracion.parametros().getAnticipacionConfirmH());
+        if (ahora().isBefore(entraACola)) {
+            throw new PlazoVencidoException("Esta cita aún no entra a la cola de confirmaciones: se habilita a las "
+                + entraACola.format(HORA) + ".");
+        }
+        exigirPlazo(c, Transicion.CONFIRMADA, "confirmar esta cita");
+        RegistroLlamada llamada = idLlamada == null ? null : llamadas.findById(idLlamada).orElse(null);
+        if (llamada == null || llamada.getCita() == null
+                || !llamada.getCita().getIdCita().equals(c.getIdCita())
+                || llamada.getTipoCola() != TipoCola.CONFIRMACION
+                || llamada.getResultado() != ResultadoLlamada.CONFIRMO) {
+            throw new ReglaNegocioException("Registra primero la llamada en la que el paciente confirmó.");
+        }
+        EstadoCita anterior = c.getEstado();
+        c.setEstado(EstadoCita.CONFIRMADA);
+        citas.saveAndFlush(c);
+        CitaEvento e = nuevoEvento(c, TipoEvento.CAMBIO_ESTADO, anterior, EstadoCita.CONFIRMADA, actor, null);
+        e.setLlamada(llamada);
+        eventos.save(e);
     }
 
     /** El paciente cancela hasta la hora de inicio. Si la registra el personal, el motivo es obligatorio. */
@@ -139,9 +177,56 @@ public class CitaEstadoService {
         cambiar(c, EstadoCita.NO_ASISTIO, actor, motivo);
     }
 
-    /** Cambio de duración de una cita ya agendada: se completa junto con la agenda de recepción. */
+    /**
+    Cambia la duración de una cita programada o confirmada; el inicio no se mueve. El médico necesita que el tipo de
+    consulta lo permita al médico, la recepción que lo permita a recepción y el administrador siempre puede. Si la nueva
+    duración se cruza con la cita siguiente, PostgreSQL la rechaza y la cita queda como estaba.
+    */
+    @Transactional
     public void ajustarDuracion(Long idCita, int nuevaDuracionMin, Long actor) {
-        throw new UnsupportedOperationException("Pendiente: ajuste de duración");
+        Cita c = cita(idCita, actor);
+        exigirEstado(c, VIGENTES, "Solo se ajusta la duración de una cita programada o confirmada.");
+        TipoConsulta tipo = c.getTipoConsulta();
+        Cuenta quien = cuenta(actor);
+        if (quien != null) {
+            NombreRol rol = quien.getRol().getNombre();
+            boolean puede = switch (rol) {
+                case MEDICO -> tipo.isAjusteMedico();
+                case RECEPCION -> tipo.isAjusteRecepcion();
+                case ADMINISTRADOR, SUPERADMIN -> true;
+                case PACIENTE -> false;
+            };
+            if (!puede) {
+                throw new ReglaNegocioException("Tu perfil no puede ajustar la duración de este tipo de consulta.");
+            }
+        }
+        int incremento = tipo.getIncrementoMin() != null ? tipo.getIncrementoMin() : configuracion.incremento();
+        if (nuevaDuracionMin < incremento || nuevaDuracionMin > DURACION_MAXIMA_MIN
+                || nuevaDuracionMin % incremento != 0) {
+            throw new ReglaNegocioException("La duración debe ir en múltiplos de " + incremento + " minutos, hasta "
+                + DURACION_MAXIMA_MIN + ".");
+        }
+        LocalDateTime inicio = c.getInicio();
+        LocalDateTime finAnterior = c.getFin();
+        LocalDateTime finNuevo = inicio.plusMinutes(nuevaDuracionMin);
+        if (finNuevo.equals(finAnterior)) {
+            throw new ReglaNegocioException("La cita ya dura " + nuevaDuracionMin + " minutos.");
+        }
+        c.setFin(finNuevo);
+        try {
+            citas.saveAndFlush(c);
+        } catch (DataIntegrityViolationException ex) {
+            if (ErroresBaseDatos.esSolape(ex)) {
+                throw new HorarioOcupadoException("La nueva duración se cruza con la siguiente cita.");
+            }
+            throw ex;
+        }
+        CitaEvento e = nuevoEvento(c, TipoEvento.AJUSTE_DURACION, null, null, actor, null);
+        e.setInicioAnterior(inicio);
+        e.setFinAnterior(finAnterior);
+        e.setInicioNuevo(inicio);
+        e.setFinNuevo(finNuevo);
+        eventos.save(e);
     }
 
     /** Indicaciones del médico, que verá el paciente. */
@@ -217,6 +302,12 @@ public class CitaEstadoService {
     }
 
     private void evento(Cita c, TipoEvento tipo, EstadoCita anterior, EstadoCita nuevo, Long actor, String motivo) {
+        eventos.save(nuevoEvento(c, tipo, anterior, nuevo, actor, motivo));
+    }
+
+    /** Evento sin guardar, para completarlo antes de insertarlo (la base valida algunos campos juntos). */
+    private CitaEvento nuevoEvento(Cita c, TipoEvento tipo, EstadoCita anterior, EstadoCita nuevo, Long actor,
+            String motivo) {
         CitaEvento e = new CitaEvento();
         e.setCita(c);
         e.setCuenta(actor == null ? null : cuentas.getReferenceById(actor));
@@ -225,7 +316,7 @@ public class CitaEstadoService {
         e.setEstadoNuevo(nuevo);
         e.setMotivo(vacio(motivo) ? null : motivo.trim());
         e.setFechaHora(ahora());
-        eventos.save(e);
+        return e;
     }
 
     private LocalDateTime ahora() {
