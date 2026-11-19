@@ -15,7 +15,6 @@ import pe.consultorio.citas.dto.PreferenciaDatos;
 import pe.consultorio.citas.entity.Cita;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCita;
-import pe.consultorio.citas.entity.Paciente;
 import pe.consultorio.citas.exception.RecursoNoEncontradoException;
 import pe.consultorio.citas.exception.ReglaNegocioException;
 import pe.consultorio.citas.repository.CitaRepository;
@@ -32,14 +31,17 @@ public class PortalPacienteService {
     private final CitaRepository citas;
     private final CuentaRepository cuentas;
     private final PreferenciaDisponibilidadRepository preferencias;
+    private final ContactoService contacto;
     private final Clock reloj;
 
     public PortalPacienteService(MedicoEspecialidadRepository medicoEspecialidades, CitaRepository citas,
-            CuentaRepository cuentas, PreferenciaDisponibilidadRepository preferencias, Clock reloj) {
+            CuentaRepository cuentas, PreferenciaDisponibilidadRepository preferencias, ContactoService contacto,
+            Clock reloj) {
         this.medicoEspecialidades = medicoEspecialidades;
         this.citas = citas;
         this.cuentas = cuentas;
         this.preferencias = preferencias;
+        this.contacto = contacto;
         this.reloj = reloj;
     }
 
@@ -66,14 +68,12 @@ public class PortalPacienteService {
             .filter(p -> p.getRevocadoEn() == null)
             .map(p -> new PreferenciaDatos(p.getAlcance(), p.getMinLlegadaMin(), p.getDiasPrevios()))
             .orElse(null);
-        Paciente contacto = c.getCuentaTitular() != null && c.getCuentaTitular().getPacientePropio() != null
-            ? c.getCuentaTitular().getPacientePropio() : c.getPaciente();
         return new CitaReprogramable(c.getIdCita(), c.getMedico().getIdMedico(),
             c.getMedico().getNombres() + " " + c.getMedico().getApellidos(), c.getEspecialidad().getNombre(),
             c.getTipoConsulta().getNombre(), (int) Duration.between(c.getInicio(), c.getFin()).toMinutes(),
             c.getModalidad(), c.getInicio(), c.getFin(),
             c.getPaciente().getNombres() + " " + c.getPaciente().getApellidos(),
-            PacienteService.textoEstado(c.getEstado()), contacto.getTelefono(), preferencia);
+            PacienteService.textoEstado(c.getEstado()), contacto.telefonoDe(c), preferencia);
     }
 
     /** Médicos activos que atienden la especialidad (o todos, si no se indica), por nombre. */
