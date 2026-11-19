@@ -1,6 +1,7 @@
 package pe.consultorio.citas.repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,10 @@ public interface RegistroLlamadaRepository extends JpaRepository<RegistroLlamada
 
     /** Cuántas llamadas se registraron para la cita en esa cola. */
     long countByCitaIdCitaAndTipoCola(Long idCita, TipoCola tipoCola);
+
+    /** La última llamada registrada para la cita en esa cola. */
+    Optional<RegistroLlamada> findFirstByCitaIdCitaAndTipoColaOrderByFechaHoraDesc(Long idCita, TipoCola tipoCola);
+
+    /** Cuántas llamadas se registraron para un horario liberado. */
+    long countByOportunidadIdOportunidad(Long idOportunidad);
 }

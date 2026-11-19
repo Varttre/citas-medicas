@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+Tabla común de las colas de llamadas de recepción (confirmaciones, cupos liberados, citas pendientes).
+Parámetros:
+  filas      lista de FilaCola
+  accion     ruta base; cada fila envía su resultado a «accion/{id}/llamada» o, sin resultados, enlaza a «accion/{id}»
+  resultados mapa código → texto de los resultados que admite la cola; null = la fila abre su detalle en vez del modal
+  columna    título de la columna de fecha («Cita», «Horario liberado»…)
+-->
+<div th:fragment="tabla(filas, accion, resultados, columna)">
+  <div class="card shadow-sm"><div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light"><tr>
+        <th th:if="${resultados != null}">Paciente</th>
+        <th th:if="${resultados != null}">Teléfono de contacto</th>
+        <th>Médico</th><th th:text="${columna}">Cita</th><th th:if="${resultados == null}">Detalle</th>
+        <th class="text-center">Intentos</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        <tr th:each="f : ${filas}" th:classappend="${f.urgente} ? 'table-warning'">
+          <td th:if="${resultados != null}" class="fw-semibold" th:text="${f.paciente}">Paciente</td>
+          <td th:if="${resultados != null}">
+            <span th:text="${f.telefono ?: 'Sin teléfono'}">999 999 999</span>
+            <span th:if="${f.telefonoInvalido}" class="badge text-bg-danger ms-1">Número inválido</span>
+            <div class="small text-body-secondary" th:if="${f.detalle != null}" th:text="${f.detalle}">Contacto</div>
+          </td>
+          <td th:text="${f.medico}">Médico</td>
+          <td class="text-nowrap" th:text="${#temporals.format(f.fechaHora, 'EEE d MMM, HH:mm')}">Jue 12, 08:30</td>
+          <td th:if="${resultados == null}" th:text="${f.detalle}">Detalle</td>
+          <td class="text-center" th:text="${f.intentos}">0</td>
+          <td><span class="badge" th:classappend="${f.estado == 'Sin llamar' or f.estado == 'Abierto'} ? 'text-bg-light border' : (${f.estado == 'Número inválido'} ? 'text-bg-danger' : 'text-bg-warning')" th:text="${f.estado}">Sin llamar</span></td>
+          <td class="text-end">
+            <button th:if="${resultados != null}" class="btn btn-sm btn-primary" data-bs-toggle="modal" th:attr="data-bs-target='#llamada-' + ${f.id}">Registrar resultado</button>
+            <a th:if="${resultados == null}" class="btn btn-sm btn-primary" th:href="@{__${accion}__/{id}(id=${f.id})}">Ver candidatos</a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(filas)}"><td colspan="8" class="text-center text-body-secondary">No hay elementos en esta cola.</td></tr>
+      </tbody>
+    </table>
+  </div></div>
+
+  <th:block th:if="${resultados != null}">
+    <div th:each="f : ${filas}" class="modal fade" th:id="|llamada-${f.id}|" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered"><form class="modal-content" method="post" th:action="@{__${accion}__/{id}/llamada(id=${f.id})}">
+        <div class="modal-header"><h2 class="modal-title h5" th:text="|Resultado de la llamada · ${f.paciente}|">Resultado de la llamada</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body">
+          <p class="small text-body-secondary" th:text="|${#temporals.format(f.fechaHora, 'EEE d MMM, HH:mm')} · ${f.medico} · contacto ${f.telefono ?: 'sin teléfono'}|">Detalle</p>
+          <div class="form-check mb-2" th:each="r, i : ${resultados}">
+            <input class="form-check-input" type="radio" name="resultado" th:value="${r.key}" th:id="|res-${f.id}-${i.index}|" th:checked="${i.first}">
+            <label class="form-check-label" th:for="|res-${f.id}-${i.index}|" th:text="${r.value}">Resultado</label>
+          </div>
+          <label class="form-label small mt-2" th:for="|obs-${f.id}|">Observación (obligatoria si canceló)</label>
+          <input class="form-control form-control-sm" name="observacion" maxlength="255" th:id="|obs-${f.id}|">
+          <p class="small text-body-secondary mt-3 mb-0">Se registra automáticamente quién llamó y a qué hora.</p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-primary">Guardar</button></div>
+      </form></div>
+    </div>
+  </th:block>
+</div>
+</body>
+</html>
