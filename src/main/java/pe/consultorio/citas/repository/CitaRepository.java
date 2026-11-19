@@ -51,4 +51,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     @Query("select c from Cita c join fetch c.medico join fetch c.tipoConsulta "
         + "where c.cuentaTitular.idCuenta = :idCuenta order by c.inicio desc")
     List<Cita> delTitular(@Param("idCuenta") Long idCuenta);
+
+    /** Citas programadas (sin confirmar) que empiezan en {@code (desde, hasta]}, con médico, paciente y especialidad. */
+    @Query("select c from Cita c join fetch c.medico join fetch c.paciente join fetch c.especialidad "
+        + "where c.estado = 'PROGRAMADA' and c.inicio > :desde and c.inicio <= :hasta order by c.inicio")
+    List<Cita> programadasEntre(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 }
