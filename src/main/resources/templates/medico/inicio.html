@@ -15,39 +15,45 @@
         <div><h1 class="h3 mb-0" th:text="|Buenos días, ${usuarioSesion?.nombreMostrado}|">Buenos días</h1><p class="text-body-secondary mb-0" th:text="${fechaHoy}">Hoy</p></div>
         
       </div>
+      <div th:if="${t == null}" class="alert alert-light border">Esta cuenta no tiene un médico asociado.</div>
+      <th:block th:if="${t != null}">
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3"><a th:href="@{/medico/agenda}" class="card shadow-sm h-100 text-decoration-none"><div class="card-body">
-          <div class="fs-2 fw-semibold ">8</div><div class="small text-body-secondary">Citas hoy</div>
+          <div class="fs-2 fw-semibold " th:text="${t.citasHoy}">0</div><div class="small text-body-secondary">Citas hoy</div>
         </div></a></div>
         <div class="col-6 col-md-3"><a th:href="@{/medico/agenda}" class="card shadow-sm h-100 text-decoration-none"><div class="card-body">
-          <div class="fs-2 fw-semibold text-success">2</div><div class="small text-body-secondary">Confirmadas</div>
+          <div class="fs-2 fw-semibold text-success" th:text="${t.confirmadas}">0</div><div class="small text-body-secondary">Confirmadas</div>
         </div></a></div>
         <div class="col-6 col-md-3"><a th:href="@{/medico/agenda}" class="card shadow-sm h-100 text-decoration-none"><div class="card-body">
-          <div class="fs-2 fw-semibold text-primary">2</div><div class="small text-body-secondary">Atendidas</div>
+          <div class="fs-2 fw-semibold text-primary" th:text="${t.atendidas}">0</div><div class="small text-body-secondary">Atendidas</div>
         </div></a></div>
         <div class="col-6 col-md-3"><a th:href="@{/medico/agenda}" class="card shadow-sm h-100 text-decoration-none"><div class="card-body">
-          <div class="fs-2 fw-semibold text-warning-emphasis">5</div><div class="small text-body-secondary">Pendientes de atender</div>
+          <div class="fs-2 fw-semibold text-warning-emphasis" th:text="${t.pendientes}">0</div><div class="small text-body-secondary">Pendientes de atender</div>
         </div></a></div>
       </div>
       <div class="row g-4">
         <div class="col-lg-6">
           <div class="card shadow-sm mb-4">
             <div class="card-header fw-semibold">Próxima cita</div>
-            <div class="card-body d-flex justify-content-between align-items-center gap-3">
+            <div class="card-body d-flex justify-content-between align-items-center gap-3" th:if="${t.proxima != null}">
               <div>
-                <div class="fs-4 fw-semibold">10:00</div>
-                <div>Jorge Paredes Luna</div>
-                <div class="small text-body-secondary">Primera cita · 45 min · Presencial</div>
+                <div class="fs-4 fw-semibold" th:text="${#temporals.format(t.proxima.inicio, 'HH:mm')}">10:00</div>
+                <div th:text="${t.proxima.paciente}">Paciente</div>
+                <div class="small text-body-secondary" th:text="|${t.proxima.tipo} · ${t.proxima.duracionMin()} min · ${t.proxima.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">Tipo</div>
               </div>
-              <span class="badge text-bg-info">En sala</span>
+              <span class="badge" th:classappend="${t.proxima.asistio()} ? 'text-bg-info' : 'text-bg-secondary'" th:text="${t.proxima.asistio()} ? 'En sala' : ${t.proxima.estado}">Programada</span>
             </div>
+            <div class="card-body text-body-secondary" th:if="${t.proxima == null}">No te quedan citas por atender hoy.</div>
           </div>
           <div class="card shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
-              <i class="bi bi-stopwatch fs-2 text-warning"></i>
+              <i class="bi bi-stopwatch fs-2" th:classappend="${t.retrasoMin != null and t.retrasoMin > 0} ? 'text-warning' : 'text-success'"></i>
               <div>
-                <div class="fs-5 fw-semibold">Vas 8 min atrasada</div>
-                <div class="small text-body-secondary">Según la hora real de inicio frente a la programada de tus citas de hoy.</div>
+                <div class="fs-5 fw-semibold" th:if="${t.retrasoMin == null}">Aún no inicias consultas hoy</div>
+                <div class="fs-5 fw-semibold" th:if="${t.retrasoMin != null and t.retrasoMin > 0}" th:text="|Vas ${t.retrasoMin} min atrasado|">Vas 8 min atrasado</div>
+                <div class="fs-5 fw-semibold" th:if="${t.retrasoMin != null and t.retrasoMin < 0}" th:text="|Vas ${-t.retrasoMin} min adelantado|">Vas adelantado</div>
+                <div class="fs-5 fw-semibold" th:if="${t.retrasoMin != null and t.retrasoMin == 0}">Vas a tiempo</div>
+                <div class="small text-body-secondary">Según la hora real de inicio de tu última consulta de hoy frente a la programada.</div>
               </div>
             </div>
           </div>
@@ -55,37 +61,30 @@
         <div class="col-lg-6">
           <h2 class="h5 mb-3">Alertas</h2>
           <div class="list-group shadow-sm">
-            <a th:href="@{/medico/horario#duraciones}" class="list-group-item list-group-item-action d-flex gap-3 py-3">
-              <i class="bi bi-lightbulb text-primary fs-5"></i>
-              <div><div class="fw-semibold">Sugerencia de duración disponible</div>
-              <div class="small text-body-secondary">Seguimiento: la mediana de tus últimas 30 citas es 38 min y tienes configurado 30.</div></div>
-            </a>
-            <a href="#indicadas" data-bs-toggle="collapse" class="list-group-item list-group-item-action d-flex gap-3 py-3">
-              <i class="bi bi-clipboard2-pulse text-warning fs-5"></i>
-              <div class="flex-grow-1"><div class="fw-semibold">3 citas que indicaste siguen sin agendarse</div>
-              <div class="small text-body-secondary">La más próxima a vencer: 20 de noviembre.</div></div>
-              <i class="bi bi-chevron-down"></i>
-            </a>
-            <div class="collapse" id="indicadas">
-              <div class="list-group-item small">
+            <th:block th:if="${!#lists.isEmpty(t.indicaciones)}">
+              <a href="#indicadas" data-bs-toggle="collapse" class="list-group-item list-group-item-action d-flex gap-3 py-3">
+                <i class="bi bi-clipboard2-pulse text-warning fs-5"></i>
+                <div class="flex-grow-1"><div class="fw-semibold" th:text="${#lists.size(t.indicaciones) == 1} ? '1 cita que indicaste sigue sin agendarse' : |${#lists.size(t.indicaciones)} citas que indicaste siguen sin agendarse|">Citas indicadas</div>
+                <div class="small text-body-secondary" th:text="|La más próxima a vencer: ${#temporals.format(t.indicaciones[0].vigenteHasta, 'd ''de'' MMMM')}.|">Vence</div></div>
+                <i class="bi bi-chevron-down"></i>
+              </a>
+              <div class="collapse" id="indicadas"><div class="list-group-item small">
                 <table class="table table-sm mb-0">
                   <thead><tr><th>Paciente</th><th>Tipo</th><th>Vigente hasta</th></tr></thead>
-                  <tbody>
-                    <tr><td>Martín Salazar</td><td>Seguimiento</td><td class="text-danger">20 nov 2026</td></tr>
-                    <tr><td>Lucía Vega Ríos</td><td>Seguimiento</td><td>28 feb 2027</td></tr>
-                    <tr><td>Hugo Cárdenas</td><td>Procedimiento menor</td><td>5 mar 2027</td></tr>
-                  </tbody>
+                  <tbody><tr th:each="i : ${t.indicaciones}"><td th:text="${i.paciente}">Paciente</td><td th:text="${i.tipo}">Tipo</td><td th:text="${#temporals.format(i.vigenteHasta, 'd MMM yyyy')}">fecha</td></tr></tbody>
                 </table>
-              </div>
-            </div>
-            <a th:href="@{/medico/horario}" class="list-group-item list-group-item-action d-flex gap-3 py-3">
+              </div></div>
+            </th:block>
+            <a th:each="r : ${t.horariosRechazados}" th:href="@{/medico/horario}" class="list-group-item list-group-item-action d-flex gap-3 py-3">
               <i class="bi bi-calendar-x text-danger fs-5"></i>
               <div><div class="fw-semibold">Un cambio de horario quedó bloqueado</div>
-              <div class="small text-body-secondary">La versión desde el 1 de diciembre recorta los martes a las 16:00 y hay 8 citas en ese rango.</div></div>
+              <div class="small text-body-secondary" th:text="${r}">Detalle</div></div>
             </a>
+            <div class="list-group-item text-body-secondary py-3" th:if="${#lists.isEmpty(t.indicaciones) and #lists.isEmpty(t.horariosRechazados)}">No tienes alertas.</div>
           </div>
         </div>
       </div>
+      </th:block>
     </main>
   </div>
 </div>
