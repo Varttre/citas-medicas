@@ -22,18 +22,19 @@
         <div class="card-body">
           <div class="d-flex flex-wrap justify-content-between gap-2">
             <div>
+              <div class="small text-primary fw-semibold" th:if="${c.tercero}" th:text="|Para ${c.paciente}|">Para otra persona</div>
               <div class="fw-semibold" th:text="|${c.especialidad} · ${c.medico}|">Especialidad · Médico</div>
               <div class="small text-body-secondary" th:text="|${#temporals.format(c.inicio, 'EEEE d ''de'' MMMM, HH:mm')} · ${c.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">fecha</div>
             </div>
-            <span class="badge align-self-start" th:classappend="${c.estado == 'Confirmada'} ? 'text-bg-success' : 'text-bg-secondary'" th:text="${c.estado}">Programada</span>
+            <div class="d-flex flex-column align-items-end gap-1">
+              <span class="badge" th:classappend="${c.estado == 'Confirmada'} ? 'text-bg-success' : 'text-bg-secondary'" th:text="${c.estado}">Programada</span>
+              <span class="badge text-bg-info" th:if="${c.preferencia != null}"><i class="bi bi-telephone me-1"></i>Te llamaremos si se libera un cupo</span>
+            </div>
           </div>
-          <div class="d-flex gap-2 mt-3">
+          <div class="d-flex flex-wrap gap-2 mt-3">
             <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" th:attr="data-bs-target='#c' + ${i.count}"><i class="bi bi-chevron-down me-1"></i>Expandir</button>
             <a th:if="${c.cancelable}" th:href="@{/paciente/citas/{id}/reprogramar(id=${c.idCita})}" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar2-event me-1"></i>Reprogramar</a>
-            <form th:if="${c.cancelable}" method="post" th:action="@{/paciente/citas/{id}/cancelar(id=${c.idCita})}" class="m-0"
-                  onsubmit="return confirm('¿Cancelar esta cita? El horario se ofrecerá a otros pacientes.');">
-              <button class="btn btn-sm btn-outline-danger">Cancelar</button>
-            </form>
+            <button th:if="${c.cancelable}" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" th:attr="data-bs-target='#cancelar' + ${i.count}">Cancelar</button>
           </div>
           <div class="collapse" th:id="|c${i.count}|">
             <div class="border-top mt-3 pt-3">
@@ -41,14 +42,59 @@
               <dl class="row small mb-0">
                 <dt class="col-5 col-md-3">Paciente</dt><dd class="col-7 col-md-9" th:text="${c.paciente}">Paciente</dd>
                 <dt class="col-5 col-md-3">Tipo</dt><dd class="col-7 col-md-9" th:text="|${c.tipo} · ${#temporals.format(c.inicio, 'HH:mm')} a ${#temporals.format(c.fin, 'HH:mm')}|">Consulta</dd>
+                <th:block th:if="${c.indicaciones != null}"><dt class="col-5 col-md-3">Indicaciones del médico</dt><dd class="col-7 col-md-9" th:text="${c.indicaciones}">Indicaciones</dd></th:block>
+                <th:block th:if="${c.indicacionesAdmin != null}"><dt class="col-5 col-md-3">Indicaciones del consultorio</dt><dd class="col-7 col-md-9" th:text="${c.indicacionesAdmin}">Indicaciones</dd></th:block>
               </dl>
-              <p class="small text-body-secondary mt-2 mb-0">No hay indicaciones u observaciones para esta cita</p>
+              <p class="small text-body-secondary mt-2 mb-0" th:if="${c.indicaciones == null and c.indicacionesAdmin == null}">No hay indicaciones u observaciones para esta cita</p>
+
+              <div th:if="${c.cancelable}" class="border-top mt-3 pt-3" th:with="pr=${c.preferencia}">
+                <h3 class="h6">Disponibilidad inmediata</h3>
+                <p class="small text-body-secondary" th:if="${pr == null}">Si quieres, te llamamos cuando se libere un horario antes de esta cita. Tu cita solo se mueve si aceptas.</p>
+                <p class="small" th:if="${pr != null}" th:text="|Te llamaremos ${pr.alcance().name() == 'MEDICO' ? 'para un cupo con ' + c.medico : 'para un cupo con cualquier médico de ' + c.especialidad}, si puedes llegar en ${pr.minLlegadaMin()} min y hasta ${pr.diasPrevios()} días antes.|">Preferencia</p>
+                <form class="row g-2 align-items-end" th:action="@{/paciente/citas/{id}/preferencia(id=${c.idCita})}" method="post">
+                  <div class="col-md-4"><label class="form-label small">¿Con quién?</label>
+                    <select class="form-select form-select-sm" name="alcance">
+                      <option value="MEDICO" th:selected="${pr == null or pr.alcance().name() == 'MEDICO'}" th:text="|Solo con ${c.medico}|">Solo con este médico</option>
+                      <option value="ESPECIALIDAD" th:selected="${pr != null and pr.alcance().name() == 'ESPECIALIDAD'}" th:text="|Cualquier médico de ${c.especialidad}|">Cualquier médico</option>
+                    </select></div>
+                  <div class="col-6 col-md-3"><label class="form-label small">Tiempo para llegar</label>
+                    <div class="input-group input-group-sm"><input type="number" class="form-control" name="llegada" min="0" max="1440" th:value="${pr != null ? pr.minLlegadaMin() : 60}"><span class="input-group-text">min</span></div></div>
+                  <div class="col-6 col-md-3"><label class="form-label small">Días antes</label>
+                    <div class="input-group input-group-sm"><input type="number" class="form-control" name="diasPrevios" min="0" max="60" th:value="${pr != null ? pr.diasPrevios() : 3}"><span class="input-group-text">días</span></div></div>
+                  <div class="col-md-2"><button class="btn btn-sm btn-primary w-100" th:text="${pr == null} ? 'Activar' : 'Guardar'">Guardar</button></div>
+                </form>
+                <form th:if="${pr != null}" class="mt-2" th:action="@{/paciente/citas/{id}/preferencia/revocar(id=${c.idCita})}" method="post">
+                  <button class="btn btn-sm btn-link link-danger p-0">Ya no quiero que me llamen para esta cita</button>
+                </form>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div th:if="${c.cancelable}" class="modal fade" th:id="|cancelar${i.count}|" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+            <div class="modal-header"><h2 class="modal-title h5">¿Cancelar esta cita?</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <div class="modal-body">
+              <p class="mb-1 fw-semibold" th:text="|${c.especialidad} · ${c.medico}|">Especialidad · Médico</p>
+              <p class="mb-2" th:text="|${#temporals.format(c.inicio, 'EEEE d ''de'' MMMM, HH:mm')} · ${c.paciente}|">fecha</p>
+              <p class="small text-body-secondary mb-2" th:if="${c.cancelarHasta != null}"
+                 th:text="|Puedes cancelar hasta las ${#temporals.format(c.cancelarHasta, 'HH:mm')} del ${#temporals.format(c.cancelarHasta, 'dd/MM')}.|">Puedes cancelar hasta…</p>
+              <div class="alert alert-warning small mb-2" th:if="${penalizacion != null}" th:text="${penalizacion}">Penalización</div>
+              <p class="small mb-0">El horario quedará libre para otros pacientes.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Mantener cita</button>
+              <form method="post" th:action="@{/paciente/citas/{id}/cancelar(id=${c.idCita})}" class="m-0">
+                <button class="btn btn-danger">Cancelar cita</button>
+              </form>
+            </div>
+          </div></div>
         </div>
       </div>
       <p th:if="${#lists.isEmpty(citas)}" class="text-center text-body-secondary my-4">Usted no tiene próximas citas</p>
 
+      <p class="small text-body-secondary mb-1">Reprogramar mueve la misma cita a otra fecha u hora, sin plazo. Cancelar la anula.</p>
       <p class="small text-body-secondary mb-1">Ves todas tus citas —también las que agendó recepción— y las que agendaste para otras personas.</p>
     </main>
   </div>

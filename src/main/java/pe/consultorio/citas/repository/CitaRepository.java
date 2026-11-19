@@ -46,4 +46,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
         + "order by c.inicio")
     List<Cita> delTipoDesde(@Param("idTipo") Short idTipo, @Param("desde") LocalDateTime desde,
             @Param("estados") Collection<EstadoCita> estados);
+
+    /** Citas que agendó la cuenta (como titular), con médico y tipo cargados. */
+    @Query("select c from Cita c join fetch c.medico join fetch c.tipoConsulta "
+        + "where c.cuentaTitular.idCuenta = :idCuenta order by c.inicio desc")
+    List<Cita> delTitular(@Param("idCuenta") Long idCuenta);
 }
