@@ -5,7 +5,7 @@
 Tabla común de las colas de llamadas de recepción (confirmaciones, cupos liberados, citas pendientes).
 Parámetros:
   filas      lista de FilaCola
-  accion     ruta base; cada fila envía su resultado a «accion/{id}/llamada» o, sin resultados, enlaza a «accion/{id}»
+  accion     ruta base; cada fila envía su resultado a «accion/{id}/resultado» o, sin resultados, enlaza a «accion/{id}»
   resultados mapa código → texto de los resultados que admite la cola; null = la fila abre su detalle en vez del modal
   columna    título de la columna de fecha («Cita», «Horario liberado»…)
 -->
@@ -42,7 +42,7 @@ Parámetros:
 
   <th:block th:if="${resultados != null}">
     <div th:each="f : ${filas}" class="modal fade" th:id="|llamada-${f.id}|" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered"><form class="modal-content" method="post" th:action="@{__${accion}__/{id}/llamada(id=${f.id})}">
+      <div class="modal-dialog modal-dialog-centered"><form class="modal-content" method="post" th:action="@{__${accion}__/{id}/resultado(id=${f.id})}">
         <div class="modal-header"><h2 class="modal-title h5" th:text="|Resultado de la llamada · ${f.paciente}|">Resultado de la llamada</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
         <div class="modal-body">

@@ -22,11 +22,6 @@ public class RecepcionController {
         return "recepcion/nueva-cita";
     }
 
-    @GetMapping("/confirmaciones")
-    public String confirmaciones() {
-        return "recepcion/confirmaciones";
-    }
-
     @GetMapping("/pendientes")
     public String pendientes() {
         return "recepcion/pendientes";
