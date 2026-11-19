@@ -34,7 +34,8 @@ import pe.consultorio.citas.service.disponibilidad.Rejilla;
 /**
 Mueve una cita a otro horario conservando su identificador. No hay plazo de antelación: basta con que la cita aún no
 haya empezado. Se conservan el médico, el tipo, la duración y la modalidad; la cita vuelve a PROGRAMADA (pierde la
-confirmación) y queda un evento REPROGRAMACION con los horarios anterior y nuevo.
+confirmación) y queda un evento REPROGRAMACION con los horarios anterior y nuevo. El horario anterior se ofrece como
+oportunidad y, si el nuevo cae en un horario liberado, este queda cubierto.
 */
 @Service
 public class ReprogramacionService {
@@ -48,13 +49,14 @@ public class ReprogramacionService {
     private final BloqueoTemporalRepository bloqueos;
     private final DisponibilidadService disponibilidad;
     private final PreferenciaService preferencias;
+    private final OportunidadService oportunidadService;
     private final ConfiguracionService configuracion;
     private final Clock reloj;
 
     public ReprogramacionService(CitaRepository citas, CitaEventoRepository eventos, CuentaRepository cuentas,
             OportunidadRepository oportunidades, BloqueoTemporalRepository bloqueos,
             DisponibilidadService disponibilidad, PreferenciaService preferencias,
-            ConfiguracionService configuracion, Clock reloj) {
+            OportunidadService oportunidadService, ConfiguracionService configuracion, Clock reloj) {
         this.citas = citas;
         this.eventos = eventos;
         this.cuentas = cuentas;
@@ -62,6 +64,7 @@ public class ReprogramacionService {
         this.bloqueos = bloqueos;
         this.disponibilidad = disponibilidad;
         this.preferencias = preferencias;
+        this.oportunidadService = oportunidadService;
         this.configuracion = configuracion;
         this.reloj = reloj;
     }
@@ -133,6 +136,8 @@ public class ReprogramacionService {
         ev.setFinNuevo(nuevoFin);
         ev.setFechaHora(ahora);
         eventos.save(ev);
+        oportunidadService.liberar(c, inicioAnterior, finAnterior);
+        oportunidadService.registrarCobertura(c);
         if (actor != null) {
             bloqueos.borrarDeCuenta(actor);
         }

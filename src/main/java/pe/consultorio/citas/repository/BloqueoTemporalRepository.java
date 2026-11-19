@@ -28,4 +28,8 @@ public interface BloqueoTemporalRepository extends JpaRepository<BloqueoTemporal
     @Modifying
     @Query("delete from BloqueoTemporal b where b.cuenta.idCuenta = :idCuenta")
     int borrarDeCuenta(@Param("idCuenta") Long idCuenta);
+
+    @Modifying
+    @Query("delete from BloqueoTemporal b where b.expiraEn <= :ahora")
+    int borrarVencidos(@Param("ahora") LocalDateTime ahora);
 }

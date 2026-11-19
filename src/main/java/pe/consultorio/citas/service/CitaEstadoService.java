@@ -47,15 +47,18 @@ public class CitaEstadoService {
     private final CitaEventoRepository eventos;
     private final CuentaRepository cuentas;
     private final RegistroLlamadaRepository llamadas;
+    private final OportunidadService oportunidades;
     private final ConfiguracionService configuracion;
     private final Clock reloj;
 
     public CitaEstadoService(CitaRepository citas, CitaEventoRepository eventos, CuentaRepository cuentas,
-            RegistroLlamadaRepository llamadas, ConfiguracionService configuracion, Clock reloj) {
+            RegistroLlamadaRepository llamadas, OportunidadService oportunidades, ConfiguracionService configuracion,
+            Clock reloj) {
         this.citas = citas;
         this.eventos = eventos;
         this.cuentas = cuentas;
         this.llamadas = llamadas;
+        this.oportunidades = oportunidades;
         this.configuracion = configuracion;
         this.reloj = reloj;
     }
@@ -92,7 +95,10 @@ public class CitaEstadoService {
         eventos.save(e);
     }
 
-    /** El paciente cancela hasta la hora de inicio. Si la registra el personal, el motivo es obligatorio. */
+    /**
+    El paciente cancela hasta la hora de inicio. Si la registra el personal, el motivo es obligatorio. El horario
+    liberado se registra como oportunidad para ofrecerlo a otros pacientes.
+    */
     @Transactional
     public void cancelarPorPaciente(Long idCita, Long actor, String motivo) {
         Cita c = cita(idCita, actor);
@@ -103,6 +109,7 @@ public class CitaEstadoService {
         exigirEstado(c, VIGENTES, "Esta cita ya no se puede cancelar.");
         exigirPlazo(c, Transicion.CANCELADA_POR_PACIENTE, "cancelar esta cita");
         cambiar(c, EstadoCita.CANCELADA_POR_PACIENTE, actor, motivo);
+        oportunidades.liberar(c, c.getInicio(), c.getFin());
     }
 
     /** El consultorio cancela (médico, recepción o administrador), siempre con motivo. */
@@ -114,6 +121,7 @@ public class CitaEstadoService {
         }
         exigirEstado(c, VIGENTES, "Esta cita ya no se puede cancelar.");
         cambiar(c, EstadoCita.CANCELADA_POR_CLINICA, actor, motivo);
+        oportunidades.liberar(c, c.getInicio(), c.getFin());
     }
 
     /** Recepción registra que el paciente llegó (desde 30 minutos antes hasta el fin del día). */
@@ -227,6 +235,11 @@ public class CitaEstadoService {
         e.setInicioNuevo(inicio);
         e.setFinNuevo(finNuevo);
         eventos.save(e);
+        if (finNuevo.isBefore(finAnterior)) {
+            oportunidades.liberar(c, finNuevo, finAnterior);
+        } else {
+            oportunidades.registrarCobertura(c);
+        }
     }
 
     /** Indicaciones del médico, que verá el paciente. */
