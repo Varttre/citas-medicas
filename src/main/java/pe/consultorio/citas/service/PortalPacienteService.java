@@ -1,6 +1,7 @@
 package pe.consultorio.citas.service;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -8,11 +9,19 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.consultorio.citas.dto.CitaPaciente;
+import pe.consultorio.citas.dto.CitaReprogramable;
 import pe.consultorio.citas.dto.MedicoOpcion;
+import pe.consultorio.citas.dto.PreferenciaDatos;
 import pe.consultorio.citas.entity.Cita;
+import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCita;
+import pe.consultorio.citas.entity.Paciente;
+import pe.consultorio.citas.exception.RecursoNoEncontradoException;
+import pe.consultorio.citas.exception.ReglaNegocioException;
 import pe.consultorio.citas.repository.CitaRepository;
+import pe.consultorio.citas.repository.CuentaRepository;
 import pe.consultorio.citas.repository.MedicoEspecialidadRepository;
+import pe.consultorio.citas.repository.PreferenciaDisponibilidadRepository;
 
 /** Consultas del portal del paciente: médicos para agendar y sus citas. */
 @Service
@@ -21,13 +30,50 @@ public class PortalPacienteService {
 
     private final MedicoEspecialidadRepository medicoEspecialidades;
     private final CitaRepository citas;
+    private final CuentaRepository cuentas;
+    private final PreferenciaDisponibilidadRepository preferencias;
     private final Clock reloj;
 
     public PortalPacienteService(MedicoEspecialidadRepository medicoEspecialidades, CitaRepository citas,
-            Clock reloj) {
+            CuentaRepository cuentas, PreferenciaDisponibilidadRepository preferencias, Clock reloj) {
         this.medicoEspecialidades = medicoEspecialidades;
         this.citas = citas;
+        this.cuentas = cuentas;
+        this.preferencias = preferencias;
         this.reloj = reloj;
+    }
+
+    /**
+    La cita que la cuenta quiere reprogramar. La cuenta la ve si es de su paciente propio o si ella la agendó; si
+    no, se trata como inexistente (404). Solo se reprograma una cita programada o confirmada que aún no empieza.
+    */
+    @Transactional(readOnly = true)
+    public CitaReprogramable reprogramable(Long idCuenta, Long idCita) {
+        Cuenta cuenta = cuentas.findById(idCuenta)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Cuenta inexistente " + idCuenta));
+        Cita c = citas.findById(idCita)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Cita inexistente " + idCita));
+        boolean propia = cuenta.getPacientePropio() != null
+            && c.getPaciente().getIdPaciente().equals(cuenta.getPacientePropio().getIdPaciente());
+        boolean agendadaPorMi = c.getCuentaTitular() != null && c.getCuentaTitular().getIdCuenta().equals(idCuenta);
+        if (!propia && !agendadaPorMi) {
+            throw new RecursoNoEncontradoException("Cita " + idCita + " de otro paciente");
+        }
+        if (!fila(c, LocalDateTime.now(reloj)).cancelable()) {
+            throw new ReglaNegocioException("Esta cita ya no se puede reprogramar.");
+        }
+        PreferenciaDatos preferencia = preferencias.findByCitaIdCita(idCita)
+            .filter(p -> p.getRevocadoEn() == null)
+            .map(p -> new PreferenciaDatos(p.getAlcance(), p.getMinLlegadaMin(), p.getDiasPrevios()))
+            .orElse(null);
+        Paciente contacto = c.getCuentaTitular() != null && c.getCuentaTitular().getPacientePropio() != null
+            ? c.getCuentaTitular().getPacientePropio() : c.getPaciente();
+        return new CitaReprogramable(c.getIdCita(), c.getMedico().getIdMedico(),
+            c.getMedico().getNombres() + " " + c.getMedico().getApellidos(), c.getEspecialidad().getNombre(),
+            c.getTipoConsulta().getNombre(), (int) Duration.between(c.getInicio(), c.getFin()).toMinutes(),
+            c.getModalidad(), c.getInicio(), c.getFin(),
+            c.getPaciente().getNombres() + " " + c.getPaciente().getApellidos(),
+            PacienteService.textoEstado(c.getEstado()), contacto.getTelefono(), preferencia);
     }
 
     /** Médicos activos que atienden la especialidad (o todos, si no se indica), por nombre. */
