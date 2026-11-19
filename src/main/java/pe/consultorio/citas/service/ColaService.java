@@ -1,6 +1,7 @@
 package pe.consultorio.citas.service;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.consultorio.citas.dto.CupoLiberado;
 import pe.consultorio.citas.dto.FilaCola;
 import pe.consultorio.citas.entity.Cita;
 import pe.consultorio.citas.entity.Oportunidad;
@@ -78,6 +80,18 @@ public class ColaService {
     /** Horarios liberados abiertos, los más próximos primero, con cuántos candidatos tiene cada uno. */
     public List<FilaCola> cupos() {
         return oportunidades.abiertas().stream().map(this::filaCupo).toList();
+    }
+
+    /** Horarios liberados abiertos con su duración, cuánto falta para que empiecen y cuántos candidatos tienen. */
+    public List<CupoLiberado> cuposLiberados() {
+        LocalDateTime ahora = LocalDateTime.now(reloj);
+        return oportunidades.abiertas().stream()
+            .map(o -> new CupoLiberado(o.getIdOportunidad(),
+                nombre(o.getMedico().getNombres(), o.getMedico().getApellidos()), o.getInicio(), o.getFin(),
+                Duration.between(o.getInicio(), o.getFin()).toMinutes(),
+                Duration.between(ahora, o.getInicio()).toMinutes(),
+                candidatos.candidatos(o.getIdOportunidad()).size()))
+            .toList();
     }
 
     private FilaCola filaConfirmacion(Cita c) {
