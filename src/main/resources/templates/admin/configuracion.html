@@ -11,152 +11,221 @@
     <main class="container-xl p-3 p-lg-4">
       <div th:replace="~{fragmentos/base :: mensajes}"></div>
 
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div><h1 class="h3 mb-0">Configuración</h1><p class="text-body-secondary mb-0">Parámetros que gobiernan el cálculo de horarios y las colas</p></div>
-        <div class="d-flex gap-2"><button class="btn btn-outline-secondary">Descartar</button><button class="btn btn-primary">Guardar cambios</button></div>
+      <div th:if="${confirmarTipo}" class="alert alert-warning">
+        <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle me-1"></i>
+          Hay <span th:text="${confirmarCitas}">3</span> citas futuras de este tipo</div>
+        <div class="small mb-2">Si lo desactivas, ya no se podrá elegir para citas nuevas. Las citas ya agendadas no cambian.</div>
+        <ul class="small mb-2">
+          <li th:each="c : ${confirmarProximas}"
+              th:text="|${#temporals.format(c.inicio, 'dd/MM HH:mm')} · ${c.paciente.nombres} ${c.paciente.apellidos} · Dr(a). ${c.medico.apellidos}|">12/11 09:00 · Paciente</li>
+        </ul>
+        <form th:action="@{/admin/configuracion/tipos/{id}/desactivar(id=${confirmarTipo})}" method="post" class="d-inline">
+          <button class="btn btn-sm btn-warning">Desactivar igualmente</button>
+        </form>
+        <a th:href="@{/admin/configuracion(pestana='tipos')}" class="btn btn-sm btn-outline-secondary ms-1">Cancelar</a>
+      </div>
+
+      <div class="mb-4">
+        <h1 class="h3 mb-0">Configuración</h1>
+        <p class="text-body-secondary mb-0">Parámetros que gobiernan el cálculo de horarios y las colas. Cada sección se guarda por separado.</p>
       </div>
       <ul class="nav nav-tabs mb-4">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tipos">Tipos de consulta</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#globales">Parámetros globales</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#plazos">Plazos por estado</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#catalogos">Catálogos</button></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${pestana == 'tipos'} ? 'active'" th:href="@{/admin/configuracion(pestana='tipos')}">Tipos de consulta</a></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${pestana == 'parametros'} ? 'active'" th:href="@{/admin/configuracion(pestana='parametros')}">Parámetros globales</a></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${pestana == 'plazos'} ? 'active'" th:href="@{/admin/configuracion(pestana='plazos')}">Plazos por estado</a></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${pestana == 'catalogos'} ? 'active'" th:href="@{/admin/configuracion(pestana='catalogos')}">Catálogos</a></li>
       </ul>
-      <div class="tab-content">
-        <div class="tab-pane fade show active" id="tipos">
-          <div class="card shadow-sm"><div class="table-responsive">
-            <table class="table align-middle mb-0">
-              <thead class="table-light"><tr><th>Tipo</th><th>Duración por defecto</th><th>Incremento</th><th>Quién ajusta la duración</th><th class="text-center">Reservable por web</th><th>Modalidad</th><th>Estado</th><th></th></tr></thead>
-              <tbody>
-              <tr class=""><td class="fw-semibold">Primera cita</td><td>45 min</td><td>Global (15)</td><td>Médico y recepción</td><td class="text-center"><span class="text-body-tertiary">—</span></td><td>Ambas</td>
-                <td><span class="badge text-bg-success">Activo</span></td>
-                <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td></tr>
-              <tr class=""><td class="fw-semibold">Seguimiento</td><td>30 min</td><td>Global (15)</td><td>Médico y recepción</td><td class="text-center"><i class="bi bi-check-lg text-success"></i></td><td>Ambas</td>
-                <td><span class="badge text-bg-success">Activo</span></td>
-                <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td></tr>
-              <tr class=""><td class="fw-semibold">Consulta</td><td>30 min</td><td>Global (15)</td><td>Médico y recepción</td><td class="text-center"><i class="bi bi-check-lg text-success"></i></td><td>Ambas</td>
-                <td><span class="badge text-bg-success">Activo</span></td>
-                <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td></tr>
-              <tr class=""><td class="fw-semibold">Procedimiento menor</td><td>60 min</td><td>Global (15)</td><td>Médico</td><td class="text-center"><span class="text-body-tertiary">—</span></td><td>Presencial</td>
-                <td><span class="badge text-bg-success">Activo</span></td>
-                <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td></tr>
-              <tr class="text-body-secondary"><td class="fw-semibold">Ambulatorio</td><td>30 min</td><td>Global (15)</td><td>Recepción</td><td class="text-center"><span class="text-body-tertiary">—</span></td><td>Presencial</td>
-                <td><span class="badge text-bg-light border">Inactivo</span></td>
-                <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Editar</button></td></tr></tbody>
-            </table>
-          </div></div>
-          <button class="btn btn-outline-primary mt-3"><i class="bi bi-plus-lg me-1"></i>Nuevo tipo de consulta</button>
 
-        </div>
+      <!-- ============================================================ Tipos de consulta -->
+      <div th:if="${pestana == 'tipos'}">
+        <div class="card shadow-sm"><div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light"><tr><th>Tipo</th><th>Duración por defecto</th><th>Incremento</th><th>Quién ajusta la duración</th><th class="text-center">Reservable por web</th><th>Modalidad</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+            <th:block th:each="t : ${tipos}">
+              <tr th:classappend="${!t.activo} ? 'text-body-secondary'">
+                <td class="fw-semibold" th:text="${t.nombre}">Consulta</td>
+                <td th:text="|${t.duracionDefecto} min|">30 min</td>
+                <td th:text="${t.incrementoMin != null} ? |${t.incrementoMin} min| : |Global (${p.incrementoMin})|">Global (15)</td>
+                <td th:text="${t.ajusteMedico and t.ajusteRecepcion} ? 'Médico y recepción' : (${t.ajusteMedico} ? 'Médico' : (${t.ajusteRecepcion} ? 'Recepción' : 'Solo el administrador'))">Médico y recepción</td>
+                <td class="text-center"><i th:if="${t.reservableWeb}" class="bi bi-check-lg text-success"></i><span th:unless="${t.reservableWeb}" class="text-body-tertiary">—</span></td>
+                <td th:text="${t.modalidadPermitida.name() == 'AMBAS'} ? 'Ambas' : (${t.modalidadPermitida.name() == 'PRESENCIAL'} ? 'Presencial' : 'Teleconsulta')">Ambas</td>
+                <td><span th:if="${t.activo}" class="badge text-bg-success">Activo</span><span th:unless="${t.activo}" class="badge text-bg-light border">Inactivo</span></td>
+                <td class="text-end"><button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" th:attr="data-bs-target='#tipo-' + ${t.idTipoConsulta}">Editar</button></td>
+              </tr>
+              <tr class="collapse" th:id="|tipo-${t.idTipoConsulta}|">
+                <td colspan="8" class="bg-body-tertiary">
+                  <div th:replace="~{admin/configuracion :: formTipo(${t}, @{/admin/configuracion/tipos/{id}(id=${t.idTipoConsulta})})}"></div>
+                </td>
+              </tr>
+            </th:block>
+            </tbody>
+          </table>
+        </div></div>
+        <button class="btn btn-outline-primary mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#tipo-nuevo"><i class="bi bi-plus-lg me-1"></i>Nuevo tipo de consulta</button>
+        <div class="collapse mt-3" id="tipo-nuevo"><div class="card card-body shadow-sm">
+          <div th:replace="~{admin/configuracion :: formTipo(null, @{/admin/configuracion/tipos})}"></div>
+        </div></div>
+      </div>
 
-        <div class="tab-pane fade" id="globales">
-          <div class="card shadow-sm"><div class="card-body pt-2"><h2 class="h6 text-body-secondary text-uppercase small mt-2">Oferta de horarios</h2>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Incremento de duración</div><div class="small text-body-secondary">Base de la rejilla: todas las horas y duraciones son múltiplos de este valor.</div></div>
-                <div class="col-md-5"><select class="form-select" style="max-width:14rem"><option selected>15 min</option></select><div class="small text-body-secondary mt-1">Fijado en 15 min por el esquema de la base de datos.</div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Política de protección de bloques</div><div class="small text-body-secondary">Evita que una consulta corta ocupe el último bloque largo del día. «Blanda» solo lo deja para el final si hay otras opciones.</div></div>
-                <div class="col-md-5"><select class="form-select" style="max-width:14rem"><option >Nunca</option><option selected>Blanda</option><option >Dura</option></select></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Minutos protegidos por día</div><div class="small text-body-secondary">Tamaño del bloque que se intenta reservar para consultas largas. No aplica si la política es «Nunca».</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="120"><span class="input-group-text">min</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Ventana de liberación</div><div class="small text-body-secondary">Faltando menos de este tiempo, el bloque deja de protegerse y se ofrece a todos.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="48"><span class="input-group-text">horas</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Bloqueo temporal del horario</div><div class="small text-body-secondary">Cuánto se reserva un horario mientras el usuario termina de agendar. No garantiza exclusividad: eso lo hace la base de datos.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="5"><span class="input-group-text">min</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Hueco mínimo útil</div><div class="small text-body-secondary">No se configura: es la duración más corta entre los tipos activos. Un sobrante menor se considera inaprovechable.</div></div>
-                <div class="col-md-5"><span class="badge text-bg-light border fs-6">30 min</span></div>
-              </div><h2 class="h6 text-body-secondary text-uppercase small mt-4">Estimación de duración</h2>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Citas de la ventana de estimación</div><div class="small text-body-secondary">Mínimo de citas cerradas para sugerir una duración, y tamaño de la ventana móvil.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="30"><span class="input-group-text">citas</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Días de «Recordar después»</div><div class="small text-body-secondary">Cuánto tiempo se oculta una sugerencia de duración que el médico pospuso.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="7"><span class="input-group-text">días</span></div></div>
-              </div><h2 class="h6 text-body-secondary text-uppercase small mt-4">Colas y citas</h2>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Anticipación de la cola de confirmación</div><div class="small text-body-secondary">Con cuántas horas de antelación una cita entra a la cola de llamadas de confirmación.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="48"><span class="input-group-text">horas</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Vigencia de una cita indicada</div><div class="small text-body-secondary">Cuánto dura por defecto la indicación de siguiente cita antes de vencer.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="90"><span class="input-group-text">días</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Penalización por cancelación tardía</div><div class="small text-body-secondary">Si el paciente ve un aviso de penalización al cancelar, y su texto.</div></div>
-                <div class="col-md-5"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="pen"><label class="form-check-label" for="pen">Mostrar aviso</label></div><input class="form-control form-control-sm" placeholder="Texto del aviso" disabled></div>
-              </div><h2 class="h6 text-body-secondary text-uppercase small mt-4">Portal del paciente</h2>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Tipo de consulta por defecto en el portal</div><div class="small text-body-secondary">Con qué tipo continúa el paciente cuando elige «Agendar una consulta nueva». Debe ser reservable por web.</div></div>
-                <div class="col-md-5"><select class="form-select" style="max-width:14rem"><option selected>Consulta</option><option >Seguimiento</option></select></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Número de WhatsApp del consultorio</div><div class="small text-body-secondary">Al que abre el botón de WhatsApp del portal. Si se deja vacío, el botón no se muestra.</div></div>
-                <div class="col-md-5"><input class="form-control" style="max-width:14rem" placeholder="+51 9XX XXX XXX"></div>
-              </div><h2 class="h6 text-body-secondary text-uppercase small mt-4">Seguridad</h2>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Intentos fallidos de inicio de sesión</div><div class="small text-body-secondary">Tras este número de intentos la cuenta se bloquea temporalmente.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="5"><span class="input-group-text">intentos</span></div></div>
-              </div>
-              <div class="row g-2 py-3 border-bottom align-items-center">
-                <div class="col-md-7"><div class="fw-semibold">Duración del bloqueo por intentos</div><div class="small text-body-secondary">Tiempo que la cuenta queda bloqueada.</div></div>
-                <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" class="form-control" value="15"><span class="input-group-text">min</span></div></div>
-              </div>
-          </div></div>
-        </div>
+      <!-- ============================================================ Parámetros globales -->
+      <form th:if="${pestana == 'parametros'}" th:action="@{/admin/configuracion/parametros}" method="post">
+        <div class="card shadow-sm"><div class="card-body pt-2">
+          <h2 class="h6 text-body-secondary text-uppercase small mt-2">Oferta de horarios</h2>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Incremento de duración</div><div class="small text-body-secondary">Base de la rejilla: todas las horas y duraciones son múltiplos de este valor.</div></div>
+            <div class="col-md-5"><span class="badge text-bg-light border fs-6" th:text="|${p.incrementoMin} min|">15 min</span><div class="small text-body-secondary mt-1">Fijo: cambiarlo movería las horas de las citas ya agendadas.</div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Política de protección de bloques</div><div class="small text-body-secondary">Evita que una consulta corta ocupe el último bloque largo del día.</div></div>
+            <div class="col-md-5"><span class="badge text-bg-light border fs-6">Nunca</span><div class="small text-body-secondary mt-1">La protección de bloques no forma parte de esta versión.</div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Minutos protegidos por día</div><div class="small text-body-secondary">Tamaño del bloque que se intenta reservar para consultas largas. No aplica si la política es «Nunca».</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="minutosProtegidos" class="form-control" min="0" max="480" th:value="${p.minutosProtegidos}" required><span class="input-group-text">min</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Ventana de liberación</div><div class="small text-body-secondary">Faltando menos de este tiempo, el bloque deja de protegerse y se ofrece a todos.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="ventanaLiberacionH" class="form-control" min="0" max="168" th:value="${p.ventanaLiberacionH}" required><span class="input-group-text">horas</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Bloqueo temporal del horario</div><div class="small text-body-secondary">Cuánto se reserva un horario mientras el usuario termina de agendar. No garantiza exclusividad: eso lo hace la base de datos.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="bloqueoTemporalMin" class="form-control" min="1" max="30" th:value="${p.bloqueoTemporalMin}" required><span class="input-group-text">min</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Hueco mínimo útil</div><div class="small text-body-secondary">No se configura: es la duración más corta entre los tipos activos. Un sobrante menor se considera inaprovechable.</div></div>
+            <div class="col-md-5"><span class="badge text-bg-light border fs-6" th:text="|${huecoMinimo} min|">30 min</span></div>
+          </div>
 
-        <div class="tab-pane fade" id="plazos">
-          <div class="card shadow-sm"><div class="table-responsive">
-            <table class="table align-middle mb-0">
-              <thead class="table-light"><tr><th>Transición</th><th>Desde</th><th>Hasta</th></tr></thead>
-              <tbody><tr><td class="fw-semibold">→ No asistió</td><td style="min-width:14rem"><div class="input-group input-group-sm"><span class="input-group-text">desde</span><input class="form-control" value="5"><span class="input-group-text">min después</span></div></td><td>Fin del día</td></tr><tr><td class="fw-semibold">→ Cancelada por el paciente</td><td style="min-width:14rem">Siempre</td><td><div class="input-group input-group-sm"><span class="input-group-text">hasta</span><input class="form-control" value="0"><span class="input-group-text">min antes</span></div></td></tr><tr><td class="fw-semibold">→ Cancelada por la clínica</td><td style="min-width:14rem">Siempre</td><td>Sin límite</td></tr><tr><td class="fw-semibold">→ Confirmada</td><td style="min-width:14rem">Al entrar a la cola</td><td>Hora de inicio</td></tr><tr><td class="fw-semibold">→ Asistió</td><td style="min-width:14rem"><div class="input-group input-group-sm"><span class="input-group-text">desde</span><input class="form-control" value="30"><span class="input-group-text">min antes</span></div></td><td>Fin del día</td></tr><tr><td class="fw-semibold">→ Realizada</td><td style="min-width:14rem">Tras «asistió»</td><td>Fin del día siguiente</td></tr><tr><td class="fw-semibold">Asistió → No asistió (se retiró)</td><td style="min-width:14rem">Tras «asistió»</td><td>Fin del día · motivo obligatorio</td></tr></tbody>
-            </table>
-          </div></div>
-          <p class="small text-body-secondary mt-2">Los minutos se cuentan respecto de la hora de inicio de la cita. «Fin del día», «fin del día siguiente» y «tras asistió» son reglas fijas del sistema.</p>
-        </div>
+          <h2 class="h6 text-body-secondary text-uppercase small mt-4">Estimación de duración</h2>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Citas de la ventana de estimación</div><div class="small text-body-secondary">Mínimo de citas cerradas para sugerir una duración, y tamaño de la ventana móvil.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="nVentanaEstimacion" class="form-control" min="1" max="200" th:value="${p.NVentanaEstimacion}" required><span class="input-group-text">citas</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Días de «Recordar después»</div><div class="small text-body-secondary">Cuánto tiempo se oculta una sugerencia de duración que el médico pospuso.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="diasRecordarSugerencia" class="form-control" min="1" max="90" th:value="${p.diasRecordarSugerencia}" required><span class="input-group-text">días</span></div></div>
+          </div>
 
-        <div class="tab-pane fade" id="catalogos">
-          <div class="row g-4">
-            <div class="col-lg-5">
-              <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center"><span class="fw-semibold">Especialidades</span><button class="btn btn-sm btn-outline-primary">Agregar</button></div>
-                <ul class="list-group list-group-flush">
-                  <li class="list-group-item d-flex justify-content-between">Cardiología<span class="badge text-bg-success">Activa</span></li>
-                  <li class="list-group-item d-flex justify-content-between">Dermatología<span class="badge text-bg-success">Activa</span></li>
-                  <li class="list-group-item d-flex justify-content-between">Ginecología<span class="badge text-bg-success">Activa</span></li>
-                  <li class="list-group-item d-flex justify-content-between">Medicina General<span class="badge text-bg-success">Activa</span></li>
-                  <li class="list-group-item d-flex justify-content-between">Pediatría<span class="badge text-bg-success">Activa</span></li>
-                </ul>
-              </div>
+          <h2 class="h6 text-body-secondary text-uppercase small mt-4">Colas y citas</h2>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Anticipación de la cola de confirmación</div><div class="small text-body-secondary">Con cuántas horas de antelación una cita entra a la cola de llamadas de confirmación.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="anticipacionConfirmH" class="form-control" min="0" max="168" th:value="${p.anticipacionConfirmH}" required><span class="input-group-text">horas</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Vigencia de una cita indicada</div><div class="small text-body-secondary">Cuánto dura por defecto la indicación de siguiente cita antes de vencer.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="vigenciaIndicadaDias" class="form-control" min="1" max="365" th:value="${p.vigenciaIndicadaDias}" required><span class="input-group-text">días</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Penalización por cancelación tardía</div><div class="small text-body-secondary">Si el paciente ve un aviso de penalización al cancelar, y su texto.</div></div>
+            <div class="col-md-5">
+              <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="pen" name="mostrarPenalizacion" value="true" th:checked="${p.mostrarPenalizacion}"><label class="form-check-label" for="pen">Mostrar aviso</label></div>
+              <input class="form-control form-control-sm" name="textoPenalizacion" maxlength="255" placeholder="Texto del aviso" th:value="${p.textoPenalizacion}">
             </div>
-            <div class="col-lg-7">
-              <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center"><span class="fw-semibold">Avisos del portal</span><button class="btn btn-sm btn-outline-primary">Nuevo aviso</button></div>
-                <div class="card-body">
-                  <div class="row g-2 mb-3">
-                    <div class="col-12"><label class="form-label small">Título</label><input class="form-control form-control-sm" value="Despistaje gratuito de hipertensión"></div>
-                    <div class="col-12"><label class="form-label small">Texto <span class="text-body-secondary">(máx. 300 caracteres)</span></label><textarea class="form-control form-control-sm" rows="2" maxlength="300">Del 16 al 21 de noviembre, toma de presión sin costo para pacientes registrados.</textarea></div>
-                    <div class="col-md-6"><label class="form-label small">Imagen del banner</label><input type="file" class="form-control form-control-sm"></div>
-                    <div class="col-md-6"><label class="form-label small">Enlace de «Conocer más»</label><input class="form-control form-control-sm" placeholder="https://"></div>
-                  </div>
-                  <table class="table table-sm small mb-0">
-                    <tbody>
-                      <tr><td>Despistaje gratuito de hipertensión</td><td><span class="badge text-bg-success">Visible</span></td></tr>
-                      <tr><td>Atención los sábados por la mañana</td><td><span class="badge text-bg-success">Visible</span></td></tr>
-                      <tr><td>Teleconsulta en más especialidades</td><td><span class="badge text-bg-success">Visible</span></td></tr>
-                      <tr><td>Campaña de vacunación de octubre</td><td><span class="badge text-bg-light border">Oculto</span></td></tr>
-                    </tbody>
-                  </table>
+          </div>
+
+          <h2 class="h6 text-body-secondary text-uppercase small mt-4">Portal del paciente</h2>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Tipo de consulta por defecto en el portal</div><div class="small text-body-secondary">Con qué tipo continúa el paciente cuando elige «Agendar una consulta nueva». Debe ser reservable por web.</div></div>
+            <div class="col-md-5"><select class="form-select" name="idTipoWebDefecto" style="max-width:14rem">
+              <option th:each="t : ${tiposWeb}" th:value="${t.idTipoConsulta}" th:text="${t.nombre}" th:selected="${t.idTipoConsulta == p.tipoWebDefecto.idTipoConsulta}">Consulta</option>
+            </select></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Número de WhatsApp del consultorio</div><div class="small text-body-secondary">Al que abre el botón de WhatsApp del portal. Si se deja vacío, el botón no se muestra.</div></div>
+            <div class="col-md-5"><input class="form-control" name="whatsappNumero" maxlength="20" style="max-width:14rem" placeholder="+51 9XX XXX XXX" th:value="${p.whatsappNumero}"></div>
+          </div>
+
+          <h2 class="h6 text-body-secondary text-uppercase small mt-4">Seguridad</h2>
+          <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Intentos fallidos de inicio de sesión</div><div class="small text-body-secondary">Tras este número de intentos la cuenta se bloquea temporalmente.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="maxIntentosLogin" class="form-control" min="1" max="20" th:value="${p.maxIntentosLogin}" required><span class="input-group-text">intentos</span></div></div>
+          </div>
+          <div class="row g-2 py-3 align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Duración del bloqueo por intentos</div><div class="small text-body-secondary">Tiempo que la cuenta queda bloqueada.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="minutosBloqueoLogin" class="form-control" min="1" max="1440" th:value="${p.minutosBloqueoLogin}" required><span class="input-group-text">min</span></div></div>
+          </div>
+        </div></div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <a th:href="@{/admin/configuracion(pestana='parametros')}" class="btn btn-outline-secondary">Descartar</a>
+          <button class="btn btn-primary">Guardar parámetros</button>
+        </div>
+      </form>
+
+      <!-- ============================================================ Plazos -->
+      <form th:if="${pestana == 'plazos'}" th:action="@{/admin/configuracion/plazos}" method="post">
+        <div class="card shadow-sm"><div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light"><tr><th>Transición</th><th>Desde</th><th>Hasta</th></tr></thead>
+            <tbody>
+              <tr><td class="fw-semibold">→ No asistió</td><td style="min-width:14rem"><div class="input-group input-group-sm"><span class="input-group-text">desde</span><input type="number" name="noAsistioDespues" class="form-control" min="0" max="240" th:value="${plazoNoAsistio}" required><span class="input-group-text">min después</span></div></td><td>Fin del día</td></tr>
+              <tr><td class="fw-semibold">→ Cancelada por el paciente</td><td style="min-width:14rem">Siempre</td><td><div class="input-group input-group-sm"><span class="input-group-text">hasta</span><input type="number" name="cancelarAntes" class="form-control" min="0" max="2880" th:value="${plazoCancelar}" required><span class="input-group-text">min antes</span></div></td></tr>
+              <tr><td class="fw-semibold">→ Cancelada por la clínica</td><td style="min-width:14rem">Siempre</td><td>Sin límite</td></tr>
+              <tr><td class="fw-semibold">→ Confirmada</td><td style="min-width:14rem">Al entrar a la cola</td><td>Hora de inicio</td></tr>
+              <tr><td class="fw-semibold">→ Asistió</td><td style="min-width:14rem"><div class="input-group input-group-sm"><span class="input-group-text">desde</span><input type="number" name="llegadaAntes" class="form-control" min="0" max="240" th:value="${plazoLlegada}" required><span class="input-group-text">min antes</span></div></td><td>Fin del día</td></tr>
+              <tr><td class="fw-semibold">→ Realizada</td><td style="min-width:14rem">Tras «asistió»</td><td>Fin del día siguiente</td></tr>
+              <tr><td class="fw-semibold">Asistió → No asistió (se retiró)</td><td style="min-width:14rem">Tras «asistió»</td><td>Fin del día · motivo obligatorio</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+        <p class="small text-body-secondary mt-2">Los minutos se cuentan respecto de la hora de inicio de la cita. «Fin del día», «fin del día siguiente» y «tras asistió» son reglas fijas del sistema.</p>
+        <div class="d-flex justify-content-end"><button class="btn btn-primary">Guardar plazos</button></div>
+      </form>
+
+      <!-- ============================================================ Catálogos -->
+      <div th:if="${pestana == 'catalogos'}" class="row g-4">
+        <div class="col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center"><span class="fw-semibold">Especialidades</span>
+              <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#esp-nueva">Agregar</button></div>
+            <div class="collapse border-bottom p-3" id="esp-nueva">
+              <form th:action="@{/admin/configuracion/especialidades}" method="post" class="row g-2">
+                <div class="col-12"><input class="form-control form-control-sm" name="nombre" maxlength="80" placeholder="Nombre" required></div>
+                <div class="col-12"><input class="form-control form-control-sm" name="descripcion" maxlength="255" placeholder="Descripción (opcional)"></div>
+                <input type="hidden" name="activo" value="true">
+                <div class="col-12 text-end"><button class="btn btn-sm btn-primary">Crear especialidad</button></div>
+              </form>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item" th:each="e : ${especialidades}">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span th:text="${e.nombre}" th:classappend="${!e.activo} ? 'text-body-secondary'">Cardiología</span>
+                  <span>
+                    <span th:if="${e.activo}" class="badge text-bg-success">Activa</span><span th:unless="${e.activo}" class="badge text-bg-light border">Inactiva</span>
+                    <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" th:attr="data-bs-target='#esp-' + ${e.idEspecialidad}">Editar</button>
+                  </span>
+                </div>
+                <form class="collapse row g-2 mt-1" th:id="|esp-${e.idEspecialidad}|" th:action="@{/admin/configuracion/especialidades/{id}(id=${e.idEspecialidad})}" method="post">
+                  <div class="col-12"><input class="form-control form-control-sm" name="nombre" maxlength="80" th:value="${e.nombre}" required></div>
+                  <div class="col-12"><input class="form-control form-control-sm" name="descripcion" maxlength="255" th:value="${e.descripcion}" placeholder="Descripción (opcional)"></div>
+                  <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="activo" value="true" th:id="|esp-activo-${e.idEspecialidad}|" th:checked="${e.activo}"><label class="form-check-label small" th:for="|esp-activo-${e.idEspecialidad}|">Activa</label></div></div>
+                  <div class="col-6 text-end"><button class="btn btn-sm btn-primary">Guardar</button></div>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center"><span class="fw-semibold">Avisos del portal</span>
+              <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#aviso-nuevo">Nuevo aviso</button></div>
+            <div class="collapse border-bottom p-3" id="aviso-nuevo">
+              <div th:replace="~{admin/configuracion :: formAviso(null, @{/admin/configuracion/avisos})}"></div>
+            </div>
+            <div class="list-group list-group-flush">
+              <div class="list-group-item" th:each="a : ${avisos}">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span th:text="${a.titulo}">Despistaje gratuito</span>
+                  <span>
+                    <span th:if="${a.activo}" class="badge text-bg-success">Visible</span><span th:unless="${a.activo}" class="badge text-bg-light border">Oculto</span>
+                    <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" th:attr="data-bs-target='#aviso-' + ${a.idAviso}">Editar</button>
+                  </span>
+                </div>
+                <div class="collapse mt-2" th:id="|aviso-${a.idAviso}|">
+                  <div th:replace="~{admin/configuracion :: formAviso(${a}, @{/admin/configuracion/avisos/{id}(id=${a.idAviso})})}"></div>
                 </div>
               </div>
+              <div class="list-group-item text-body-secondary small" th:if="${#lists.isEmpty(avisos)}">Aún no hay avisos.</div>
             </div>
           </div>
         </div>
@@ -165,6 +234,44 @@
   </div>
 </div>
 
+<!-- Fragmentos de formulario: no se muestran solos, los usan las pestañas de arriba. -->
+<th:block th:if="${false}">
+<!-- Formulario de un tipo de consulta (nuevo si t es null). -->
+<form th:fragment="formTipo(t, accion)" th:action="${accion}" method="post" class="row g-2 align-items-end">
+  <div class="col-md-4"><label class="form-label small">Nombre</label><input class="form-control form-control-sm" name="nombre" maxlength="60" th:value="${t?.nombre}" required></div>
+  <div class="col-6 col-md-2"><label class="form-label small">Duración por defecto</label>
+    <select class="form-select form-select-sm" name="duracionDefecto">
+      <option th:each="d : ${duraciones}" th:value="${d}" th:text="|${d} min|" th:selected="${t != null ? d == t.duracionDefecto : d == 30}">30 min</option>
+    </select></div>
+  <div class="col-6 col-md-2"><label class="form-label small">Incremento</label>
+    <select class="form-select form-select-sm" name="incrementoMin">
+      <option value="" th:text="|Global (${p.incrementoMin})|">Global</option>
+      <option th:each="i : ${incrementos}" th:value="${i}" th:text="|${i} min|" th:selected="${t != null and t.incrementoMin != null and i == t.incrementoMin}">15 min</option>
+    </select></div>
+  <div class="col-md-4"><label class="form-label small">Modalidad</label>
+    <select class="form-select form-select-sm" name="modalidadPermitida">
+      <option th:each="m : ${modalidades}" th:value="${m}" th:selected="${t != null ? m == t.modalidadPermitida : m.name() == 'AMBAS'}"
+              th:text="${m.name() == 'AMBAS'} ? 'Ambas' : (${m.name() == 'PRESENCIAL'} ? 'Presencial' : 'Teleconsulta')">Ambas</option>
+    </select></div>
+  <div class="col-12 d-flex flex-wrap gap-3 small">
+    <div class="form-check"><input class="form-check-input" type="checkbox" name="ajusteMedico" value="true" th:checked="${t == null or t.ajusteMedico}"><label class="form-check-label">El médico ajusta la duración</label></div>
+    <div class="form-check"><input class="form-check-input" type="checkbox" name="ajusteRecepcion" value="true" th:checked="${t == null or t.ajusteRecepcion}"><label class="form-check-label">Recepción ajusta la duración</label></div>
+    <div class="form-check"><input class="form-check-input" type="checkbox" name="reservableWeb" value="true" th:checked="${t != null and t.reservableWeb}"><label class="form-check-label">Reservable por web</label></div>
+    <div class="form-check"><input class="form-check-input" type="checkbox" name="activo" value="true" th:checked="${t == null or t.activo}"><label class="form-check-label">Activo</label></div>
+    <button class="btn btn-sm btn-primary ms-auto" th:text="${t == null} ? 'Crear tipo' : 'Guardar'">Guardar</button>
+  </div>
+</form>
+
+<!-- Formulario de un aviso del portal (nuevo si a es null). -->
+<form th:fragment="formAviso(a, accion)" th:action="${accion}" method="post" class="row g-2">
+  <div class="col-12"><label class="form-label small">Título</label><input class="form-control form-control-sm" name="titulo" maxlength="100" th:value="${a?.titulo}" required></div>
+  <div class="col-12"><label class="form-label small">Texto <span class="text-body-secondary">(máx. 300 caracteres)</span></label><textarea class="form-control form-control-sm" name="texto" rows="2" maxlength="300" required th:text="${a?.texto}"></textarea></div>
+  <div class="col-md-6"><label class="form-label small">Dirección de la imagen del banner</label><input class="form-control form-control-sm" name="bannerUrl" maxlength="255" placeholder="https://" th:value="${a?.bannerUrl}" required></div>
+  <div class="col-md-6"><label class="form-label small">Enlace de «Conocer más»</label><input class="form-control form-control-sm" name="enlace" maxlength="255" placeholder="https://" th:value="${a?.enlace}" required></div>
+  <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="activo" value="true" th:checked="${a == null or a.activo}"><label class="form-check-label small">Visible en el portal</label></div></div>
+  <div class="col-6 text-end"><button class="btn btn-sm btn-primary" th:text="${a == null} ? 'Crear aviso' : 'Guardar'">Guardar</button></div>
+</form>
+</th:block>
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
 </body>
