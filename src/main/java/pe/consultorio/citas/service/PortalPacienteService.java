@@ -1,5 +1,7 @@
 package pe.consultorio.citas.service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -13,10 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.consultorio.citas.dto.CitaPaciente;
 import pe.consultorio.citas.dto.CitaReprogramable;
 import pe.consultorio.citas.dto.MedicoOpcion;
+import pe.consultorio.citas.dto.OpcionWhatsapp;
 import pe.consultorio.citas.dto.PreferenciaDatos;
 import pe.consultorio.citas.entity.Cita;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCita;
+import pe.consultorio.citas.entity.Paciente;
 import pe.consultorio.citas.entity.Transicion;
 import pe.consultorio.citas.exception.RecursoNoEncontradoException;
 import pe.consultorio.citas.exception.ReglaNegocioException;
@@ -158,5 +162,39 @@ public class PortalPacienteService {
             c.getTipoConsulta().getNombre(), c.getModalidad() == null ? "" : c.getModalidad().name(),
             PacienteService.textoEstado(c.getEstado()), vigente(c, ahora), tercero, c.getIndicaciones(),
             c.getIndicacionesAdmin(), preferencia, estados.ventana(c, Transicion.CANCELADA_POR_PACIENTE).hasta());
+    }
+
+    /** Motivos de la pantalla de WhatsApp y el texto que añaden al mensaje. «Otro» pide un agente. */
+    private static final Map<String, String> MOTIVOS_WHATSAPP = new LinkedHashMap<>();
+    static {
+        MOTIVOS_WHATSAPP.put("Consultar horarios de atención", "Deseo consultar los horarios de atención.");
+        MOTIVOS_WHATSAPP.put("Consultar especialidades y médicos", "Deseo consultar las especialidades y los médicos.");
+        MOTIVOS_WHATSAPP.put("Consultar tarifas", "Deseo consultar las tarifas.");
+        MOTIVOS_WHATSAPP.put("Problemas con mi cuenta", "Tengo un problema con mi cuenta.");
+        MOTIVOS_WHATSAPP.put("Otro", "Deseo contactar con un agente.");
+    }
+
+    /**
+    Opciones de WhatsApp para la cuenta: cada una abre wa.me con un mensaje que ya trae su nombre y documento. Lista
+    vacía si el consultorio no configuró un número.
+    */
+    @Transactional(readOnly = true)
+    public List<OpcionWhatsapp> whatsapp(Long idCuenta, String numero) {
+        if (numero == null || numero.isBlank()) {
+            return List.of();
+        }
+        Cuenta cuenta = cuentas.findById(idCuenta)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Cuenta inexistente " + idCuenta));
+        Paciente p = cuenta.getPacientePropio();
+        String saludo = p == null ? "Hola." : "Hola, soy " + p.getNombres() + " " + p.getApellidos() + " ("
+            + p.getTipoDocumento() + " " + p.getNroDocumento() + ").";
+        String digitos = numero.replaceAll("\\D", "");
+        return MOTIVOS_WHATSAPP.entrySet().stream()
+            .map(e -> {
+                String mensaje = saludo + " " + e.getValue();
+                return new OpcionWhatsapp(e.getKey(), mensaje, "https://wa.me/" + digitos + "?text="
+                    + URLEncoder.encode(mensaje, StandardCharsets.UTF_8).replace("+", "%20"));
+            })
+            .toList();
     }
 }

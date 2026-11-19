@@ -15,22 +15,20 @@
         <div><h1 class="h3 mb-0">WhatsApp del consultorio</h1><p class="text-body-secondary mb-0">Escríbenos por WhatsApp; el mensaje ya incluye tus datos</p></div>
         
       </div>
-      <div class="row g-4">
-        <div class="col-lg-6">
-          <div class="card shadow-sm"><div class="card-body p-4">
-            <h2 class="h6 mb-3">¿Sobre qué quieres consultar?</h2>
-            <div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m0" checked><label class="form-check-label" for="m0">Consultar horarios de atención</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m1" ><label class="form-check-label" for="m1">Consultar especialidades y médicos</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m2" ><label class="form-check-label" for="m2">Consultar tarifas</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m3" ><label class="form-check-label" for="m3">Problemas con mi cuenta</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="motivo" id="m4" ><label class="form-check-label" for="m4">Otro</label></div>
-            <a href="#" class="btn btn-success mt-3"><i class="bi bi-whatsapp me-1"></i>Abrir WhatsApp</a>
-          </div></div>
-        </div>
-        <div class="col-lg-6">
-          <div class="card shadow-sm"><div class="card-body p-4">
-            <h2 class="h6 mb-3">Mensaje que se enviará</h2>
-            <div class="bg-success-subtle rounded p-3">Hola, soy Lucía Vega Ríos (DNI 45812337). Deseo consultar los horarios de atención.</div>
-            <p class="small text-body-secondary mt-3 mb-0">Si eliges «Otro», el mensaje dirá «Deseo contactar con un agente».</p>
-          </div></div>
-        </div>
+      <div class="alert alert-light border" th:if="${#lists.isEmpty(opciones)}">
+        <i class="bi bi-info-circle me-1"></i>El consultorio todavía no tiene un número de WhatsApp disponible. Puedes llamar a recepción.
       </div>
+      <div class="card shadow-sm" th:unless="${#lists.isEmpty(opciones)}"><div class="card-body p-4">
+        <h2 class="h6 mb-3">¿Sobre qué quieres consultar?</h2>
+        <div class="list-group">
+          <a th:each="o : ${opciones}" th:href="${o.enlace}" target="_blank" rel="noopener" class="list-group-item list-group-item-action d-flex gap-3 align-items-start">
+            <i class="bi bi-whatsapp text-success fs-4"></i>
+            <span><span class="fw-semibold d-block" th:text="${o.motivo}">Motivo</span>
+              <span class="small text-body-secondary" th:text="|Mensaje: «${o.mensaje}»|">Mensaje</span></span>
+          </a>
+        </div>
+        <p class="small text-body-secondary mt-3 mb-0">Se abre WhatsApp con el mensaje listo; solo tienes que enviarlo.</p>
+      </div></div>
     </main>
   </div>
 </div>
