@@ -59,4 +59,14 @@ public class PreferenciaService {
                 "preferencia revocada", null);
         });
     }
+
+    /** Da por usada la preferencia de la cita: el paciente ya aceptó un cupo liberado y su cita se adelantó. */
+    @Transactional
+    public void consumir(Long idCita, Long idCuentaActor) {
+        preferencias.findByCitaIdCita(idCita).filter(p -> p.getRevocadoEn() == null).ifPresent(p -> {
+            p.setRevocadoEn(LocalDateTime.now(reloj));
+            auditoria.registrar(idCuentaActor, AccionAuditoria.PREFERENCIA_CAMBIO, "CITA", String.valueOf(idCita),
+                "preferencia consumida", "Consumida al aceptar un cupo");
+        });
+    }
 }
