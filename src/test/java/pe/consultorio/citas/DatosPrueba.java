@@ -158,6 +158,12 @@ public class DatosPrueba {
         return crearCuenta(NombreRol.PACIENTE, correo, propio);
     }
 
+    /** Cuenta del personal (recepción, administrador…) sin paciente propio. */
+    @Transactional
+    public Cuenta crearCuentaPersonal(NombreRol rol) {
+        return crearCuenta(rol, rol.name().toLowerCase() + SECUENCIA.getAndIncrement() + "@prueba.pe", null);
+    }
+
     /**
     Cita presencial del paciente con el médico, en la primera especialidad del médico y con el tipo de consulta de
     prueba. Si el estado es ASISTIO o REALIZADA, rellena las marcas de tiempo que la base exige.
