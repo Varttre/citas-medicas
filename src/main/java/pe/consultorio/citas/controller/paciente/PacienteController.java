@@ -41,15 +41,7 @@ public class PacienteController {
         return "paciente/inicio";
     }
 
-    /**
-    Nueva cita, paso 1 (¿para quién?) y paso 3 (cita indicada). Los pasos 2, 4 y 5 los atiende
-    NuevaCitaController.
-    */
-    @GetMapping("/cita/nueva")
-    public String nuevaCita() {
-        return "paciente/nueva-cita-1";
-    }
-
+    /** Nueva cita, paso 3 (cita indicada): diseño; los demás pasos los atiende NuevaCitaController. */
     @GetMapping("/cita/nueva/3")
     public String nuevaCitaIndicada() {
         return "paciente/nueva-cita-3";
