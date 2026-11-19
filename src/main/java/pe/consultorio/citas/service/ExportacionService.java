@@ -3,6 +3,7 @@ package pe.consultorio.citas.service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
@@ -23,15 +24,19 @@ public class ExportacionService {
             fuente.setBold(true);
             negrita.setFont(fuente);
 
-            Sheet h1 = hoja(libro, "Horarios recuperados", negrita, "Cubiertos", "Expirados", "% recuperado");
-            fila(h1, 1, m.cubiertas(), m.expiradas(), texto(m.recuperadosPct()));
+            Sheet h1 = hoja(libro, "Horarios recuperados", negrita, "Cubiertos", "Expirados", "% recuperado",
+                "Minutos recuperados", "Abiertos ahora");
+            fila(h1, 1, m.cubiertas(), m.expiradas(), texto(m.recuperadosPct()), m.minutosRecuperados(),
+                m.abiertasAhora());
 
             Sheet h2 = hoja(libro, "No asistencia", negrita, "Médico", "Especialidad", "Realizadas", "No asistió", "%");
             int i = 1;
             for (Metricas.NoAsistenciaMedico n : m.porMedico()) {
                 fila(h2, i++, n.medico(), n.especialidad(), n.realizadas(), n.noAsistio(), texto(n.pct()));
             }
-            fila(h2, i, "Total", "", m.realizadas(), m.noAsistio(), texto(m.noAsistenciaPct()));
+            fila(h2, i++, "Total", "", m.realizadas(), m.noAsistio(), texto(m.noAsistenciaPct()));
+            i = grupos(h2, i + 1, "Por especialidad", m.porEspecialidad(), negrita);
+            grupos(h2, i + 1, "Por hora de inicio", m.porHora(), negrita);
 
             Sheet h3 = hoja(libro, "Citas indicadas", negrita, "Agendadas", "Cerradas", "% agendadas");
             fila(h3, 1, m.indicadasAgendadas(), m.indicadasCerradas(), texto(m.indicadasPct()));
@@ -51,6 +56,22 @@ public class ExportacionService {
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo generar el Excel", e);
         }
+    }
+
+    /** Una tabla de no asistencia agrupada debajo de la principal; devuelve la siguiente fila libre. */
+    private static int grupos(Sheet h, int desde, String titulo, List<Metricas.NoAsistenciaGrupo> grupos,
+            CellStyle negrita) {
+        Row r = h.createRow(desde);
+        String[] encabezados = {titulo, "", "Realizadas", "No asistió", "%"};
+        for (int c = 0; c < encabezados.length; c++) {
+            r.createCell(c).setCellValue(encabezados[c]);
+            r.getCell(c).setCellStyle(negrita);
+        }
+        int i = desde + 1;
+        for (Metricas.NoAsistenciaGrupo g : grupos) {
+            fila(h, i++, g.grupo(), "", g.realizadas(), g.noAsistio(), texto(g.pct()));
+        }
+        return i;
     }
 
     private static Sheet hoja(XSSFWorkbook libro, String nombre, CellStyle negrita, String... encabezados) {
