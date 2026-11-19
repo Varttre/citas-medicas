@@ -33,9 +33,17 @@
               <td class="fw-semibold text-nowrap" th:text="|${#temporals.format(c.inicio, 'HH:mm')}–${#temporals.format(c.fin, 'HH:mm')}|">08:00</td>
               <td><div th:text="${c.medico}">Médico</div><div class="small text-body-secondary" th:text="${c.especialidad}">Esp</div></td>
               <td><div th:text="${c.paciente}">Paciente</div><div class="small text-body-secondary" th:text="${c.documento}">DNI</div></td>
-              <td><div th:text="${c.tipo}">Tipo</div><div class="small text-body-secondary" th:text="|${c.duracionMin()} min · ${c.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">30 min</div></td>
+              <td><div th:text="${c.tipo}">Tipo</div>
+                <div class="small text-body-secondary" th:text="|${c.duracionMin()} min · ${c.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">30 min</div>
+                <form th:if="${c.vigente() and c.ajusteRecepcion}" class="d-inline-flex gap-1 mt-1" method="post" th:action="@{/recepcion/citas/{id}/duracion(id=${c.idCita})}">
+                  <input type="hidden" name="fecha" th:value="${fecha}">
+                  <select class="form-select form-select-sm" name="nuevaDuracion" style="width:6.5rem" aria-label="Nueva duración">
+                    <option th:each="d : ${duraciones}" th:value="${d}" th:text="|${d} min|" th:selected="${d == c.duracionMin()}">30 min</option>
+                  </select>
+                  <button class="btn btn-sm btn-outline-secondary" title="Cambiar la duración">Ajustar</button></form></td>
               <td><span class="badge" th:classappend="${c.vigente()} ? 'text-bg-secondary' : (${c.asistio()} ? 'text-bg-info' : 'text-bg-light border')" th:text="${c.atencionIniciada and c.asistio()} ? 'En atención' : ${c.estado}">Programada</span></td>
               <td class="text-end text-nowrap">
+                <a th:if="${c.vigente()}" class="btn btn-sm btn-outline-primary" th:href="@{/recepcion/citas/{id}/reprogramar(id=${c.idCita})}">Reprogramar</a>
                 <form th:if="${c.vigente()}" class="d-inline" method="post" th:action="@{/recepcion/citas/{id}/llegada(id=${c.idCita})}">
                   <input type="hidden" name="fecha" th:value="${fecha}">
                   <button class="btn btn-sm btn-outline-success">Llegó</button></form>
@@ -60,7 +68,8 @@
           </tbody>
         </table>
       </div></div>
-      <p class="small text-body-secondary mt-2">La llegada se registra desde 30 minutos antes de la cita; la inasistencia, desde 5 minutos después del inicio.</p>
+      <p class="small text-body-secondary mt-2">La llegada se registra desde 30 minutos antes de la cita; la inasistencia, desde 5 minutos después del inicio.
+        Una cita reprogramada vuelve a quedar programada y hay que confirmarla otra vez. La duración solo se ajusta si el tipo de consulta lo permite a recepción.</p>
     </main>
   </div>
 </div>

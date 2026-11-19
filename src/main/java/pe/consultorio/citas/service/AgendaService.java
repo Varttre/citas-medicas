@@ -6,8 +6,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import pe.consultorio.citas.dto.CitaAgenda;
 import pe.consultorio.citas.entity.Cita;
+import pe.consultorio.citas.exception.RecursoNoEncontradoException;
 import pe.consultorio.citas.repository.CitaRepository;
 
 /** Consultas de agenda del día para recepción (todos los médicos) y para el médico (solo las suyas). */
@@ -30,6 +32,13 @@ public class AgendaService {
             .toList();
     }
 
+    /** Una cita, con los mismos datos que una fila de la agenda. */
+    @Transactional(readOnly = true)
+    public CitaAgenda una(Long idCita) {
+        return citas.findById(idCita).map(AgendaService::fila)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Cita inexistente " + idCita));
+    }
+
     /** Citas del día del médico de la sesión. */
     public List<CitaAgenda> delMedico(Long idMedico, LocalDate fecha) {
         return delDia(fecha, idMedico);
@@ -41,6 +50,7 @@ public class AgendaService {
             c.getInicio(), c.getFin(), c.getPaciente().getNombres() + " " + c.getPaciente().getApellidos(),
             c.getPaciente().getTipoDocumento() + " " + c.getPaciente().getNroDocumento(),
             c.getTipoConsulta().getNombre(), c.getModalidad().name(), c.getEstado().name(),
-            PacienteService.textoEstado(c.getEstado()), c.getInicioReal() != null);
+            PacienteService.textoEstado(c.getEstado()), c.getInicioReal() != null,
+            c.getTipoConsulta().isAjusteRecepcion());
     }
 }

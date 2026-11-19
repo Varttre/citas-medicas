@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Reprogramar cita')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('agenda')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="mb-4">
+        <h1 class="h3 mb-0">Reprogramar cita</h1>
+        <p class="text-body-secondary mb-0" th:text="|${c.paciente} · ${c.documento}|">Paciente · DNI</p>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <div class="small text-body-secondary text-uppercase fw-semibold">Horario actual</div>
+            <div class="fw-semibold" th:text="|${#temporals.format(c.inicio, 'EEEE d ''de'' MMMM, HH:mm')} a ${#temporals.format(c.fin, 'HH:mm')}|">Jueves 12, 08:30 a 09:00</div>
+            <div class="small text-body-secondary" th:text="|${c.medico} · ${c.especialidad} · ${c.tipo} · ${c.duracionMin()} min · ${c.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">Médico</div>
+          </div>
+          <span class="badge" th:classappend="${c.estadoCodigo == 'CONFIRMADA'} ? 'text-bg-success' : 'text-bg-secondary'" th:text="${c.estado}">Programada</span>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <h2 class="h5 mb-0" th:text="|Horarios libres del ${#temporals.format(fecha, 'EEEE d ''de'' MMMM')}|">Horarios libres</h2>
+            <form class="input-group" style="max-width: 16rem" th:action="@{/recepcion/citas/{id}/reprogramar(id=${c.idCita})}" method="get">
+              <input type="date" class="form-control" name="fecha" th:value="${fecha}" aria-label="Día">
+              <button class="btn btn-outline-secondary">Ver día</button>
+            </form>
+          </div>
+          <p class="small text-body-secondary">Se conservan el médico, el tipo, la duración y la modalidad. En azul, los horarios que llenan un hueco exacto de la agenda.</p>
+          <div class="d-flex flex-wrap gap-2">
+            <form th:each="o : ${ofertas}" th:action="@{/recepcion/citas/{id}/reprogramar(id=${c.idCita})}" method="post" class="m-0">
+              <input type="hidden" name="nuevoInicio" th:value="${#temporals.format(o.inicio, 'yyyy-MM-dd''T''HH:mm')}">
+              <button class="btn" th:classappend="${o.calce.name() == 'PERFECTO'} ? 'btn-primary' : 'btn-outline-primary'"
+                      th:text="${#temporals.format(o.inicio, 'HH:mm')}">09:00</button>
+            </form>
+          </div>
+          <p th:if="${#lists.isEmpty(ofertas)}" class="text-body-secondary mb-0">El médico no tiene horarios libres ese día. Prueba con otra fecha.</p>
+          <div class="mt-4">
+            <a th:href="@{/recepcion/agenda(fecha=${#temporals.format(c.inicio, 'yyyy-MM-dd')})}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver a la agenda</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>
