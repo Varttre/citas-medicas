@@ -11,11 +11,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import pe.consultorio.citas.config.UsuarioSesion;
+import pe.consultorio.citas.service.EstadisticaMedicoService;
 import pe.consultorio.citas.service.TableroMedicoService;
 
 /**
-Pantallas del portal del médico. Inicio, agenda y estadísticas muestran por ahora el diseño del prototipo con datos
-de ejemplo; se conectan a los servicios en las tareas de agenda (B9) y estadísticas (D6).
+Inicio y estadísticas del médico, siempre con las citas del médico de la sesión. La agenda y el horario tienen su
+propio controlador.
 */
 @Controller
 @RequestMapping("/medico")
@@ -26,10 +27,12 @@ public class MedicoController {
 
     private final Clock reloj;
     private final TableroMedicoService tablero;
+    private final EstadisticaMedicoService estadisticas;
 
-    public MedicoController(Clock reloj, TableroMedicoService tablero) {
+    public MedicoController(Clock reloj, TableroMedicoService tablero, EstadisticaMedicoService estadisticas) {
         this.reloj = reloj;
         this.tablero = tablero;
+        this.estadisticas = estadisticas;
     }
 
     /** Contadores de hoy, próxima cita, puntualidad y alertas, solo con las citas del médico de la sesión. */
@@ -42,8 +45,11 @@ public class MedicoController {
         return "medico/inicio";
     }
 
+    /** Solo con las citas del médico de la sesión: nunca datos de otros médicos ni comparativas. */
     @GetMapping("/estadisticas")
-    public String estadisticas() {
+    public String estadisticas(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
+        model.addAttribute("e", usuario == null || usuario.getIdMedico() == null ? null
+            : estadisticas.calcular(usuario.getIdMedico()));
         return "medico/estadisticas";
     }
 }

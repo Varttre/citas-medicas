@@ -56,4 +56,15 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     @Query("select c from Cita c join fetch c.medico join fetch c.paciente join fetch c.especialidad "
         + "where c.estado = 'PROGRAMADA' and c.inicio > :desde and c.inicio <= :hasta order by c.inicio")
     List<Cita> programadasEntre(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+
+    /** Citas del médico que empiezan en {@code [desde, hasta)}, en cualquier estado, con su tipo cargado. */
+    @Query("select c from Cita c join fetch c.tipoConsulta where c.medico.idMedico = :idMedico "
+        + "and c.inicio >= :desde and c.inicio < :hasta order by c.inicio")
+    List<Cita> delMedicoEntre(@Param("idMedico") Long idMedico, @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta);
+
+    /** Citas realizadas del médico con su duración real registrada, de la más reciente a la más antigua. */
+    @Query("select c from Cita c join fetch c.tipoConsulta where c.medico.idMedico = :idMedico "
+        + "and c.estado = 'REALIZADA' and c.inicioReal is not null and c.finReal is not null order by c.inicio desc")
+    List<Cita> realizadasDelMedico(@Param("idMedico") Long idMedico);
 }
