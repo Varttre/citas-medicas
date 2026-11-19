@@ -25,9 +25,9 @@ import pe.consultorio.citas.service.PortalPacienteService;
 import pe.consultorio.citas.service.PreferenciaService;
 
 /**
-Pantallas del portal del paciente. Mis citas (con las agendadas para otras personas y la disponibilidad inmediata de
-cada cita) y citas pasadas muestran datos reales; los avisos muestran por ahora el diseño del prototipo. La
-reprogramación la atiende ReprogramarController y el perfil, PerfilController.
+Pantallas del portal del paciente: inicio, Mis citas (con las agendadas para otras personas y la disponibilidad
+inmediata de cada cita), citas pasadas, avisos y WhatsApp. La reprogramación la atiende ReprogramarController, la
+nueva cita NuevaCitaController y el perfil, PerfilController.
 */
 @Controller
 @RequestMapping("/paciente")
@@ -49,10 +49,14 @@ public class PacienteController {
         this.configuracion = configuracion;
     }
 
+    /** Saludo, las tres próximas citas que ve la cuenta y los avisos vigentes del consultorio. */
     @GetMapping("/inicio")
-    public String inicio(Model model) {
+    public String inicio(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
         String fecha = LocalDate.now(reloj).format(FECHA_LARGA);
         model.addAttribute("fechaHoy", Character.toUpperCase(fecha.charAt(0)) + fecha.substring(1));
+        model.addAttribute("proximas", usuario == null ? List.of()
+            : portal.proximas(usuario.getIdCuenta()).stream().limit(3).toList());
+        model.addAttribute("avisos", configuracion.avisosActivos().stream().limit(2).toList());
         return "paciente/inicio";
     }
 
@@ -117,12 +121,15 @@ public class PacienteController {
     }
 
     @GetMapping("/avisos")
-    public String avisos() {
+    public String avisos(Model model) {
+        model.addAttribute("avisos", configuracion.avisosActivos());
         return "paciente/avisos";
     }
 
     @GetMapping("/whatsapp")
-    public String whatsapp() {
+    public String whatsapp(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
+        model.addAttribute("opciones", usuario == null ? List.of()
+            : portal.whatsapp(usuario.getIdCuenta(), configuracion.parametros().getWhatsappNumero()));
         return "paciente/whatsapp";
     }
 }
