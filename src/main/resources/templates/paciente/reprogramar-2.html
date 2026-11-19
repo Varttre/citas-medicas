@@ -16,7 +16,7 @@
       </div>
       <ol class="list-unstyled d-flex flex-wrap gap-2 gap-md-3 mb-4"><li class="d-flex align-items-center gap-1 text-success"><i class="bi bi-check-circle-fill"></i><span class="small">Nuevo horario</span></li><li class="text-body-tertiary d-none d-md-block"><i class="bi bi-chevron-right small"></i></li><li class="d-flex align-items-center gap-1 text-primary fw-semibold"><span class="badge rounded-pill text-bg-primary">2</span><span class="small">Confirmar</span></li></ol>
 
-      <div class="row g-4">
+      <form class="row g-4" th:action="@{/paciente/citas/{id}/reprogramar(id=${c.idCita})}" method="post">
         <div class="col-lg-7">
           <div class="card shadow-sm mb-4">
             <div class="card-header fw-semibold">Cambio de horario</div>
@@ -25,25 +25,25 @@
                 <div class="col-md">
                   <div class="border rounded p-3 h-100">
                     <div class="small text-body-secondary text-uppercase fw-semibold">Horario actual</div>
-                    <div class="fw-semibold text-decoration-line-through">Jueves 12 de noviembre</div>
-                    <div class="text-decoration-line-through">08:30 a 09:00</div>
+                    <div class="fw-semibold text-decoration-line-through" th:text="${#temporals.format(c.inicio, 'EEEE d ''de'' MMMM')}">Jueves 12 de noviembre</div>
+                    <div class="text-decoration-line-through" th:text="|${#temporals.format(c.inicio, 'HH:mm')} a ${#temporals.format(c.fin, 'HH:mm')}|">08:30 a 09:00</div>
                   </div>
                 </div>
                 <div class="col-md-auto text-center text-primary"><i class="bi bi-arrow-right-circle-fill fs-3 d-none d-md-inline"></i><i class="bi bi-arrow-down-circle-fill fs-3 d-md-none"></i></div>
                 <div class="col-md">
                   <div class="border border-primary rounded p-3 h-100 bg-primary-subtle">
                     <div class="small text-body-secondary text-uppercase fw-semibold">Nuevo horario</div>
-                    <div class="fw-semibold">Lunes 16 de noviembre</div>
-                    <div>09:00 a 09:30</div>
+                    <div class="fw-semibold" th:text="${#temporals.format(nuevoInicio, 'EEEE d ''de'' MMMM')}">Lunes 16 de noviembre</div>
+                    <div th:text="|${#temporals.format(nuevoInicio, 'HH:mm')} a ${#temporals.format(nuevoFin, 'HH:mm')}|">09:00 a 09:30</div>
                   </div>
                 </div>
               </div>
               <dl class="row mb-0">
-                <dt class="col-sm-4">Paciente</dt><dd class="col-sm-8">Lucía Vega Ríos</dd>
-                <dt class="col-sm-4">Médico</dt><dd class="col-sm-8">Dr. Andrés Ponce · Medicina General</dd>
-                <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8">Consulta · 30 min</dd>
-                <dt class="col-sm-4">Modalidad</dt><dd class="col-sm-8">Presencial · Av. Camino Real 1234, San Isidro</dd>
-                <dt class="col-sm-4">Te llamaremos al</dt><dd class="col-sm-8 mb-0">987 654 321</dd>
+                <dt class="col-sm-4">Paciente</dt><dd class="col-sm-8" th:text="${c.paciente}">Paciente</dd>
+                <dt class="col-sm-4">Médico</dt><dd class="col-sm-8" th:text="|${c.medico} · ${c.especialidad}|">Médico · Especialidad</dd>
+                <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8" th:text="|${c.tipo} · ${c.duracionMin} min|">Consulta · 30 min</dd>
+                <dt class="col-sm-4">Modalidad</dt><dd class="col-sm-8" th:text="${c.modalidad.name() == 'PRESENCIAL'} ? 'Presencial' : 'Teleconsulta'">Presencial</dd>
+                <dt class="col-sm-4">Te llamaremos al</dt><dd class="col-sm-8 mb-0" th:text="${c.telefono ?: 'Sin teléfono registrado'}">987 654 321</dd>
               </dl>
             </div>
           </div>
@@ -57,26 +57,26 @@
             <div class="card-header fw-semibold">Disponibilidad inmediata</div>
             <div class="card-body">
               <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="acepta-di" checked data-muestra="#campos-di">
-                <label class="form-check-label" for="acepta-di">Sigo aceptando que me llamen si se libera un cupo antes del nuevo horario.</label>
+                <input class="form-check-input" type="checkbox" id="acepta-di" name="aceptaLlamada" value="true" th:checked="${c.preferencia != null}" data-muestra="#campos-di">
+                <label class="form-check-label" for="acepta-di" th:text="${c.preferencia != null} ? 'Sigo aceptando que me llamen si se libera un cupo antes del nuevo horario.' : 'Acepto que me llamen si se libera un cupo antes del nuevo horario.'">Acepto que me llamen</label>
               </div>
               <div id="campos-di" class="row g-3">
                 <div class="col-12">
                   <label class="form-label">¿Con quién aceptas el adelanto?</label>
                   <div class="d-flex flex-wrap gap-3">
-                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-med" checked><label class="form-check-label" for="al-med">Solo con el Dr. Ponce</label></div>
-                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-esp"><label class="form-check-label" for="al-esp">Con cualquier médico de Medicina General</label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-med" value="MEDICO" th:checked="${c.preferencia == null or c.preferencia.alcance().name() == 'MEDICO'}"><label class="form-check-label" for="al-med" th:text="|Solo con ${c.medico}|">Solo con el médico</label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-esp" value="ESPECIALIDAD" th:checked="${c.preferencia != null and c.preferencia.alcance().name() == 'ESPECIALIDAD'}"><label class="form-check-label" for="al-esp" th:text="|Con cualquier médico de ${c.especialidad}|">Con cualquier médico</label></div>
                   </div>
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label">Tiempo mínimo para llegar</label>
-                  <div class="input-group"><input type="number" class="form-control" value="45" min="0"><select class="form-select" style="max-width:8rem"><option selected>minutos</option><option>horas</option></select></div>
+                  <label class="form-label" for="min-llegada">Tiempo mínimo para llegar</label>
+                  <div class="input-group"><input type="number" class="form-control" id="min-llegada" name="minLlegada" min="0" max="1440" th:value="${c.preferencia != null ? c.preferencia.minLlegadaMin() : 60}"><span class="input-group-text">minutos</span></div>
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label">¿Cuántos días antes aceptas adelantarla?</label>
-                  <div class="input-group"><input type="number" class="form-control" value="3" min="1"><span class="input-group-text">días</span></div>
+                  <label class="form-label" for="dias-previos">¿Cuántos días antes aceptas adelantarla?</label>
+                  <div class="input-group"><input type="number" class="form-control" id="dias-previos" name="diasPrevios" min="0" max="60" th:value="${c.preferencia != null ? c.preferencia.diasPrevios() : 3}"><span class="input-group-text">días</span></div>
                 </div>
-                <p class="small text-body-secondary mb-0">Tu preferencia se conserva tal como la tenías; aquí solo la ajustas si quieres. Tu antigüedad en la lista no cambia.</p>
+                <p class="small text-body-secondary mb-0" th:if="${c.preferencia != null}">Tu preferencia se conserva tal como la tenías; aquí solo la ajustas si quieres. Tu antigüedad en la lista no cambia.</p>
               </div>
             </div>
           </div>
@@ -85,29 +85,18 @@
         <div class="col-lg-5">
           <div class="card shadow-sm">
             <div class="card-body">
-              <div class="alert alert-primary small d-flex gap-2 align-items-center">
-                <i class="bi bi-hourglass-split"></i><span>Nuevo horario reservado para ti por <strong data-cuenta-regresiva="236">3:56</strong></span>
+              <div class="alert alert-primary small d-flex gap-2 align-items-center" th:if="${segundos > 0}">
+                <i class="bi bi-hourglass-split"></i><span>Nuevo horario reservado para ti por <strong th:attr="data-cuenta-regresiva=${segundos}">5:00</strong></span>
               </div>
-              <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#reprogramada">Reprogramar cita</button>
-              <a th:href="@{/paciente/citas/reprogramar}" class="btn btn-outline-secondary w-100 mt-2">Elegir otro horario</a>
-              <a th:href="@{/paciente/citas}" class="btn btn-link w-100 mt-1 link-secondary">Mantener el horario actual</a>
+              <div class="alert alert-warning small" th:unless="${segundos > 0}">El tiempo de reserva terminó. Si el horario sigue libre, igual puedes reprogramar.</div>
+              <button class="btn btn-primary w-100">Reprogramar cita</button>
+              <a th:href="@{/paciente/citas/{id}/reprogramar(id=${c.idCita})}" class="btn btn-outline-secondary w-100 mt-2">Elegir otro horario</a>
+              <button class="btn btn-link w-100 mt-1 link-secondary" th:formaction="@{/paciente/citas/{id}/reprogramar/mantener(id=${c.idCita})}" formnovalidate>Mantener el horario actual</button>
             </div>
           </div>
-
         </div>
-      </div>
-
-      <div class="modal fade" id="reprogramada" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
-          <div class="modal-body text-center p-4">
-            <i class="bi bi-calendar2-check text-success display-5"></i>
-            <h2 class="h5 mt-3">Cita reprogramada</h2>
-            <p class="mb-1">Lunes 16 de noviembre, 09:00 · Dr. Andrés Ponce</p>
-            <p class="small text-body-secondary">Es la misma cita en un nuevo horario. El consultorio te llamará para confirmarla; tu horario anterior ya está disponible para otros pacientes.</p>
-            <a th:href="@{/paciente/citas}" class="btn btn-primary">Ver mis citas</a>
-          </div>
-        </div></div>
-      </div>
+      </form>
+      <p class="small text-body-secondary mt-3">Reprogramar mueve esta misma cita a otro horario. Si quieres cambiar de médico o de tipo de consulta, cancela la cita y agenda una nueva.</p>
     </main>
   </div>
 </div>

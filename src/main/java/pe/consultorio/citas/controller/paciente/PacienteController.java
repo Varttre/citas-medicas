@@ -16,8 +16,8 @@ import pe.consultorio.citas.config.UsuarioSesion;
 import pe.consultorio.citas.service.PortalPacienteService;
 
 /**
-Pantallas del portal del paciente. Mis citas y citas pasadas muestran datos reales; la reprogramación, los avisos y
-el perfil muestran por ahora el diseño del prototipo y se conectan en las tareas C4, C5 y C9.
+Pantallas del portal del paciente. Mis citas y citas pasadas muestran datos reales; los avisos muestran por ahora el
+diseño del prototipo. La reprogramación la atiende ReprogramarController y el perfil, PerfilController.
 */
 @Controller
 @RequestMapping("/paciente")
@@ -67,16 +67,6 @@ public class PacienteController {
         model.addAttribute("citas", usuario == null || usuario.getIdPacientePropio() == null ? List.of()
             : portal.pasadas(usuario.getIdPacientePropio()));
         return "paciente/citas-pasadas";
-    }
-
-    @GetMapping("/citas/reprogramar")
-    public String reprogramar() {
-        return "paciente/reprogramar-1";
-    }
-
-    @GetMapping("/citas/reprogramar/2")
-    public String reprogramarHorario() {
-        return "paciente/reprogramar-2";
     }
 
     @GetMapping("/avisos")
