@@ -1,10 +1,13 @@
 package pe.consultorio.citas.service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -20,7 +23,11 @@ import pe.consultorio.citas.repository.CitaIndicadaRepository;
 import pe.consultorio.citas.repository.CitaRepository;
 import pe.consultorio.citas.repository.OportunidadRepository;
 
-/** Las cuatro métricas del tablero del administrador, calculadas desde el historial. */
+/**
+Las cuatro métricas del tablero del administrador, calculadas desde el historial: horarios liberados recuperados
+(con los minutos recuperados), no asistencia por médico, especialidad y hora, citas indicadas agendadas y
+reprogramaciones por cita.
+*/
 @Service
 @Transactional(readOnly = true)
 public class MetricaService {
@@ -46,6 +53,16 @@ public class MetricaService {
         var ops = oportunidades.findAll().stream().filter(o -> enRango(o.getCreadaEn(), ini, fin)).toList();
         long cubiertas = ops.stream().filter(o -> o.getEstado() == EstadoOportunidad.CUBIERTA).count();
         long expiradas = ops.stream().filter(o -> o.getEstado() == EstadoOportunidad.EXPIRADA).count();
+        long minutosRecuperados = ops.stream()
+            .filter(o -> o.getEstado() == EstadoOportunidad.CUBIERTA && o.getCitaCobertura() != null)
+            .mapToLong(o -> {
+                Cita c = o.getCitaCobertura();
+                LocalDateTime desdeCubierto = c.getInicio().isAfter(o.getInicio()) ? c.getInicio() : o.getInicio();
+                LocalDateTime hastaCubierto = c.getFin().isBefore(o.getFin()) ? c.getFin() : o.getFin();
+                return Math.max(0, Duration.between(desdeCubierto, hastaCubierto).toMinutes());
+            })
+            .sum();
+        long abiertasAhora = oportunidades.abiertas().size();
 
         // 2. No asistencia: NO_ASISTIO / (REALIZADA + NO_ASISTIO), en total y por médico
         List<Cita> delRango = citas.findAll().stream().filter(c -> enRango(c.getInicio(), ini, fin)).toList();
@@ -63,6 +80,9 @@ public class MetricaService {
             })
             .sorted(Comparator.comparing(Metricas.NoAsistenciaMedico::medico))
             .toList();
+        List<Metricas.NoAsistenciaGrupo> porEspecialidad = grupos(delRango, c -> c.getEspecialidad().getNombre());
+        List<Metricas.NoAsistenciaGrupo> porHora = grupos(delRango,
+            c -> String.format("%02d:00", c.getInicio().getHour()));
 
         // 3. Citas indicadas que terminan agendadas: AGENDADA / (AGENDADA + VENCIDA + DESCARTADA)
         var ind = indicadas.findAll().stream().filter(i -> enRango(i.getCreadoEn(), ini, fin)).toList();
@@ -87,7 +107,21 @@ public class MetricaService {
         return new Metricas(desde, hasta, cubiertas, expiradas, pct(cubiertas, cubiertas + expiradas),
             realizadas, noAsistio, pct(noAsistio, realizadas + noAsistio), porMedico,
             agendadas, cerradas, pct(agendadas, cerradas),
-            delRango.size(), promedio, max, distribucion);
+            delRango.size(), promedio, max, distribucion, minutosRecuperados, abiertasAhora, porEspecialidad, porHora);
+    }
+
+    /** No asistencia agrupada (por especialidad u hora), en orden alfabético del grupo; solo grupos con casos. */
+    private static List<Metricas.NoAsistenciaGrupo> grupos(List<Cita> lista, Function<Cita, String> clave) {
+        return lista.stream()
+            .collect(Collectors.groupingBy(clave, TreeMap::new, Collectors.toList()))
+            .entrySet().stream()
+            .map(e -> {
+                long r = contar(e.getValue(), EstadoCita.REALIZADA);
+                long n = contar(e.getValue(), EstadoCita.NO_ASISTIO);
+                return new Metricas.NoAsistenciaGrupo(e.getKey(), r, n, pct(n, r + n));
+            })
+            .filter(g -> g.realizadas() + g.noAsistio() > 0)
+            .toList();
     }
 
     private static boolean enRango(LocalDateTime t, LocalDateTime ini, LocalDateTime fin) {
