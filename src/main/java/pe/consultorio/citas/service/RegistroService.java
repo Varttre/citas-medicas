@@ -6,7 +6,9 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.consultorio.citas.dto.ParaQuien;
 import pe.consultorio.citas.dto.RegistroForm;
+import pe.consultorio.citas.dto.TerceroForm;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.CuentaPaciente;
 import pe.consultorio.citas.entity.EstadoCuenta;
@@ -108,5 +110,76 @@ public class RegistroService {
 
     private static String digitos(String s) {
         return s == null ? "" : s.replaceAll("\\D", "");
+    }
+
+    /**
+    Vincula a la cuenta con otra persona para agendarle citas (un familiar o alguien a su cargo). Si el documento ya
+    existe, se usa ese paciente sin cambiar sus datos, siempre que la fecha de nacimiento coincida; si no existe, se
+    crea sin teléfono. El teléfono que escribe la cuenta nunca se guarda en el paciente: el consultorio llama a la
+    cuenta. Exige la declaración de consentimiento; si el paciente revocó el vínculo, no se puede volver a crear.
+    */
+    @Transactional
+    public ParaQuien vincularTercero(Long idCuenta, TerceroForm f) {
+        if (f.tipoDocumento() == null || vacio(f.nroDocumento()) || vacio(f.nombres()) || vacio(f.apellidos())
+                || f.fechaNacimiento() == null) {
+            throw new ReglaNegocioException("Completa el documento, los nombres, los apellidos y la fecha de nacimiento.");
+        }
+        if (f.fechaNacimiento().isAfter(LocalDateTime.now(reloj).toLocalDate())) {
+            throw new ReglaNegocioException("La fecha de nacimiento no puede ser futura.");
+        }
+        if (!Boolean.TRUE.equals(f.consentimiento())) {
+            throw new ReglaNegocioException("Declara que tienes el consentimiento del paciente para agendar a su nombre.");
+        }
+        Cuenta cuenta = cuentas.findById(idCuenta).orElseThrow(() -> new ReglaNegocioException("La cuenta no existe."));
+        String nro = f.nroDocumento().trim();
+        Paciente existente = pacientes.findAll().stream()
+            .filter(p -> p.getTipoDocumento() == f.tipoDocumento() && p.getNroDocumento().equals(nro))
+            .findFirst().orElse(null);
+        String aviso = null;
+        Paciente paciente;
+        if (existente == null) {
+            paciente = new Paciente();
+            paciente.setTipoDocumento(f.tipoDocumento());
+            paciente.setNroDocumento(nro);
+            paciente.setNombres(f.nombres().trim());
+            paciente.setApellidos(f.apellidos().trim());
+            paciente.setFechaNacimiento(f.fechaNacimiento());
+            paciente = pacientes.save(paciente);
+        } else if (!existente.getFechaNacimiento().equals(f.fechaNacimiento())) {
+            throw new ReglaNegocioException("Revisa los datos o comunícate con el consultorio.");
+        } else {
+            paciente = existente;
+            if (!vacio(f.telefono()) && !digitos(f.telefono()).equals(digitos(existente.getTelefono()))) {
+                aviso = "Para actualizar el teléfono del paciente, debe comunicarse con recepción.";
+            }
+        }
+        if (cuenta.getPacientePropio() != null && cuenta.getPacientePropio().getIdPaciente().equals(
+                paciente.getIdPaciente())) {
+            return new ParaQuien(paciente.getIdPaciente(), nombre(paciente), false, null);
+        }
+        Long idPaciente = paciente.getIdPaciente();
+        CuentaPaciente vinculo = vinculos.delPaciente(idPaciente).stream()
+            .filter(v -> v.getCuenta().getIdCuenta().equals(idCuenta)).findFirst().orElse(null);
+        if (vinculo != null && vinculo.getRevocadoEn() != null) {
+            throw new ReglaNegocioException("Este paciente retiró su consentimiento. Comunícate con el consultorio.");
+        }
+        if (vinculo == null) {
+            vinculo = new CuentaPaciente();
+            vinculo.setCuenta(cuenta);
+            vinculo.setPaciente(paciente);
+            vinculo.setConsentimientoEn(LocalDateTime.now(reloj));
+            vinculos.save(vinculo);
+            auditoria.registrar(idCuenta, AccionAuditoria.VINCULO_PACIENTE, "PACIENTE", String.valueOf(idPaciente),
+                existente == null ? "paciente nuevo registrado por la cuenta" : "paciente existente", null);
+        }
+        return new ParaQuien(idPaciente, nombre(paciente), true, aviso);
+    }
+
+    private static String nombre(Paciente p) {
+        return p.getNombres() + " " + p.getApellidos();
+    }
+
+    private static boolean vacio(String s) {
+        return s == null || s.isBlank();
     }
 }

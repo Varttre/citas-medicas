@@ -22,12 +22,45 @@
             <div class="card-header fw-semibold">Resumen de la cita</div>
             <div class="card-body">
               <dl class="row mb-0">
-                <dt class="col-sm-4">Paciente</dt><dd class="col-sm-8" th:text="${usuarioSesion?.nombreMostrado}">Paciente</dd>
+                <dt class="col-sm-4">Paciente</dt><dd class="col-sm-8" th:text="${para.nombre}">Paciente</dd>
                 <dt class="col-sm-4">Médico</dt><dd class="col-sm-8" th:text="|${nc.medico} · ${nc.especialidad}|">Médico</dd>
                 <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8" th:text="${nc.tipo}">Consulta</dd>
                 <dt class="col-sm-4">Fecha y hora</dt><dd class="col-sm-8" th:text="|${#temporals.format(nc.inicio, 'EEEE d ''de'' MMMM ''de'' yyyy, HH:mm')} a ${#temporals.format(nc.fin(), 'HH:mm')}|">fecha</dd>
                 <dt class="col-sm-4">Modalidad</dt><dd class="col-sm-8 mb-0" th:text="${nc.modalidad.name() == 'PRESENCIAL'} ? 'Presencial' : 'Teleconsulta'">Presencial</dd>
               </dl>
+            </div>
+          </div>
+
+          <div class="card shadow-sm" th:with="pr=${preferencia}">
+            <div class="card-header fw-semibold">Disponibilidad inmediata</div>
+            <div class="card-body">
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="acepta-di" name="aceptaLlamada" value="true" th:checked="${pr != null}" data-muestra="#campos-di">
+                <label class="form-check-label" for="acepta-di">Acepto ser llamado si se libera un cupo antes.</label>
+              </div>
+              <div id="campos-di" class="row g-3" th:classappend="${pr == null} ? 'd-none'">
+                <div class="col-12">
+                  <label class="form-label">¿Con quién aceptas el adelanto?</label>
+                  <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-med" value="MEDICO" th:checked="${pr == null or pr.alcance().name() == 'MEDICO'}"><label class="form-check-label" for="al-med" th:text="|Solo con ${nc.medico}|">Solo con este médico</label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="alcance" id="al-esp" value="ESPECIALIDAD" th:checked="${pr != null and pr.alcance().name() == 'ESPECIALIDAD'}"><label class="form-check-label" for="al-esp" th:text="|Con cualquier médico de ${nc.especialidad}|">Con cualquier médico de la especialidad</label></div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="llegada">Tiempo mínimo para llegar</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="llegada" name="llegada" min="0" max="1440"
+                           th:value="${pr != null ? pr.minLlegadaMin() : (nc.modalidad.name() == 'TELECONSULTA' ? 0 : 60)}">
+                    <select class="form-select" name="unidadLlegada" style="max-width:8rem" aria-label="Unidad"><option value="MINUTOS" selected>minutos</option><option value="HORAS">horas</option></select>
+                  </div>
+                  <div class="form-text" th:if="${nc.modalidad.name() == 'TELECONSULTA'}">En teleconsulta no necesitas trasladarte: puedes dejarlo en 0.</div>
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label" for="dias-previos">¿Cuántos días antes aceptas adelantarla?</label>
+                  <div class="input-group"><input type="number" class="form-control" id="dias-previos" name="diasPrevios" min="0" max="60" th:value="${pr != null ? pr.diasPrevios() : 3}"><span class="input-group-text">días</span></div>
+                </div>
+                <p class="small text-body-secondary mb-0">Si se libera un horario que te sirve, recepción te llamará para ofrecértelo. Tu cita solo se mueve si aceptas.</p>
+              </div>
             </div>
           </div>
         </div>
