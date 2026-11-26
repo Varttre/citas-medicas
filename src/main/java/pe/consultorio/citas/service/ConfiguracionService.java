@@ -106,6 +106,15 @@ public class ConfiguracionService {
         return parametros().getIncrementoMin();
     }
 
+    /**
+    Si una cita que se saca (o reprograma) en {@code ahora} para empezar en {@code inicio} puede activar «Acepto ser
+    llamado»: debe haber al menos {@code min_horas_adelanto} horas entre ambos momentos (RC-046).
+    */
+    public boolean elegibleAdelanto(java.time.LocalDateTime ahora, java.time.LocalDateTime inicio) {
+        Short horas = parametros().getMinHorasAdelanto();
+        return !inicio.isBefore(ahora.plusHours(horas == null ? 0 : horas));
+    }
+
     /** El hueco más chico que todavía sirve para algo: la menor duración por defecto entre los tipos activos. */
     public int huecoMinimoUtil() {
         return tiposActivos().stream()
@@ -234,6 +243,8 @@ public class ConfiguracionService {
         short vigencia = (short) enRango(f.vigenciaIndicadaDias(), 1, 365, "La vigencia de una cita indicada");
         short intentos = (short) enRango(f.maxIntentosLogin(), 1, 20, "Los intentos de inicio de sesión");
         short minutosBloqueo = (short) enRango(f.minutosBloqueoLogin(), 1, 1440, "La duración del bloqueo");
+        short minHoras = f.minHorasAdelanto() == null ? p.getMinHorasAdelanto()
+            : (short) enRango(f.minHorasAdelanto(), 0, 720, "Las horas mínimas para «Acepto ser llamado»");
         boolean penalizacion = si(f.mostrarPenalizacion());
         String textoPenalizacion = vacio(f.textoPenalizacion()) ? null : f.textoPenalizacion().trim();
         if (penalizacion && textoPenalizacion == null) {
@@ -265,6 +276,7 @@ public class ConfiguracionService {
         cambio(cambios, "whatsapp_numero", p.getWhatsappNumero(), whatsapp);
         cambio(cambios, "max_intentos_login", p.getMaxIntentosLogin(), intentos);
         cambio(cambios, "minutos_bloqueo_login", p.getMinutosBloqueoLogin(), minutosBloqueo);
+        cambio(cambios, "min_horas_adelanto", p.getMinHorasAdelanto(), minHoras);
         p.setMinutosProtegidos(protegidos);
         p.setVentanaLiberacionH(ventana);
         p.setBloqueoTemporalMin(bloqueo);
@@ -278,6 +290,7 @@ public class ConfiguracionService {
         p.setWhatsappNumero(whatsapp);
         p.setMaxIntentosLogin(intentos);
         p.setMinutosBloqueoLogin(minutosBloqueo);
+        p.setMinHorasAdelanto(minHoras);
         parametros.save(p);
         auditar(actor, "PARAMETRO_CONSULTORIO", "1", cambios);
     }

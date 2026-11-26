@@ -114,6 +114,12 @@ public class OportunidadService {
         return oportunidades.abiertas().stream().filter(o -> o.getInicio().isAfter(ahora)).toList();
     }
 
+    /** Las que se cubrieron hoy, la más reciente primero (recepción las ve aparte, ya sin ofrecerlas). */
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public List<Oportunidad> cubiertasHoy() {
+        return oportunidades.cubiertasDesde(LocalDateTime.now(reloj).toLocalDate().atStartOfDay());
+    }
+
     /** Las abiertas cuya hora ya llegó dejan de ofrecerse. Devuelve cuántas expiraron. */
     @Transactional(propagation = Propagation.REQUIRED)
     public int expirarVencidas() {

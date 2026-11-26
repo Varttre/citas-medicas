@@ -41,7 +41,9 @@ import pe.consultorio.citas.service.ConfiguracionService;
 
 /**
 Usuarios de prueba para desarrollo (perfil dev). Si la base no tiene ninguna cuenta, crea un usuario por perfil con
-la contraseña Demo2026!, dos médicos con su especialidad, duraciones y horario vigente desde hoy, y dos avisos.
+la contraseña Demo2026!, seis médicos (dos en Cardiología, dos en Medicina General, uno en Dermatología y uno en
+Traumatología, estas dos creadas aquí y sin citas) con duraciones y horario de todos los días hasta las 23:00, y dos
+avisos. La médica de Pediatría, el historial y los pacientes en espera los crea demo/historial-demo.sql.
 En una instalación real no corre: las cuentas las crea el administrador.
 */
 @Component
@@ -96,14 +98,33 @@ public class DatosDemo implements CommandLineRunner {
         cuenta("admin@consultorio.pe", NombreRol.ADMINISTRADOR, "Administrador", null);
         cuenta("recepcion@consultorio.pe", NombreRol.RECEPCION, "Recepción", null);
 
+        // Todos los días hasta las 23:00: la clase (y la exposición) es de noche, también en fin de semana.
         Medico ramirez = medico("medico1@consultorio.pe", "Carmen", "Ramírez", "Cardiología");
-        for (int dia = 1; dia <= 5; dia++) {
+        for (int dia = 1; dia <= 7; dia++) {
             franja(ramirez, dia, "08:00", "13:00");
-            franja(ramirez, dia, "15:00", "19:00");
+            franja(ramirez, dia, "15:00", "23:00");
         }
         Medico ponce = medico("medico2@consultorio.pe", "Andrés", "Ponce", "Medicina General");
-        for (int dia : new int[] {1, 3, 5}) {
-            franja(ponce, dia, "09:00", "13:00");
+        for (int dia = 1; dia <= 7; dia++) {
+            if (dia == 1 || dia == 3 || dia == 5) {
+                franja(ponce, dia, "09:00", "13:00");
+            }
+            franja(ponce, dia, "17:00", "23:00");
+        }
+        // Un segundo médico en Cardiología y en Medicina General (para mostrar el adelanto con otro médico de la
+        // especialidad) y dos especialidades con médico pero sin citas: agendas vacías para reservar sin choques.
+        Medico torres = medico("medico4@consultorio.pe", "Luis", "Torres Medina", "Cardiología");
+        Medico castro = medico("medico5@consultorio.pe", "Elena", "Castro Rivas", "Medicina General");
+        especialidad("Dermatología", "Piel, cabello y uñas");
+        especialidad("Traumatología", "Huesos, articulaciones y lesiones");
+        Medico salas = medico("medico6@consultorio.pe", "Raúl", "Salas Ortiz", "Dermatología");
+        Medico rojas = medico("medico7@consultorio.pe", "Patricia", "Rojas León", "Traumatología");
+        for (int dia = 1; dia <= 7; dia++) {
+            franja(torres, dia, "15:00", "23:00");
+            franja(castro, dia, "08:00", "12:00");
+            franja(castro, dia, "18:00", "23:00");
+            franja(salas, dia, "16:00", "23:00");
+            franja(rojas, dia, "16:00", "23:00");
         }
 
         Paciente lucia = new Paciente();
@@ -124,10 +145,10 @@ public class DatosDemo implements CommandLineRunner {
 
         aviso("Campaña de chequeo cardiológico", "Durante noviembre, evaluación cardiológica con descuento para mayores de 50 años.",
             "/especialidades");
-        aviso("Nuevo horario de atención", "Atendemos de lunes a viernes de 8:00 a 19:00. Reserva tu cita desde el portal.",
+        aviso("Nuevo horario de atención", "Atendemos todos los días de 8:00 a 23:00. Reserva tu cita desde el portal.",
             "/como-agendar");
 
-        log.info("Datos de prueba creados: 6 usuarios con la contraseña {}", CONTRASENA);
+        log.info("Datos de prueba creados: 10 usuarios con la contraseña {}", CONTRASENA);
     }
 
     private Cuenta cuenta(String correo, NombreRol rol, String nombreVisible, Paciente propio) {
@@ -141,6 +162,18 @@ public class DatosDemo implements CommandLineRunner {
         c.setIntentosFallidos((short) 0);
         c.setCreadoEn(ahora());
         return cuentas.save(c);
+    }
+
+    /** Especialidad activa solo para la demostración (las tres de siempre vienen en V2). */
+    private void especialidad(String nombre, String descripcion) {
+        if (especialidades.findAll().stream().anyMatch(e -> e.getNombre().equals(nombre))) {
+            return;
+        }
+        Especialidad e = new Especialidad();
+        e.setNombre(nombre);
+        e.setDescripcion(descripcion);
+        e.setActivo(true);
+        especialidades.save(e);
     }
 
     /** Médico activo con su especialidad y la duración por defecto de cada tipo activo. */

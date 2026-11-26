@@ -187,22 +187,33 @@ public class RegistroService {
             vinculo.setCuenta(cuenta);
             vinculo.setPaciente(paciente);
             vinculo.setConsentimientoEn(LocalDateTime.now(reloj));
+            vinculo.setParentesco(f.parentesco() == null ? null : f.parentesco().name());
             vinculos.save(vinculo);
             auditoria.registrar(idCuenta, AccionAuditoria.VINCULO_PACIENTE, "PACIENTE", String.valueOf(idPaciente),
                 existente == null ? "paciente nuevo registrado por la cuenta" : "paciente existente", null);
         }
+        if (f.parentesco() != null && !f.parentesco().name().equals(vinculo.getParentesco())) {
+            vinculo.setParentesco(f.parentesco().name());   // ya era su tercero: se completa o corrige el parentesco
+            vinculos.save(vinculo);
+        }
         return new ParaQuien(idPaciente, nombre(paciente), true, aviso);
     }
 
-    /** Los terceros que la cuenta puede agendar (vínculo sin revocar), del más antiguo al más nuevo. */
+    /**
+    Los terceros que la cuenta puede agendar (vínculo sin revocar), del más antiguo al más nuevo. El paciente propio
+    también tiene vínculo (se crea al registrarse), pero no es un tercero: no aparece aquí.
+    */
     @Transactional(readOnly = true)
     public List<TerceroVista> terceros(Long idCuenta) {
         java.time.LocalDate hoy = LocalDateTime.now(reloj).toLocalDate();
+        Long propio = idPacientePropio(idCuenta);
         return vinculos.vigentesDeCuenta(idCuenta).stream()
+            .filter(v -> !v.getPaciente().getIdPaciente().equals(propio))
             .map(v -> {
                 Paciente p = v.getPaciente();
                 return new TerceroVista(p.getIdPaciente(), nombre(p), p.getTipoDocumento().name(), p.getNroDocumento(),
-                    Period.between(p.getFechaNacimiento(), hoy).getYears(), v.getConsentimientoEn());
+                    Period.between(p.getFechaNacimiento(), hoy).getYears(), v.getConsentimientoEn(),
+                    pe.consultorio.citas.entity.Parentesco.texto(v.getParentesco()));
             })
             .toList();
     }
@@ -213,12 +224,23 @@ public class RegistroService {
     */
     @Transactional(readOnly = true)
     public ParaQuien terceroVinculado(Long idCuenta, Long idPaciente) {
+        if (idPaciente.equals(idPacientePropio(idCuenta))) {
+            throw new ReglaNegocioException(ES_TU_DOCUMENTO);
+        }
         return vinculos.vigentesDeCuenta(idCuenta).stream()
             .filter(v -> v.getPaciente().getIdPaciente().equals(idPaciente))
             .findFirst()
             .map(v -> new ParaQuien(idPaciente, nombre(v.getPaciente()), true, null))
             .orElseThrow(() -> new ReglaNegocioException(
                 "Esa persona ya no está entre tus terceros. Elige otra o añádela de nuevo."));
+    }
+
+    /** Mensaje cuando se intenta agendar «Para otra persona» al titular de la cuenta. */
+    public static final String ES_TU_DOCUMENTO =
+        "Esa persona eres tú. Para agendar a tu nombre, elige «Para mí».";
+
+    private Long idPacientePropio(Long idCuenta) {
+        return cuentas.findById(idCuenta).map(Cuenta::getPacientePropio).map(Paciente::getIdPaciente).orElse(null);
     }
 
     private static String nombre(Paciente p) {

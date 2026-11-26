@@ -51,6 +51,8 @@
 
               <div th:if="${c.cancelable}" class="border-top mt-3 pt-3" th:with="pr=${c.preferencia}">
                 <h3 class="h6">Disponibilidad inmediata</h3>
+                <p class="small text-body-secondary mb-0" th:if="${pr == null and !(c.elegibleAdelanto and c.diasHastaCita >= 1)}">Esta cita se sacó con poca anticipación: no admite «Acepto ser llamado».</p>
+                <th:block th:if="${pr != null or (c.elegibleAdelanto and c.diasHastaCita >= 1)}">
                 <p class="small text-body-secondary" th:if="${pr == null}">Si quieres, te llamamos cuando se libere un horario antes de esta cita. Tu cita solo se mueve si aceptas.</p>
                 <p class="small" th:if="${pr != null}" th:text="|Te llamaremos ${pr.alcance().name() == 'MEDICO' ? 'para un cupo con ' + c.medico : 'para un cupo con cualquier médico de ' + c.especialidad}, si puedes llegar en ${pr.minLlegadaMin()} min y hasta ${pr.diasPrevios()} días antes.|">Preferencia</p>
                 <form class="row g-2 align-items-end" th:action="@{/paciente/citas/{id}/preferencia(id=${c.idCita})}" method="post">
@@ -61,13 +63,15 @@
                     </select></div>
                   <div class="col-6 col-md-3"><label class="form-label small">Tiempo para llegar</label>
                     <div class="input-group input-group-sm"><input type="number" class="form-control" name="llegada" min="0" max="1440" th:value="${pr != null ? pr.minLlegadaMin() : 60}"><span class="input-group-text">min</span></div></div>
-                  <div class="col-6 col-md-3"><label class="form-label small">Días antes</label>
-                    <div class="input-group input-group-sm"><input type="number" class="form-control" name="diasPrevios" min="0" max="60" th:value="${pr != null ? pr.diasPrevios() : 3}"><span class="input-group-text">días</span></div></div>
+                  <div class="col-6 col-md-3"><label class="form-label small" th:for="|dias-${c.idCita}|">Hasta cuántos días antes</label>
+                    <div class="input-group input-group-sm"><input type="number" class="form-control" name="diasPrevios" th:id="|dias-${c.idCita}|" min="1" th:max="${c.diasHastaCita < 1 ? 1 : c.diasHastaCita}" th:value="${pr != null ? pr.diasPrevios() : (c.diasHastaCita < 3 ? c.diasHastaCita : 3)}"><span class="input-group-text">días</span></div>
+                    <button type="button" class="btn btn-link btn-sm p-0" th:attr="data-lo-mas-pronto=|#dias-${c.idCita}|">Lo más pronto posible</button></div>
                   <div class="col-md-2"><button class="btn btn-sm btn-primary w-100" th:text="${pr == null} ? 'Activar' : 'Guardar'">Guardar</button></div>
                 </form>
                 <form th:if="${pr != null}" class="mt-2" th:action="@{/paciente/citas/{id}/preferencia/revocar(id=${c.idCita})}" method="post">
                   <button class="btn btn-sm btn-link link-danger p-0">Ya no quiero que me llamen para esta cita</button>
                 </form>
+                </th:block>
               </div>
             </div>
           </div>

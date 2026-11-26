@@ -84,4 +84,16 @@ public class CuentaPaciente {
     public void setRevocadoEn(LocalDateTime revocadoEn) {
         this.revocadoEn = revocadoEn;
     }
+
+    /** Relación del tercero con el titular (HIJO, MADRE, PADRE, CONYUGE, HERMANO, ABUELO, NIETO, OTRO). Opcional. */
+    @Column(name = "parentesco", length = 10)
+    private String parentesco;
+
+    public String getParentesco() {
+        return parentesco;
+    }
+
+    public void setParentesco(String parentesco) {
+        this.parentesco = parentesco;
+    }
 }

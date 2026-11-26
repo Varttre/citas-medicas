@@ -58,10 +58,18 @@ dependencias. Flyway crea las tablas solo, y el perfil `dev` carga usuarios y da
 | --- | --- |
 | Administrador | `admin@consultorio.pe` |
 | Recepción | `recepcion@consultorio.pe` |
-| Médico | `medico1@consultorio.pe` · `medico2@consultorio.pe` · `medico3@consultorio.pe` |
+| Médico | `medico1@` y `medico4@` (Cardiología) · `medico2@` y `medico5@` (Medicina General) · `medico3@` (Pediatría) · `medico6@` (Dermatología) · `medico7@` (Traumatología), todos `@consultorio.pe` |
 | Paciente | `paciente@consultorio.pe` |
 
 Para detener la aplicación: `Ctrl + C` en la consola.
+
+Todos los médicos de demostración atienden **todos los días hasta las 23:00**. Dermatología y Traumatología no tienen
+citas (agendas vacías para reservar sin choques). Hay 15 pacientes en espera (3 por médico de Cardiología, Medicina
+General y Pediatría) con «Acepto ser llamado»: si se cancela una cita, el cupo liberado siempre tiene candidatos.
+
+**Volver a empezar con datos de hoy (Windows):** doble clic en `reiniciar-demo.bat`. Borra `citas-pg`, la crea de nuevo
+y arranca la aplicación; los datos de demostración quedan relativos a ese momento. Úsalo antes de cada práctica y unos
+30 minutos antes de exponer. Antes cierra la aplicación si está abierta.
 
 ## Pruebas
 

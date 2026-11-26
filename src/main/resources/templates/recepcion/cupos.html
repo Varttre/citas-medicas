@@ -15,22 +15,47 @@
         <div><h1 class="h3 mb-0">Cupos liberados sin cubrir</h1><p class="text-body-secondary mb-0">Ordenados por urgencia: primero los que empiezan antes</p></div>
         <span class="badge text-bg-primary fs-6" th:text="${#lists.size(cupos) == 1} ? '1 cupo' : |${#lists.size(cupos)} cupos|">0 cupos</span>
       </div>
-      <p th:if="${#lists.isEmpty(cupos)}" class="text-body-secondary">No hay horarios liberados sin cubrir. Cuando un paciente cancele o reprograme, el horario aparecerá aquí.</p>
-      <div class="row g-4" th:unless="${#lists.isEmpty(cupos)}">
+      <p th:if="${#lists.isEmpty(cupos)}" class="text-body-secondary">No hay horarios liberados con candidatos para llamar. Cuando un paciente cancele o reprograme y alguien de la lista pueda tomar el horario, aparecerá aquí.</p>
+      <div class="row g-4">
         <div class="col-xl-3">
-          <div class="list-group shadow-sm">
+          <div class="list-group shadow-sm" th:unless="${#lists.isEmpty(cupos)}">
             <a th:each="cu : ${cupos}" th:href="@{/recepcion/cupos/{id}(id=${cu.id})}" class="list-group-item list-group-item-action"
                th:classappend="${actual != null and actual.id == cu.id} ? 'active'">
               <div class="fw-semibold" th:text="${cu.medico}">Médico</div>
+              <div class="small" th:if="${cu.restoDe != null}"><span class="badge text-bg-info" th:text="|Resto de un cupo ya cubierto|">Resto</span></div>
               <div class="small" th:if="${cu.liberadoInicio != null}"><span class="fw-semibold" th:text="|${#temporals.format(cu.liberadoInicio, 'EEE d')} · liberado ${#temporals.format(cu.liberadoInicio, 'HH:mm')} a ${#temporals.format(cu.liberadoFin, 'HH:mm')}|">Hoy · liberado 08:15 a 08:45</span></div>
               <div class="small" th:classappend="${cu.liberadoInicio != null} ? 'opacity-75'" th:text="${cu.liberadoInicio != null} ? |Bloque libre ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}| : |${#temporals.format(cu.inicio, 'EEE d')} · ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}|">Hoy · 11:15 a 12:00</div>
               <div class="d-flex gap-2 mt-1 small"><span class="badge text-bg-light" th:text="|${cu.minutos} min|">45 min</span><span th:text="${cu.empiezaEn()}">Empieza en 1 h 05</span></div>
               <div class="small" th:text="${cu.candidatos == 1} ? '1 candidato' : |${cu.candidatos} candidatos|">4 candidatos</div>
             </a>
           </div>
+
+          <details class="mt-3" th:unless="${#lists.isEmpty(sinCandidatos)}" th:attr="open=${actual != null and actual.candidatos == 0} ? 'open' : null">
+            <summary class="small text-body-secondary" th:text="|Sin candidatos (${#lists.size(sinCandidatos)}): tiempo libre que se agenda normal|">Sin candidatos</summary>
+            <div class="list-group list-group-flush small mt-2">
+              <a th:each="cu : ${sinCandidatos}" th:href="@{/recepcion/cupos/{id}(id=${cu.id})}" class="list-group-item list-group-item-action"
+                 th:classappend="${actual != null and actual.id == cu.id} ? 'active'">
+                <span class="fw-semibold" th:text="${cu.medico}">Médico</span>
+                <span class="d-block" th:if="${cu.liberadoInicio != null}" th:text="|${#temporals.format(cu.liberadoInicio, 'EEE d')} · liberado ${#temporals.format(cu.liberadoInicio, 'HH:mm')} a ${#temporals.format(cu.liberadoFin, 'HH:mm')}|">Hoy · liberado 08:15 a 08:45</span>
+                <span class="d-block" th:text="${cu.liberadoInicio != null} ? |Bloque libre ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}| : |${#temporals.format(cu.inicio, 'EEE d')} · ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}|">Hoy · 11:15 a 12:00</span>
+                <span class="d-block text-body-secondary" th:if="${cu.restoDe != null}" th:text="|Resto: ${cu.restoDe}|">Resto</span>
+              </a>
+            </div>
+          </details>
+
+          <div class="mt-3" th:unless="${#lists.isEmpty(cubiertos)}">
+            <h2 class="h6 text-body-secondary"><i class="bi bi-check-circle me-1"></i>Cubiertos hoy</h2>
+            <ul class="list-group list-group-flush small">
+              <li class="list-group-item" th:each="cc : ${cubiertos}">
+                <span class="badge text-bg-success me-1">Cubierto</span><span class="fw-semibold" th:text="${cc.paciente}">Paciente</span>
+                <span class="d-block text-body-secondary" th:text="|${cc.medico} · ${#temporals.format(cc.inicio, 'EEE d HH:mm')} a ${#temporals.format(cc.fin, 'HH:mm')}|">Médico · hora</span>
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="col-xl-9" th:if="${actual != null}">
           <div class="alert alert-light border small">
+            <div th:if="${actual.restoDe != null}" class="mb-1"><span class="badge text-bg-info me-1">Resto de un cupo ya cubierto</span><span th:text="|${actual.restoDe}; esto es lo que sobró del bloque.|">Rosa cubrió 21:00 a 21:30</span></div>
             <div th:if="${actual.origen != null}" class="fw-semibold mb-1" th:text="|${actual.origen}: se liberó el horario de ${#temporals.format(actual.liberadoInicio, 'HH:mm')} a ${#temporals.format(actual.liberadoFin, 'HH:mm')} del ${#temporals.format(actual.liberadoInicio, 'EEEE d ''de'' MMMM')}.|">Canceló Carmen Ramírez: se liberó 08:15 a 08:45.</div>
             <span th:text="|Bloque de ${actual.minutos} minutos con ${actual.medico}, ${#temporals.format(actual.inicio, 'EEEE d ''de'' MMMM')} de ${#temporals.format(actual.inicio, 'HH:mm')} a ${#temporals.format(actual.fin, 'HH:mm')}.|">Bloque</span>
             <span th:if="${actual.bloqueAmpliado()}">El sistema une el horario liberado con el tiempo libre que ya había alrededor, para que quepan más candidatos.</span>
@@ -72,8 +97,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
               <div class="modal-body">
                 <input type="hidden" name="posicion" th:value="${ca.posicion}">
-                <input type="hidden" name="inicioPropuesto" th:value="${#temporals.format(ca.inicioPropuesto, 'yyyy-MM-dd''T''HH:mm')}">
-                <p class="small text-body-secondary" th:text="|Su cita del ${#temporals.format(ca.citaActual, 'dd/MM HH:mm')} pasaría a las ${#temporals.format(ca.inicioPropuesto, 'HH:mm')} · contacto ${ca.telefonoContacto ?: 'sin teléfono'}|">Detalle</p>
+                <p class="small text-body-secondary" th:text="|Su cita del ${#temporals.format(ca.citaActual, 'dd/MM HH:mm')} pasaría a este bloque · contacto ${ca.telefonoContacto ?: 'sin teléfono'}|">Detalle</p>
+                <label class="form-label small" th:for="|hora-${ca.idCita}|">Si acepta, ¿a qué hora pasa?</label>
+                <select class="form-select form-select-sm mb-1" name="inicioPropuesto" th:id="|hora-${ca.idCita}|">
+                  <option th:each="h, hs : ${horas[ca.idCita]}" th:value="${#temporals.format(h, 'yyyy-MM-dd''T''HH:mm')}"
+                          th:text="|${#temporals.format(h, 'HH:mm')} a ${#temporals.format(h.plusMinutes(ca.duracionMin), 'HH:mm')}${hs.first ? ' (lo más pronto)' : ''}|">11:15</option>
+                </select>
+                <p class="small text-body-secondary mb-3">Si al paciente no le sirve la primera hora, elige otra dentro del bloque. Lo que quede libre vuelve a la lista.</p>
                 <div class="form-check mb-2" th:each="r, i : ${resultados}">
                   <input class="form-check-input" type="radio" name="resultado" th:value="${r.key}" th:id="|ll-${ca.idCita}-${i.index}|" th:checked="${i.first}">
                   <label class="form-check-label" th:for="|ll-${ca.idCita}-${i.index}|" th:text="${r.value}">Resultado</label>

@@ -159,6 +159,31 @@ public class CandidatoService {
     }
 
     /**
+    Las horas a las que se puede pasar la cita del candidato dentro del bloque: desde la primera a la que llega a
+    tiempo ({@code inicioPropuesto}) hasta la última en que todavía cabe, cada {@code incremento} minutos, sin cruzarse
+    con otra cita suya. Así recepción no queda atada al inicio del bloque si al paciente le conviene otra hora.
+    */
+    public List<LocalDateTime> horasPosibles(Long idOportunidad, Candidato ca) {
+        Oportunidad op = oportunidades.findById(idOportunidad)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Oportunidad inexistente " + idOportunidad));
+        int paso = Math.max(configuracion.incremento(), 5);
+        List<Cita> otras = citas.delPaciente(ca.idPaciente()).stream()
+            .filter(x -> !x.getIdCita().equals(ca.idCita()))
+            .filter(x -> !CitaRepository.CANCELADAS.contains(x.getEstado()))
+            .toList();
+        List<LocalDateTime> horas = new ArrayList<>();
+        for (LocalDateTime h = ca.inicioPropuesto(); !h.plusMinutes(ca.duracionMin()).isAfter(op.getFin());
+                h = h.plusMinutes(paso)) {
+            LocalDateTime ini = h;
+            LocalDateTime fin = h.plusMinutes(ca.duracionMin());
+            if (otras.stream().noneMatch(x -> x.getInicio().isBefore(fin) && x.getFin().isAfter(ini))) {
+                horas.add(h);
+            }
+        }
+        return horas;
+    }
+
+    /**
     Recepción deja a un candidato para el final de la lista de ese bloque. Se puede repetir sobre el mismo candidato
     (vuelve a quedar último); si ya es el último, no cambia nada y devuelve false. Solo ordena la lista: no cuenta como llamada ni entra
     en ninguna métrica.

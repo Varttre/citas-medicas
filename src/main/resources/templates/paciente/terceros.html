@@ -33,6 +33,11 @@
             <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-nom">Nombres</label><input class="form-control" id="t-nom" name="nombres" maxlength="80" th:value="${t?.nombres()}"></div>
             <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-ape">Apellidos</label><input class="form-control" id="t-ape" name="apellidos" maxlength="80" th:value="${t?.apellidos()}"></div>
             <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-nac">Fecha de nacimiento</label><input type="date" class="form-control" id="t-nac" name="fechaNacimiento" th:value="${t?.fechaNacimiento()}"></div>
+            <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-par">Parentesco <span class="text-body-secondary">(opcional)</span></label>
+              <select class="form-select" id="t-par" name="parentesco">
+                <option value="">Sin indicar</option>
+                <option th:each="pa : ${parentescos}" th:value="${pa}" th:text="${pa.texto}" th:selected="${t != null and t.parentesco() == pa}">Hijo/a</option>
+              </select></div>
             <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-tel">Teléfono <span class="text-body-secondary">(opcional)</span></label><input type="tel" class="form-control" id="t-tel" name="telefono" maxlength="20" th:value="${t?.telefono()}"></div>
           </div>
           <div class="form-check mt-3">
@@ -49,7 +54,7 @@
           <div class="d-flex align-items-center gap-3">
             <i class="bi bi-person-circle fs-3 text-primary"></i>
             <div><div class="fw-semibold" th:text="${x.nombre}">Nombre</div>
-              <div class="small text-body-secondary" th:text="|${x.tipoDocumento} ${x.nroDocumento} · ${x.edad} años · desde el ${#temporals.format(x.vinculadoEn, 'dd/MM/yyyy')}|">DNI</div></div>
+              <div class="small text-body-secondary" th:text="|${x.parentesco != null ? x.parentesco + ' · ' : ''}${x.tipoDocumento} ${x.nroDocumento} · ${x.edad} años · desde el ${#temporals.format(x.vinculadoEn, 'dd/MM/yyyy')}|">DNI</div></div>
           </div>
           <a class="btn btn-sm btn-outline-primary" th:href="@{/paciente/cita/nueva(tercero=${x.idPaciente})}">
             <i class="bi bi-calendar-plus me-1"></i>Agendar cita</a>

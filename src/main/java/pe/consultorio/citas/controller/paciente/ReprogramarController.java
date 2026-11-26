@@ -22,6 +22,7 @@ import pe.consultorio.citas.dto.ReprogramarSesion;
 import pe.consultorio.citas.entity.AlcancePreferencia;
 import pe.consultorio.citas.exception.HorarioOcupadoException;
 import pe.consultorio.citas.exception.ReglaNegocioException;
+import pe.consultorio.citas.service.ConfiguracionService;
 import pe.consultorio.citas.service.PortalPacienteService;
 import pe.consultorio.citas.service.PreferenciaService;
 import pe.consultorio.citas.service.ReprogramacionService;
@@ -44,16 +45,18 @@ public class ReprogramarController {
     private final BloqueoTemporalService bloqueos;
     private final ReprogramacionService reprogramacion;
     private final PreferenciaService preferencias;
+    private final ConfiguracionService configuracion;
     private final Clock reloj;
 
     public ReprogramarController(PortalPacienteService portal, DisponibilidadService disponibilidad,
             BloqueoTemporalService bloqueos, ReprogramacionService reprogramacion, PreferenciaService preferencias,
-            Clock reloj) {
+            ConfiguracionService configuracion, Clock reloj) {
         this.portal = portal;
         this.disponibilidad = disponibilidad;
         this.bloqueos = bloqueos;
         this.reprogramacion = reprogramacion;
         this.preferencias = preferencias;
+        this.configuracion = configuracion;
         this.reloj = reloj;
     }
 
@@ -114,6 +117,11 @@ public class ReprogramarController {
         model.addAttribute("c", c);
         model.addAttribute("nuevoInicio", r.nuevoInicio());
         model.addAttribute("nuevoFin", r.nuevoInicio().plusMinutes(c.duracionMin()));
+        // «Acepto ser llamado» se vuelve a evaluar con el horario nuevo (RC-046).
+        LocalDateTime ahora = LocalDateTime.now(reloj);
+        model.addAttribute("elegible", configuracion.elegibleAdelanto(ahora, r.nuevoInicio()));
+        model.addAttribute("maxDias", java.time.temporal.ChronoUnit.DAYS.between(ahora.toLocalDate(),
+            r.nuevoInicio().toLocalDate()));
         model.addAttribute("segundos", bloqueos.vigenteDe(usuario.getIdCuenta())
             .map(bloqueos::segundosRestantes).orElse(0L));
         return "paciente/reprogramar-2";
@@ -156,8 +164,13 @@ public class ReprogramarController {
             flash.addFlashAttribute("error", e.getMessage());
             return "redirect:/paciente/citas/" + id + "/reprogramar";
         }
+        String avisoPreferencia = null;
         if (nueva != null && !nueva.equals(c.preferencia())) {
-            preferencias.guardar(id, nueva, usuario.getIdCuenta());
+            try {
+                preferencias.guardar(id, nueva, usuario.getIdCuenta());
+            } catch (ReglaNegocioException e) {
+                avisoPreferencia = e.getMessage();
+            }
         } else if (nueva == null && c.preferencia() != null) {
             preferencias.revocar(id, usuario.getIdCuenta());
         }
@@ -165,6 +178,9 @@ public class ReprogramarController {
         sesion.removeAttribute(SESION);
         flash.addFlashAttribute("exito", "Cita reprogramada. El consultorio te llamará para confirmarla; tu horario "
             + "anterior ya está disponible para otros pacientes.");
+        if (avisoPreferencia != null) {
+            flash.addFlashAttribute("aviso", avisoPreferencia);
+        }
         return "redirect:/paciente/citas";
     }
 

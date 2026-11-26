@@ -161,7 +161,9 @@ public class PortalPacienteService {
             c.getMedico().getNombres() + " " + c.getMedico().getApellidos(), c.getEspecialidad().getNombre(),
             c.getTipoConsulta().getNombre(), c.getModalidad() == null ? "" : c.getModalidad().name(),
             PacienteService.textoEstado(c.getEstado()), vigente(c, ahora), tercero, c.getIndicaciones(),
-            c.getIndicacionesAdmin(), preferencia, estados.ventana(c, Transicion.CANCELADA_POR_PACIENTE).hasta());
+            c.getIndicacionesAdmin(), preferencia, estados.ventana(c, Transicion.CANCELADA_POR_PACIENTE).hasta(),
+            c.isElegibleAdelanto(),
+            java.time.temporal.ChronoUnit.DAYS.between(ahora.toLocalDate(), c.getInicio().toLocalDate()));
     }
 
     /** Motivos de la pantalla de WhatsApp y el texto que añaden al mensaje. «Otro» pide un agente. */

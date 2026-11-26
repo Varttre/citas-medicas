@@ -16,7 +16,7 @@
       </div>
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#versiones">Versiones de horario</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#excepciones">Excepciones</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#excepciones">Ausencias (excepciones)</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#duraciones">Duraciones por tipo</button></li>
       </ul>
       <div class="tab-content">
@@ -32,7 +32,7 @@
                 </div>
                 <div th:if="${#lists.isEmpty(horario.versiones)}" class="list-group-item text-body-secondary">Aún no tienes horario.</div>
               </div>
-              <p class="small text-body-secondary mt-3">Cada cambio de horario crea una versión que rige desde su fecha; las anteriores quedan como historial. Para ausencias puntuales usa Excepciones.</p>
+              <p class="small text-body-secondary mt-3">Cada cambio de horario crea una versión que rige desde su fecha; las anteriores quedan como historial. <strong>Para atender más horas, cambia aquí tu horario.</strong> Para no atender en fechas puntuales usa «Ausencias».</p>
             </div>
             <div class="col-lg-8">
               <form class="card shadow-sm mb-4" th:action="@{/medico/horario/versiones}" method="post" id="cambiar-horario">
@@ -74,15 +74,18 @@
         <!-- Excepciones -->
         <div class="tab-pane fade" id="excepciones">
           <form class="card shadow-sm mb-4" th:action="@{/medico/horario/excepciones}" method="post">
-            <div class="card-header fw-semibold">Nueva excepción</div>
+            <div class="card-header fw-semibold">Nueva ausencia</div>
             <div class="card-body row g-3 align-items-end">
+              <div class="col-12"><div class="alert alert-warning py-2 small mb-0"><i class="bi bi-exclamation-triangle me-1"></i>
+                Una ausencia <strong>quita</strong> esas horas de tu agenda: en ese tiempo no te podrán sacar citas (vacaciones, congreso, trámite).
+                <strong>No sirve para ampliar el horario</strong>: para atender más horas usa «Cambiar mi horario» en la pestaña «Versiones de horario».</div></div>
               <div class="col-md-2"><label class="form-label">Desde</label><input type="date" name="desde" class="form-control" required></div>
               <div class="col-md-2"><label class="form-label">Hasta</label><input type="date" name="hasta" class="form-control" required></div>
               <div class="col-md-2"><label class="form-label">Hora inicio</label><input type="time" name="horaInicio" step="900" class="form-control"></div>
               <div class="col-md-2"><label class="form-label">Hora fin</label><input type="time" name="horaFin" step="900" class="form-control"></div>
-              <div class="col-md-4"><label class="form-label">Motivo</label><input name="motivo" class="form-control" required maxlength="255"></div>
-              <div class="col-12"><button class="btn btn-primary">Agregar excepción</button>
-                <span class="small text-body-secondary ms-2">Sin horas = día completo.</span></div>
+              <div class="col-md-4"><label class="form-label">Motivo de la ausencia</label><input name="motivo" class="form-control" required maxlength="255" placeholder="Ej.: congreso, vacaciones"></div>
+              <div class="col-12"><button class="btn btn-primary">Bloquear estas horas</button>
+                <span class="small text-body-secondary ms-2">Sin horas = no atiende en todo el día.</span></div>
             </div>
           </form>
           <table class="table bg-body shadow-sm">
@@ -98,10 +101,10 @@
                   </form>
                 </td>
               </tr>
-              <tr th:if="${#lists.isEmpty(horario.excepciones)}"><td colspan="4" class="text-body-secondary text-center">Sin excepciones.</td></tr>
+              <tr th:if="${#lists.isEmpty(horario.excepciones)}"><td colspan="4" class="text-body-secondary text-center">Sin ausencias.</td></tr>
             </tbody>
           </table>
-          <p class="small text-body-secondary">Si una excepción cubre citas ya agendadas, se rechaza: primero hay que reprogramarlas.</p>
+          <p class="small text-body-secondary">Si una ausencia cubre citas ya agendadas, se rechaza: primero hay que reprogramarlas.</p>
         </div>
 
         <!-- Duraciones -->

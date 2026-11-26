@@ -34,11 +34,12 @@
           <div class="card shadow-sm" th:with="pr=${preferencia}">
             <div class="card-header fw-semibold">Disponibilidad inmediata</div>
             <div class="card-body">
-              <div class="form-check mb-3">
+              <p class="small text-body-secondary mb-0" th:unless="${elegible}" th:text="|Esta cita empieza en menos de ${minHoras} horas: no admite «Acepto ser llamado» (solo las citas que se sacan con al menos ${minHoras} horas de anticipación).|">No admite</p>
+              <div class="form-check mb-3" th:if="${elegible}">
                 <input class="form-check-input" type="checkbox" id="acepta-di" name="aceptaLlamada" value="true" th:checked="${pr != null}" data-muestra="#campos-di">
                 <label class="form-check-label" for="acepta-di">Acepto ser llamado si se libera un cupo antes.</label>
               </div>
-              <div id="campos-di" class="row g-3" th:classappend="${pr == null} ? 'd-none'">
+              <div id="campos-di" class="row g-3" th:if="${elegible}" th:classappend="${pr == null} ? 'd-none'">
                 <div class="col-12">
                   <label class="form-label">¿Con quién aceptas el adelanto?</label>
                   <div class="d-flex flex-wrap gap-3">
@@ -56,8 +57,10 @@
                   <div class="form-text" th:if="${nc.modalidad.name() == 'TELECONSULTA'}">En teleconsulta no necesitas trasladarte: puedes dejarlo en 0.</div>
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label" for="dias-previos">¿Cuántos días antes aceptas adelantarla?</label>
-                  <div class="input-group"><input type="number" class="form-control" id="dias-previos" name="diasPrevios" min="0" max="60" th:value="${pr != null ? pr.diasPrevios() : 3}"><span class="input-group-text">días</span></div>
+                  <label class="form-label" for="dias-previos">Hasta cuántos días antes aceptas adelantarla</label>
+                  <div class="input-group"><input type="number" class="form-control" id="dias-previos" name="diasPrevios" min="1" th:max="${maxDias}" th:value="${pr != null ? (pr.diasPrevios() > maxDias ? maxDias : pr.diasPrevios()) : (maxDias < 3 ? maxDias : 3)}"><span class="input-group-text">días</span>
+                    <button type="button" class="btn btn-outline-secondary" data-lo-mas-pronto="#dias-previos">Lo más pronto posible</button></div>
+                  <div class="form-text" th:text="|Entre 1 y ${maxDias} (los días que faltan para tu cita).|">Entre 1 y 5</div>
                 </div>
                 <p class="small text-body-secondary mb-0">Si se libera un horario que te sirve, recepción te llamará para ofrecértelo. Tu cita solo se mueve si aceptas.</p>
               </div>

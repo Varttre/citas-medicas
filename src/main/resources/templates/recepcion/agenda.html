@@ -13,7 +13,7 @@
 
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div><h1 class="h3 mb-0" th:text="${porPaciente} ? 'Citas del paciente' : (${unDia} ? 'Agenda del día' : 'Agenda por rango')">Agenda del día</h1>
-          <p class="text-body-secondary mb-0" th:if="${porPaciente}" th:text="|Pacientes que coinciden con «${q}» · todas las fechas · ${#lists.size(citas) == 1 ? '1 cita' : #lists.size(citas) + ' citas'}|">Paciente</p>
+          <p class="text-body-secondary mb-0" th:if="${porPaciente}" th:text="|Pacientes que coinciden con «${q}» · ${pacDesde == null ? 'todas las fechas' : (pacDesde == pacHasta ? 'el ' + #temporals.format(pacDesde, 'EEEE d ''de'' MMMM') : 'del ' + #temporals.format(pacDesde, 'd/MM') + ' al ' + #temporals.format(pacHasta, 'd/MM'))} · ${#lists.size(citas) == 1 ? '1 cita' : #lists.size(citas) + ' citas'}|">Paciente</p>
           <p class="text-body-secondary mb-0" th:if="${!porPaciente and unDia}" th:text="|${#temporals.format(fecha, 'EEEE d ''de'' MMMM')} · ${medico == null ? 'todos los médicos' : 'un médico'}|">Día</p>
           <p class="text-body-secondary mb-0" th:if="${!porPaciente and !unDia}" th:text="|Del ${#temporals.format(fecha, 'd ''de'' MMMM')} al ${#temporals.format(hasta, 'd ''de'' MMMM')} · ${#lists.size(citas) == 1 ? '1 cita' : #lists.size(citas) + ' citas'}|">Rango</p></div>
         <a th:href="@{/recepcion/cita/nueva}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
@@ -21,7 +21,7 @@
       <form class="card shadow-sm mb-3" th:action="@{/recepcion/agenda}" method="get">
         <div class="card-body row g-2 align-items-end">
           <div class="col-6 col-md-3 col-xl-2"><label class="form-label small mb-1" for="a-fecha">Día o desde</label>
-            <input type="date" class="form-control" id="a-fecha" name="fecha" th:value="${porPaciente} ? '' : ${fecha}"></div>
+            <input type="date" class="form-control" id="a-fecha" name="fecha" th:value="${porPaciente} ? ${pacDesde} : ${fecha}"></div>
           <div class="col-6 col-md-3 col-xl-2"><label class="form-label small mb-1" for="a-hasta">Hasta <span class="text-body-secondary">(opcional)</span></label>
             <input type="date" class="form-control" id="a-hasta" name="hasta" th:value="${hasta}"></div>
           <div class="col-md-6 col-xl-3"><label class="form-label small mb-1" for="a-medico">Médico</label>
@@ -45,12 +45,12 @@
             </select></div>
           <div class="col-md-6 col-xl-1"><button class="btn btn-outline-primary w-100">Ver</button></div>
           <div class="col-12"><hr class="my-1"></div>
-          <div class="col-md-8 col-xl-6"><label class="form-label small mb-1" for="a-q">O busca las citas de un paciente (DNI o nombre), en todas las fechas</label>
+          <div class="col-md-8 col-xl-6"><label class="form-label small mb-1" for="a-q">Paciente (DNI o nombre) <span class="text-body-secondary">— con el día elegido, o en todas las fechas si lo dejas vacío</span></label>
             <input class="form-control" id="a-q" name="q" th:value="${q}" placeholder="Ej.: 45871236 o Rosa Ruiz"></div>
           <div class="col-md-4 col-xl-2 d-flex gap-2">
             <button class="btn btn-outline-primary flex-grow-1" name="buscar" value="1"><i class="bi bi-search me-1"></i>Buscar</button>
             <a th:if="${porPaciente}" class="btn btn-outline-secondary" th:href="@{/recepcion/agenda}">Quitar</a></div>
-          <div class="col-12 small text-body-secondary">Con paciente se ignoran las fechas; se aplican los demás filtros. Rango de hasta 62 días.</div>
+          <div class="col-12 small text-body-secondary">Paciente y fechas se combinan: borra el día para ver todas sus citas. Rango de hasta 62 días.</div>
         </div>
       </form>
 

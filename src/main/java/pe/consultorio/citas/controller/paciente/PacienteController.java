@@ -81,6 +81,7 @@ public class PacienteController {
     public String terceros(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
         model.addAttribute("terceros", usuario == null ? List.of() : registro.terceros(usuario.getIdCuenta()));
         model.addAttribute("tiposDocumento", TipoDocumento.values());
+        model.addAttribute("parentescos", pe.consultorio.citas.entity.Parentesco.values());
         return "paciente/terceros";
     }
 
@@ -125,11 +126,15 @@ public class PacienteController {
         } else if (alcance == null || llegada == null || llegada < 0 || diasPrevios == null || diasPrevios < 0) {
             flash.addFlashAttribute("error", "Completa los tres datos de la disponibilidad inmediata.");
         } else {
-            preferencias.guardar(id, new PreferenciaDatos(alcance, "HORAS".equals(unidadLlegada) ? llegada * 60 : llegada,
-                diasPrevios), usuario.getIdCuenta());
-            flash.addFlashAttribute("exito", c.preferencia() == null
-                ? "Listo: te llamaremos si se libera un cupo antes de tu cita."
-                : "Disponibilidad inmediata actualizada. Tu antigüedad en la lista no cambia.");
+            try {
+                preferencias.guardar(id, new PreferenciaDatos(alcance,
+                    "HORAS".equals(unidadLlegada) ? llegada * 60 : llegada, diasPrevios), usuario.getIdCuenta());
+                flash.addFlashAttribute("exito", c.preferencia() == null
+                    ? "Listo: te llamaremos si se libera un cupo antes de tu cita."
+                    : "Disponibilidad inmediata actualizada. Tu antigüedad en la lista no cambia.");
+            } catch (ReglaNegocioException e) {
+                flash.addFlashAttribute("error", e.getMessage());
+            }
         }
         return "redirect:/paciente/citas";
     }

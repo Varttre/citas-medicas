@@ -10,9 +10,11 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.consultorio.citas.dto.CupoCubierto;
 import pe.consultorio.citas.dto.CupoLiberado;
 import pe.consultorio.citas.dto.FilaCola;
 import pe.consultorio.citas.entity.Cita;
+import pe.consultorio.citas.entity.EstadoOportunidad;
 import pe.consultorio.citas.entity.Oportunidad;
 import pe.consultorio.citas.entity.ResultadoLlamada;
 import pe.consultorio.citas.entity.TipoCola;
@@ -96,9 +98,33 @@ public class ColaService {
                     Duration.between(o.getInicio(), o.getFin()).toMinutes(),
                     Duration.between(ahora, o.getInicio()).toMinutes(),
                     candidatos.candidatos(o.getIdOportunidad()).size(),
-                    l == null ? null : l.inicio(), l == null ? null : l.fin(), l == null ? null : l.origen());
+                    l == null ? null : l.inicio(), l == null ? null : l.fin(), l == null ? null : l.origen(),
+                    restoDe(o));
             })
             .toList();
+    }
+
+    /** Cupos cubiertos hoy: ya no se ofrecen, pero recepción ve quién tomó cada uno. */
+    public List<CupoCubierto> cuposCubiertosHoy() {
+        return oportunidades.cubiertasHoy().stream()
+            .map(o -> {
+                Cita c = o.getCitaCobertura();
+                return new CupoCubierto(nombre(o.getMedico().getNombres(), o.getMedico().getApellidos()),
+                    c.getInicio(), c.getFin(), nombre(c.getPaciente().getNombres(), c.getPaciente().getApellidos()),
+                    o.getCerradaEn());
+            })
+            .toList();
+    }
+
+    /** Si el bloque es lo que sobró de un cupo ya cubierto: «Rosa Pérez cubrió 21:00 a 21:30». Si no, nulo. */
+    private static String restoDe(Oportunidad o) {
+        Oportunidad padre = o.getOportunidadPadre();
+        if (padre == null || padre.getEstado() != EstadoOportunidad.CUBIERTA || padre.getCitaCobertura() == null) {
+            return null;
+        }
+        Cita c = padre.getCitaCobertura();
+        return nombre(c.getPaciente().getNombres(), c.getPaciente().getApellidos()) + " cubrió "
+            + c.getInicio().format(HORA) + " a " + c.getFin().format(HORA);
     }
 
     private FilaCola filaConfirmacion(Cita c) {

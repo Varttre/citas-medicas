@@ -113,6 +113,10 @@
             <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="anticipacionConfirmH" class="form-control" min="0" max="168" th:value="${p.anticipacionConfirmH}" required><span class="input-group-text">horas</span></div></div>
           </div>
           <div class="row g-2 py-3 border-bottom align-items-center">
+            <div class="col-md-7"><div class="fw-semibold">Anticipación mínima para «Acepto ser llamado»</div><div class="small text-body-secondary">Una cita solo puede activar que la llamen si se liberó un cupo antes cuando se saca con al menos estas horas de anticipación. Se decide al sacarla (o reprogramarla): cambiar este valor no afecta a las citas ya sacadas.</div></div>
+            <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="minHorasAdelanto" class="form-control" min="0" max="720" th:value="${p.minHorasAdelanto}" required><span class="input-group-text">horas</span></div></div>
+          </div>
+          <div class="row g-2 py-3 border-bottom align-items-center">
             <div class="col-md-7"><div class="fw-semibold">Vigencia de una cita indicada</div><div class="small text-body-secondary">Cuánto dura por defecto la indicación de siguiente cita antes de vencer.</div></div>
             <div class="col-md-5"><div class="input-group" style="max-width:14rem"><input type="number" name="vigenciaIndicadaDias" class="form-control" min="1" max="365" th:value="${p.vigenciaIndicadaDias}" required><span class="input-group-text">días</span></div></div>
           </div>

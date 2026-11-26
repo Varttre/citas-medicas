@@ -212,4 +212,16 @@ public class ParametroConsultorio {
     public void setTipoWebDefecto(TipoConsulta tipoWebDefecto) {
         this.tipoWebDefecto = tipoWebDefecto;
     }
+
+    /** Horas mínimas entre sacar la cita y su inicio para que pueda activar «Acepto ser llamado» (RC-046). */
+    @Column(name = "min_horas_adelanto", nullable = false)
+    private Short minHorasAdelanto;
+
+    public Short getMinHorasAdelanto() {
+        return minHorasAdelanto;
+    }
+
+    public void setMinHorasAdelanto(Short minHorasAdelanto) {
+        this.minHorasAdelanto = minHorasAdelanto;
+    }
 }

@@ -143,7 +143,7 @@ class ReprogramacionServiceTest {
         o = oportunidades.save(o);
 
         Cita lejana = cita(manana.plusDays(3).atTime(10, 0), EstadoCita.PROGRAMADA);
-        preferencias.guardar(lejana.getIdCita(), new PreferenciaDatos(AlcancePreferencia.MEDICO, 30, 0), null);
+        preferencias.guardar(lejana.getIdCita(), new PreferenciaDatos(AlcancePreferencia.MEDICO, 30, 1), null);
 
         Long idOportunidad = o.getIdOportunidad();
         assertThatThrownBy(() -> reprogramacion.adelantarPorCupo(lejana.getIdCita(), idOportunidad,

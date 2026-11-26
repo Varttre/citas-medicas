@@ -18,7 +18,7 @@
       <form class="card shadow-sm" th:action="@{/paciente/cita/nueva}" method="post"
             th:with="t=${tercero}, otra=${tercero != null or para.tercero or terceroElegido != null},
                      nuevo=${tercero != null or #lists.isEmpty(terceros)},
-                     sel=${terceroElegido != null ? terceroElegido : (#lists.isEmpty(terceros) ? null : terceros[0].idPaciente)}">
+                     sel=${terceroElegido}">
         <div class="card-body p-4">
           <h2 class="h5 mb-3">¿Para quién es la cita?</h2>
           <div class="row g-3 mb-2">
@@ -47,7 +47,7 @@
                   <input class="form-check-input flex-shrink-0" type="radio" name="idTercero" th:value="${x.idPaciente}"
                          th:checked="${!nuevo and x.idPaciente == sel}" data-oculta="#datos-nuevo">
                   <span><span class="fw-semibold" th:text="${x.nombre}">Nombre</span>
-                    <span class="d-block small text-body-secondary" th:text="|${x.tipoDocumento} ${x.nroDocumento} · ${x.edad} años|">DNI</span></span>
+                    <span class="d-block small text-body-secondary" th:text="|${x.parentesco != null ? x.parentesco + ' · ' : ''}${x.tipoDocumento} ${x.nroDocumento} · ${x.edad} años|">DNI</span></span>
                 </label>
                 <label class="list-group-item d-flex gap-3 align-items-center">
                   <input class="form-check-input flex-shrink-0" type="radio" name="idTercero" value="NUEVO" id="tercero-nuevo"
@@ -71,6 +71,11 @@
               <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-nom">Nombres</label><input class="form-control" id="t-nom" name="nombres" maxlength="80" th:value="${t?.nombres()}"></div>
               <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-ape">Apellidos</label><input class="form-control" id="t-ape" name="apellidos" maxlength="80" th:value="${t?.apellidos()}"></div>
               <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-nac">Fecha de nacimiento</label><input type="date" class="form-control" id="t-nac" name="fechaNacimiento" th:value="${t?.fechaNacimiento()}"></div>
+              <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-par">Parentesco <span class="text-body-secondary">(opcional)</span></label>
+                <select class="form-select" id="t-par" name="parentesco">
+                  <option value="">Sin indicar</option>
+                  <option th:each="pa : ${parentescos}" th:value="${pa}" th:text="${pa.texto}" th:selected="${t != null and t.parentesco() == pa}">Hijo/a</option>
+                </select></div>
               <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-tel">Teléfono <span class="text-body-secondary">(opcional)</span></label><input type="tel" class="form-control" id="t-tel" name="telefono" maxlength="20" th:value="${t?.telefono()}"></div>
             </div>
             <div class="form-check mt-3">

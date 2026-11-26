@@ -251,4 +251,19 @@ public class Cita {
     public void setCreadoEn(LocalDateTime creadoEn) {
         this.creadoEn = creadoEn;
     }
+
+    /**
+    Si la cita puede activar «Acepto ser llamado»: se fija al sacarla (había al menos min_horas_adelanto horas hasta
+    su inicio) y se vuelve a evaluar al reprogramarla. Cambiar el parámetro no la modifica (RC-046).
+    */
+    @Column(name = "elegible_adelanto", nullable = false)
+    private boolean elegibleAdelanto;
+
+    public boolean isElegibleAdelanto() {
+        return elegibleAdelanto;
+    }
+
+    public void setElegibleAdelanto(boolean elegibleAdelanto) {
+        this.elegibleAdelanto = elegibleAdelanto;
+    }
 }

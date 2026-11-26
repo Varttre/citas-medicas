@@ -69,8 +69,13 @@ public class AgendaRecepcionController {
         boolean porPaciente = q != null && !q.isBlank();
         LocalDate dia = fecha != null ? fecha : LocalDate.now(reloj);
         LocalDate fin = hasta != null ? hasta : dia;
+        // Con paciente, las fechas se combinan si se dieron (p. ej. el 26 + «Rosa»); si se dejan vacías, todas.
+        LocalDate pacDesde = porPaciente ? fecha : null;
+        LocalDate pacHasta = porPaciente && fecha != null ? (hasta != null ? hasta : fecha) : null;
         model.addAttribute("fecha", dia);
         model.addAttribute("hasta", hasta);
+        model.addAttribute("pacDesde", pacDesde);
+        model.addAttribute("pacHasta", pacHasta);
         model.addAttribute("medico", medico);
         model.addAttribute("especialidad", especialidad);
         model.addAttribute("estado", estado);
@@ -80,8 +85,8 @@ public class AgendaRecepcionController {
         model.addAttribute("medicos", OpcionFiltroMedico.de(portal.medicos(null)));
         model.addAttribute("especialidades", configuracion.especialidadesActivas());
         model.addAttribute("filtros", UriComponentsBuilder.newInstance()
-            .queryParamIfPresent("fecha", java.util.Optional.ofNullable(porPaciente ? null : dia))
-            .queryParamIfPresent("hasta", java.util.Optional.ofNullable(porPaciente ? null : hasta))
+            .queryParamIfPresent("fecha", java.util.Optional.ofNullable(porPaciente ? pacDesde : dia))
+            .queryParamIfPresent("hasta", java.util.Optional.ofNullable(porPaciente ? (pacDesde == null ? null : hasta) : hasta))
             .queryParamIfPresent("medico", java.util.Optional.ofNullable(medico))
             .queryParamIfPresent("especialidad", java.util.Optional.ofNullable(especialidad))
             .queryParamIfPresent("estado", java.util.Optional.ofNullable(estado == null || estado.isBlank() ? null : estado))
@@ -89,7 +94,8 @@ public class AgendaRecepcionController {
             .build().encode().getQuery());
         List<CitaAgenda> lista;
         try {
-            lista = agenda.buscar(porPaciente ? null : dia, porPaciente ? null : fin, medico, especialidad, estado, q);
+            lista = agenda.buscar(porPaciente ? pacDesde : dia, porPaciente ? pacHasta : fin, medico, especialidad,
+                estado, q);
         } catch (ReglaNegocioException e) {
             model.addAttribute("error", e.getMessage());
             lista = List.of();

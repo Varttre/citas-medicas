@@ -143,6 +143,8 @@ public class ReservaService {
             .noneMatch(x -> x.getEstado() == EstadoCita.REALIZADA));
         cita.setIndicacionesAdmin(c.indicacionesAdmin());
         cita.setCreadoEn(ahora);
+        // «Acepto ser llamado» se decide ahora y queda fijo (RC-046): cambiar el parámetro después no la toca.
+        cita.setElegibleAdelanto(configuracion.elegibleAdelanto(ahora, c.inicio()));
         try {
             cita = citas.saveAndFlush(cita);
         } catch (DataIntegrityViolationException e) {

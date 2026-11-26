@@ -28,6 +28,14 @@ function iniciarAlternancias() {
   });
 }
 
+/* «Lo más pronto posible»: <button data-lo-mas-pronto="#dias"> pone en el campo su máximo (los días que faltan). */
+function iniciarLoMasPronto() {
+  document.querySelectorAll('[data-lo-mas-pronto]').forEach(b => b.addEventListener('click', () => {
+    const campo = document.querySelector(b.dataset.loMasPronto);
+    if (campo && campo.max) campo.value = campo.max;
+  }));
+}
+
 /* Modo oscuro: botón flotante en todas las pantallas; la elección se guarda en este navegador. El tema se aplica
    antes de pintar con el script de la cabecera (fragmentos/base.html), para que no parpadee. */
 function iniciarTema() {
@@ -93,4 +101,5 @@ function iniciarFiltrosMedicoEspecialidad() {
 
 document.addEventListener('DOMContentLoaded', () => {
   iniciarCuentasRegresivas(); iniciarAlternancias(); iniciarTema(); iniciarFondo(); iniciarFiltrosMedicoEspecialidad();
+  iniciarLoMasPronto();
 });

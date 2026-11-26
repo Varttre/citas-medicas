@@ -56,11 +56,12 @@
           <div class="card shadow-sm">
             <div class="card-header fw-semibold">Disponibilidad inmediata</div>
             <div class="card-body">
-              <div class="form-check mb-3">
+              <p class="small text-body-secondary mb-0" th:unless="${elegible}" th:text="${c.preferencia != null} ? 'El nuevo horario es muy pronto para «Acepto ser llamado»: al reprogramar, esa opción se retira.' : 'El nuevo horario es muy pronto: no admite «Acepto ser llamado».'">No admite</p>
+              <div class="form-check mb-3" th:if="${elegible}">
                 <input class="form-check-input" type="checkbox" id="acepta-di" name="aceptaLlamada" value="true" th:checked="${c.preferencia != null}" data-muestra="#campos-di">
                 <label class="form-check-label" for="acepta-di" th:text="${c.preferencia != null} ? 'Sigo aceptando que me llamen si se libera un cupo antes del nuevo horario.' : 'Acepto que me llamen si se libera un cupo antes del nuevo horario.'">Acepto que me llamen</label>
               </div>
-              <div id="campos-di" class="row g-3">
+              <div id="campos-di" class="row g-3" th:if="${elegible}">
                 <div class="col-12">
                   <label class="form-label">¿Con quién aceptas el adelanto?</label>
                   <div class="d-flex flex-wrap gap-3">
@@ -73,8 +74,9 @@
                   <div class="input-group"><input type="number" class="form-control" id="min-llegada" name="minLlegada" min="0" max="1440" th:value="${c.preferencia != null ? c.preferencia.minLlegadaMin() : 60}"><span class="input-group-text">minutos</span></div>
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label" for="dias-previos">¿Cuántos días antes aceptas adelantarla?</label>
-                  <div class="input-group"><input type="number" class="form-control" id="dias-previos" name="diasPrevios" min="0" max="60" th:value="${c.preferencia != null ? c.preferencia.diasPrevios() : 3}"><span class="input-group-text">días</span></div>
+                  <label class="form-label" for="dias-previos">Hasta cuántos días antes aceptas adelantarla</label>
+                  <div class="input-group"><input type="number" class="form-control" id="dias-previos" name="diasPrevios" min="1" th:max="${maxDias}" th:value="${c.preferencia != null ? (c.preferencia.diasPrevios() > maxDias ? maxDias : c.preferencia.diasPrevios()) : (maxDias < 3 ? maxDias : 3)}"><span class="input-group-text">días</span>
+                    <button type="button" class="btn btn-outline-secondary" data-lo-mas-pronto="#dias-previos">Lo más pronto posible</button></div>
                 </div>
                 <p class="small text-body-secondary mb-0" th:if="${c.preferencia != null}">Tu preferencia se conserva tal como la tenías; aquí solo la ajustas si quieres. Tu antigüedad en la lista no cambia.</p>
               </div>

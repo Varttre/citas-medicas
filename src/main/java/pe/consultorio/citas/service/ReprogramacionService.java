@@ -88,7 +88,7 @@ public class ReprogramacionService {
     */
     @Transactional
     public void reprogramar(Long idCita, LocalDateTime nuevoInicio, Long actor) {
-        mover(cita(idCita, actor), nuevoInicio, null, actor, null);
+        mover(cita(idCita, actor), nuevoInicio, null, actor, null, false);
     }
 
     /**
@@ -97,7 +97,8 @@ public class ReprogramacionService {
     después se libera el anterior: al revés, si ambos son contiguos, el bloque liberado absorbería al que se está
     cubriendo y este quedaría como reemplazado en vez de cubierto (la recuperación no se contaría).
     */
-    private void mover(Cita c, LocalDateTime nuevoInicio, Medico medicoDestino, Long actor, String motivo) {
+    private void mover(Cita c, LocalDateTime nuevoInicio, Medico medicoDestino, Long actor, String motivo,
+            boolean porCupo) {
         LocalDateTime ahora = LocalDateTime.now(reloj);
         if (!VIGENTES.contains(c.getEstado()) || !c.getInicio().isAfter(ahora)) {
             throw new ReglaNegocioException("Esta cita ya no se puede reprogramar.");
@@ -139,6 +140,12 @@ public class ReprogramacionService {
         c.setInicio(nuevoInicio);
         c.setFin(nuevoFin);
         c.setEstado(EstadoCita.PROGRAMADA);
+        // Al reprogramar se vuelve a evaluar si admite «Acepto ser llamado» (RC-046). Si ya no, la preferencia se
+        // retira (un adelanto por cupo la consume después igual).
+        c.setElegibleAdelanto(configuracion.elegibleAdelanto(ahora, nuevoInicio));
+        if (!c.isElegibleAdelanto() && !porCupo) {
+            preferencias.revocar(c.getIdCita(), actor);
+        }
         try {
             citas.saveAndFlush(c);
         } catch (DataIntegrityViolationException e) {
@@ -202,7 +209,7 @@ public class ReprogramacionService {
             motivo = "Adelantada por cupo liberado: pasa de " + c.getMedico().getNombres() + " "
                 + c.getMedico().getApellidos() + " a " + destino.getNombres() + " " + destino.getApellidos();
         }
-        mover(c, nuevoInicio, destino, actor, motivo);
+        mover(c, nuevoInicio, destino, actor, motivo, true);
         preferencias.consumir(idCita, actor);
     }
 

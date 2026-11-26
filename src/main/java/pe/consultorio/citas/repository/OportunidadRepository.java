@@ -22,6 +22,11 @@ public interface OportunidadRepository extends JpaRepository<Oportunidad, Long> 
     @Query("select o from Oportunidad o join fetch o.medico where o.estado = 'ABIERTA' order by o.inicio")
     List<Oportunidad> abiertas();
 
+    /** Las cubiertas desde {@code desde}, con su médico y la cita que las cubrió, la más reciente primero. */
+    @Query("select o from Oportunidad o join fetch o.medico join fetch o.citaCobertura cc join fetch cc.paciente "
+        + "where o.estado = 'CUBIERTA' and o.cerradaEn >= :desde order by o.cerradaEn desc")
+    List<Oportunidad> cubiertasDesde(@Param("desde") LocalDateTime desde);
+
     /** Las abiertas cuya hora ya llegó pasan a EXPIRADA. */
     @Modifying
     @Query("update Oportunidad o set o.estado = 'EXPIRADA', o.cerradaEn = :ahora "

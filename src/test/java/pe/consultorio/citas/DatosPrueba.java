@@ -198,6 +198,7 @@ public class DatosPrueba {
         c.setInicio(inicio);
         c.setFin(inicio.plusMinutes(minutos));
         c.setEstado(estado);
+        c.setElegibleAdelanto(true);   // como si se hubiera sacado con anticipación (RC-046); las pruebas de la regla la fijan
         c.setModalidad(Modalidad.PRESENCIAL);
         c.setCanalOrigen(CanalOrigen.PRESENCIAL);
         c.setEsPrimeraVez(true);

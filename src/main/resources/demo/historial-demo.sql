@@ -3,7 +3,8 @@
 -- datos de las últimas cuatro semanas y de los próximos días.
 -- Crea: una médica de Pediatría, pacientes de ejemplo (uno es hijo de la paciente demo), citas pasadas en todos los
 -- estados, horarios liberados recuperados y vencidos, reprogramaciones, citas indicadas, llamadas de confirmación,
--- citas futuras con «Acepto ser llamado» y un horario liberado abierto con candidatos.
+-- citas futuras con «Acepto ser llamado», un horario liberado abierto con candidatos y 15 pacientes en espera (3 por
+-- médico) para que una cancelación en la demostración, a cualquier hora, tenga a quién llamar.
 DO $$
 DECLARE
     v_hoy        date := (now() AT TIME ZONE 'America/Lima')::date;
@@ -37,6 +38,13 @@ DECLARE
     v_n          int := 0;
     v_slot       record;
     v_fila       record;
+    -- Pacientes en espera (sección 6): siempre hay candidatos para un cupo que se libere en la demostración
+    v_nombres    text[] := ARRAY['Carlos','Lucía','Miguel','Patricia','Javier','Gabriela','Ricardo','Sofía',
+                                 'Fernando','Carmen','Diego','Isabel','Martín','Elena','Andrés'];
+    v_apellidos  text[] := ARRAY['Mendoza Paz','Ramos Díaz','Chávez Soto','Vargas Peña','Rojas Luna','Navarro Gil',
+                                 'Salinas Cruz','Medina Rey','Aguilar Mora','Benites Lara','Campos Vera',
+                                 'Delgado Ríos','Espinoza Leal','Fuentes Ruiz','Guerrero Sanz'];
+    v_doc        varchar;
 BEGIN
     IF EXISTS (SELECT 1 FROM cita WHERE estado = 'REALIZADA') THEN
         RETURN;
@@ -68,8 +76,8 @@ BEGIN
         SELECT v_qui, id_tipo_consulta, duracion_defecto FROM tipo_consulta WHERE activo;
         INSERT INTO horario_version (id_medico, vigente_desde) VALUES (v_qui, v_hoy - 60);
         INSERT INTO franja_horaria (id_horario_version, dia_semana, hora_inicio, hora_fin)
-        SELECT hv.id_horario_version, d, TIME '14:00', TIME '18:00'
-          FROM horario_version hv, generate_series(1, 5) d WHERE hv.id_medico = v_qui;
+        SELECT hv.id_horario_version, d, TIME '14:00', TIME '23:00'
+          FROM horario_version hv, generate_series(1, 7) d WHERE hv.id_medico = v_qui;
     END IF;
 
     -- 2. Pacientes de ejemplo (sin cuenta web: los registró recepción) y el hijo de la paciente demo
@@ -305,6 +313,52 @@ BEGIN
             END IF;
         END LOOP;
     END LOOP;
+
+    -- 6. Pacientes en espera: 3 por médico (con cita unas tres semanas después, ya pasada la semana de exposición) que
+    --    aceptaron que los llamen si se libera un cupo antes: 15 minutos para llegar y todos los días posibles. Así
+    --    cualquier cita que se cancele en la demostración, a la hora que sea, tiene candidatos. El tercero de cada
+    --    médico acepta cualquier médico de la especialidad (Cardiología y Medicina General tienen dos). Cada paciente
+    --    acepta un solo cupo por día: hay 3 por médico para poder ensayar varias veces el mismo día.
+    FOR v_slot IN
+        SELECT * FROM (VALUES
+            ('medico1@consultorio.pe', TIME '10:00', 1), ('medico2@consultorio.pe', TIME '18:00', 2),
+            ('medico3@consultorio.pe', TIME '15:00', 3), ('medico4@consultorio.pe', TIME '16:00', 4),
+            ('medico5@consultorio.pe', TIME '09:00', 5)) s(correo, hora, n)
+    LOOP
+        SELECT m.id_medico INTO v_med FROM medico m JOIN cuenta c USING (id_cuenta) WHERE c.correo = v_slot.correo;
+        CONTINUE WHEN v_med IS NULL;
+        SELECT id_especialidad INTO v_esp FROM medico_especialidad WHERE id_medico = v_med LIMIT 1;
+        FOR v_k IN 1..3 LOOP
+            v_off := (v_slot.n - 1) * 3 + v_k;
+            v_doc := '500000' || lpad(v_off::text, 2, '0');
+            INSERT INTO paciente (tipo_documento, nro_documento, nombres, apellidos, fecha_nacimiento, telefono)
+            VALUES ('DNI', v_doc, v_nombres[v_off], v_apellidos[v_off], DATE '1975-01-15' + v_off * 400,
+                    '9010000' || lpad(v_off::text, 2, '0'))
+            ON CONFLICT (tipo_documento, nro_documento) DO NOTHING;
+            SELECT id_paciente INTO v_pac FROM paciente WHERE tipo_documento = 'DNI' AND nro_documento = v_doc;
+            v_dia := v_hoy + 19 + v_k;
+            v_ini := v_dia + v_slot.hora;
+            v_fin := v_ini + INTERVAL '30 minutes';
+            INSERT INTO cita (id_paciente, id_medico, id_especialidad, id_tipo_consulta, inicio, fin, estado, modalidad,
+                              canal_origen, es_primera_vez, creado_en, elegible_adelanto)
+            VALUES (v_pac, v_med, v_esp, 1, v_ini, v_fin, 'PROGRAMADA', 'PRESENCIAL', 'TELEFONO', TRUE,
+                    v_ahora - make_interval(days => 2 + v_k), TRUE)
+            RETURNING id_cita INTO v_cita;
+            INSERT INTO cita_evento (id_cita, id_cuenta, tipo_evento, estado_nuevo, inicio_nuevo, fin_nuevo, fecha_hora)
+            VALUES (v_cita, v_rec, 'CREACION', 'PROGRAMADA', v_ini, v_fin, v_ahora - make_interval(days => 2 + v_k));
+            INSERT INTO preferencia_disponibilidad (id_cita, alcance, min_llegada_min, dias_previos, inscrito_en,
+                                                    consentido_en)
+            VALUES (v_cita, CASE WHEN v_k = 3 THEN 'ESPECIALIDAD' ELSE 'MEDICO' END, 15, v_dia - v_hoy,
+                    v_ahora - make_interval(days => 2 + v_k), v_ahora - make_interval(days => 2 + v_k));
+        END LOOP;
+    END LOOP;
+
+    -- 7. «Acepto ser llamado» se fija al sacar la cita (RC-046): las citas futuras del historial se sacaron con días de
+    --    anticipación, y las que ya tienen la preferencia la conservan.
+    UPDATE cita c SET elegible_adelanto = TRUE
+     WHERE c.inicio > v_ahora
+       AND (c.inicio - c.creado_en >= INTERVAL '24 hours'
+            OR EXISTS (SELECT 1 FROM preferencia_disponibilidad p WHERE p.id_cita = c.id_cita));
 
     RAISE NOTICE 'Historial de demostración creado: % citas pasadas', v_n;
 END $$;

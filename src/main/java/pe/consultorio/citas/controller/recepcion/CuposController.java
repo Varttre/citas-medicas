@@ -57,8 +57,7 @@ public class CuposController {
 
     @GetMapping
     public String lista(Model model) {
-        List<CupoLiberado> cupos = colas.cuposLiberados();
-        return ver(cupos, cupos.isEmpty() ? null : cupos.get(0).id(), model);
+        return ver(colas.cuposLiberados(), null, model);
     }
 
     @GetMapping("/{id}")
@@ -66,11 +65,25 @@ public class CuposController {
         return ver(colas.cuposLiberados(), id, model);
     }
 
+    /**
+    Arriba, los cupos con candidatos (los que recepción puede trabajar); aparte y plegados, los que no tienen a nadie
+    en la lista (se agendan normal), y debajo los cubiertos hoy, con quién los tomó.
+    */
     private String ver(List<CupoLiberado> cupos, Long seleccionado, Model model) {
-        CupoLiberado actual = cupos.stream().filter(c -> c.id().equals(seleccionado)).findFirst().orElse(null);
-        model.addAttribute("cupos", cupos);
+        List<CupoLiberado> conCandidatos = cupos.stream().filter(c -> c.candidatos() > 0).toList();
+        List<CupoLiberado> sinCandidatos = cupos.stream().filter(c -> c.candidatos() == 0).toList();
+        Long elegido = seleccionado != null ? seleccionado
+            : conCandidatos.isEmpty() ? null : conCandidatos.get(0).id();
+        CupoLiberado actual = cupos.stream().filter(c -> c.id().equals(elegido)).findFirst().orElse(null);
+        List<Candidato> lista = actual == null ? List.of() : candidatos.candidatos(actual.id());
+        Map<Long, List<LocalDateTime>> horas = new LinkedHashMap<>();
+        lista.forEach(ca -> horas.put(ca.idCita(), candidatos.horasPosibles(actual.id(), ca)));
+        model.addAttribute("cupos", conCandidatos);
+        model.addAttribute("sinCandidatos", sinCandidatos);
+        model.addAttribute("cubiertos", colas.cuposCubiertosHoy());
         model.addAttribute("actual", actual);
-        model.addAttribute("candidatos", actual == null ? List.of() : candidatos.candidatos(actual.id()));
+        model.addAttribute("candidatos", lista);
+        model.addAttribute("horas", horas);
         model.addAttribute("resultados", RESULTADOS);
         return "recepcion/cupos";
     }
