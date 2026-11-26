@@ -18,6 +18,13 @@
 
       <div class="card shadow-sm">
         <div class="card-body p-4">
+          <div th:if="${seguimiento != null}" class="alert alert-success d-flex gap-2">
+            <i class="bi bi-clipboard2-pulse fs-5"></i>
+            <div><strong th:text="|Cita indicada para ${seguimiento.paciente}|">Cita indicada</strong>:
+              <span th:text="|${seguimiento.tipo} · ${seguimiento.duracion} min, a partir del ${#temporals.format(seguimiento.fechaRecomendada, 'dd/MM/yyyy')}|">Seguimiento</span>.
+              <div class="small">Se muestran solo los médicos que atienden ese tipo de consulta. La cita indicada es solo para este paciente.</div></div>
+          </div>
+          <p th:if="${seguimiento == null and para.tercero}" class="small mb-3"><i class="bi bi-person me-1"></i><span th:text="|Para ${para.nombre}|">Para</span></p>
           <h2 class="h5 mb-3">Elige especialidad y médico</h2>
           <form class="row g-3 mb-4" th:action="@{/paciente/cita/nueva/2}" method="get">
             <div class="col-md-6"><label class="form-label" for="especialidad">Especialidad</label>
@@ -28,7 +35,7 @@
               </select></div>
           </form>
           <div class="list-group">
-            <a th:each="m : ${medicos}" th:href="@{/paciente/cita/nueva/4(medico=${m.idMedico}, especialidad=${m.idEspecialidad})}"
+            <a th:each="m : ${medicos}" th:href="@{/paciente/cita/nueva/3(medico=${m.idMedico}, especialidad=${m.idEspecialidad})}"
                class="list-group-item list-group-item-action d-flex align-items-center gap-3">
               <i class="bi bi-person-badge fs-4 text-primary"></i>
               <div class="flex-grow-1"><div class="fw-semibold" th:text="${m.nombre}">Médico</div>
@@ -39,9 +46,11 @@
           </div>
           <div class="d-flex justify-content-between mt-4">
             <a th:href="@{/paciente/cita/nueva}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Atrás</a>
+            <button th:replace="~{paciente/pasos :: botonCancelar}"></button>
           </div>
         </div>
       </div>
+      <div th:replace="~{paciente/pasos :: modalCancelar}"></div>
     </main>
   </div>
 </div>

@@ -115,6 +115,22 @@ public class DatosPrueba {
         return m;
     }
 
+    /** Id de la primera especialidad del médico (la de su alta). */
+    public Short especialidadPrincipal(Medico m) {
+        return medicoEspecialidades.findAll().stream()
+            .filter(x -> x.getId().getIdMedico().equals(m.getIdMedico()))
+            .findFirst().orElseThrow().getId().getIdEspecialidad();
+    }
+
+    /** El médico pasa a atender además la especialidad {@code e}. */
+    @Transactional
+    public void agregarEspecialidad(Medico m, Especialidad e) {
+        MedicoEspecialidad me = new MedicoEspecialidad();
+        me.setMedico(medicos.getReferenceById(m.getIdMedico()));
+        me.setEspecialidad(especialidades.getReferenceById(e.getIdEspecialidad()));
+        medicoEspecialidades.save(me);
+    }
+
     /**
     Añade una franja de atención al médico, en la versión de horario que empieza en {@code desde} (la crea si no
     existe). {@code diaSemana}: 1 = lunes … 7 = domingo.

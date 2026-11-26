@@ -74,7 +74,7 @@ class MetricasRecuperacionTest {
             assertThat(g.pct()).isEqualTo(50);
         });
         try (XSSFWorkbook libro = new XSSFWorkbook(new ByteArrayInputStream(exportacion.exportar(r)))) {
-            assertThat(libro.getNumberOfSheets()).isEqualTo(4);
+            assertThat(libro.getNumberOfSheets()).isEqualTo(6);
             assertThat(libro.getSheet("Horarios recuperados").getRow(0).getCell(3).getStringCellValue())
                 .isEqualTo("Minutos recuperados");
         }

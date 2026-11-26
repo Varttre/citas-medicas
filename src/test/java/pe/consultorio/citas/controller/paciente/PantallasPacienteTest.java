@@ -18,8 +18,9 @@ import pe.consultorio.citas.PostgresTestConfig;
 @Import(PostgresTestConfig.class)
 class PantallasPacienteTest {
 
+    // El paso 3 (cita indicada) necesita un médico elegido: lo prueba SeguimientoTercerosTest.
     static final String[] RUTAS = {"/paciente/inicio", "/paciente/cita/nueva", "/paciente/cita/nueva/2",
-        "/paciente/cita/nueva/3", "/paciente/citas",
+        "/paciente/citas", "/paciente/terceros",
         "/paciente/citas/pasadas",
         "/paciente/avisos", "/paciente/whatsapp"};
 

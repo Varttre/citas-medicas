@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!-- Tarjetas de referencia médica: enlaces a fuentes oficiales de salud, en otra pestaña. Se usan en el inicio del
+     paciente y en la página pública -->
+<body>
+
+<section th:fragment="referencias(titulo, grande)">
+  <h2 class="h5 mb-3" th:text="${titulo}">Para cuidar tu salud</h2>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4" th:classappend="${grande} ? 'g-4 referencias-grandes' : 'g-3'">
+    <div class="col">
+      <div class="card h-100 shadow-sm referencia">
+        <img th:src="@{/img/ref-minsa.jpg}" class="card-img-top" alt="Ingreso a un centro de vacunación en Lima" loading="lazy">
+        <div class="card-body">
+          <i class="bi bi-shield-plus fs-3 text-primary"></i>
+          <h3 class="h6 mt-2">Ministerio de Salud del Perú</h3>
+          <p class="small text-body-secondary mb-0">Campañas de vacunación, alertas sanitarias y servicios de salud del país.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+          <a href="https://www.gob.pe/minsa" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Visitar <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 shadow-sm referencia">
+        <img th:src="@{/img/ref-medlineplus.jpg}" class="card-img-top" alt="Estetoscopio sobre un libro de medicina" loading="lazy">
+        <div class="card-body">
+          <i class="bi bi-book-half fs-3 text-primary"></i>
+          <h3 class="h6 mt-2">MedlinePlus en español</h3>
+          <p class="small text-body-secondary mb-0">Información confiable sobre enfermedades, medicamentos y exámenes médicos.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+          <a href="https://medlineplus.gov/spanish/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Visitar <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 shadow-sm referencia">
+        <img th:src="@{/img/ref-ops.jpg}" class="card-img-top" alt="Vacuna, algodón y jeringa" loading="lazy">
+        <div class="card-body">
+          <i class="bi bi-globe-americas fs-3 text-primary"></i>
+          <h3 class="h6 mt-2">Organización Panamericana de la Salud</h3>
+          <p class="small text-body-secondary mb-0">Prevención, vacunas y salud en las Américas.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+          <a href="https://www.paho.org/es" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Visitar <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 shadow-sm referencia">
+        <img th:src="@{/img/ref-oms.jpg}" class="card-img-top" alt="Una enfermera toma la presión arterial a una niña" loading="lazy">
+        <div class="card-body">
+          <i class="bi bi-globe2 fs-3 text-primary"></i>
+          <h3 class="h6 mt-2">Organización Mundial de la Salud</h3>
+          <p class="small text-body-secondary mb-0">Datos y recomendaciones de salud de alcance mundial.</p>
+        </div>
+        <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+          <a href="https://www.who.int/es" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Visitar <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

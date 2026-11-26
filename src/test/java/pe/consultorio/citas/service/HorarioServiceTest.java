@@ -76,7 +76,8 @@ class HorarioServiceTest {
 
         assertThatThrownBy(() -> horarios.crearVersion(m.getIdMedico(), NUEVA_VERSION, martesHastaLasCuatro, cuentaDe(m)))
             .isInstanceOfSatisfying(HorarioConCitasException.class, e -> {
-                assertThat(e.getMessage()).isEqualTo("Este cambio deja fuera 1 cita agendada. Reprográmalas primero.");
+                assertThat(e.getMessage())
+                    .isEqualTo("Este cambio deja fuera 1 cita agendada. Reprográmalas primero o amplía esas franjas.");
                 assertThat(e.getCitas()).singleElement()
                     .satisfies(a -> assertThat(a.idCita()).isEqualTo(cita.getIdCita()));
             });
@@ -128,15 +129,23 @@ class HorarioServiceTest {
         assertThat(horarios.verHorario(m.getIdMedico()).versiones()).hasSize(2);
     }
 
+    /** Antes se rechazaba («Ya hay una versión programada…»); desde el bloque 4 el horario nuevo la reemplaza. */
     @Test
-    void noSePuedeProgramarAntesDeUnaVersionYaProgramada() {
+    void unHorarioNuevoReemplazaAlQueYaEstabaProgramadoDespues() {
         Medico m = medicoConMartesDeOchoASeis();
-        List<FranjaDatos> franjas = List.of(new FranjaDatos(MARTES, LocalTime.of(8, 0), LocalTime.of(12, 0)));
-        horarios.crearVersion(m.getIdMedico(), LocalDate.of(2031, 6, 1), franjas, cuentaDe(m));
+        List<FranjaDatos> mananas = List.of(new FranjaDatos(MARTES, LocalTime.of(8, 0), LocalTime.of(12, 0)));
+        List<FranjaDatos> tardes = List.of(new FranjaDatos(MARTES, LocalTime.of(14, 0), LocalTime.of(19, 0)));
+        horarios.crearVersion(m.getIdMedico(), LocalDate.of(2031, 6, 1), mananas, cuentaDe(m));
 
-        assertThatThrownBy(() -> horarios.crearVersion(m.getIdMedico(), LocalDate.of(2031, 5, 1), franjas, cuentaDe(m)))
-            .isInstanceOf(ReglaNegocioException.class)
-            .hasMessage("Ya hay una versión programada desde el 01/06. Elimínala o cámbiala.");
+        horarios.crearVersion(m.getIdMedico(), LocalDate.of(2031, 5, 1), tardes, cuentaDe(m));
+
+        var versiones = horarios.verHorario(m.getIdMedico()).versiones();
+        assertThat(versiones).extracting(v -> v.vigenteDesde())
+            .containsExactlyInAnyOrder(VERSION_INICIAL, LocalDate.of(2031, 5, 1));
+        assertThat(versiones).filteredOn(v -> v.vigenteDesde().equals(VERSION_INICIAL)).singleElement()
+            .satisfies(v -> assertThat(v.vigenteHasta()).isEqualTo(LocalDate.of(2031, 4, 30)));
+        assertThat(versiones).filteredOn(v -> v.vigenteDesde().equals(LocalDate.of(2031, 5, 1))).singleElement()
+            .satisfies(v -> assertThat(v.franjas()).isEqualTo(tardes));
     }
 
     @Test

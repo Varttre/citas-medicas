@@ -120,11 +120,16 @@ class NuevaCitaTerceroTest {
                 .param("nroDocumento", existente.getNroDocumento()).param("nombres", "Otro").param("apellidos", "Nombre")
                 .param("fechaNacimiento", "2001-01-01").param("consentimiento", "true"))
             .andExpect(redirectedUrl("/paciente/cita/nueva"))
-            .andExpect(flash().attribute("error", "Revisa los datos o comunícate con el consultorio."));
+            .andExpect(flash().attribute("error", containsString("Documento y fecha de nacimiento")))
+            .andExpect(flash().attribute("error", containsString(existente.getNroDocumento())));
         mvc.perform(post("/paciente/cita/nueva").with(user(paciente)).with(csrf())
                 .param("paraQuien", "OTRA").param("tipoDocumento", "DNI").param("nroDocumento", "72000001")
                 .param("nombres", "Ana").param("apellidos", "Ruiz").param("fechaNacimiento", "2015-05-05"))
-            .andExpect(flash().attribute("error", containsString("consentimiento")));
+            .andExpect(flash().attribute("error", containsString("Consentimiento")));
+        mvc.perform(post("/paciente/cita/nueva").with(user(paciente)).with(csrf())
+                .param("paraQuien", "OTRA").param("tipoDocumento", "DNI").param("nroDocumento", "72000002")
+                .param("apellidos", "Ruiz").param("consentimiento", "true"))
+            .andExpect(flash().attribute("error", "Falta completar: nombres, fecha de nacimiento."));
         assertThat(vinculos.delPaciente(existente.getIdPaciente())).isEmpty();
         assertThat(pacientes.findById(existente.getIdPaciente()).orElseThrow().getNombres()).isEqualTo("Paciente");
     }

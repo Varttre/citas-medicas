@@ -13,7 +13,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import pe.consultorio.citas.dto.Metricas;
 
-/** Exporta las métricas del tablero a un libro de Excel (.xlsx) con Apache POI: una hoja por métrica. */
+/**
+Exporta el reporte del consultorio a un libro de Excel (.xlsx) con Apache POI: el resumen con los filtros aplicados,
+una hoja por métrica y el detalle por médico.
+*/
 @Service
 public class ExportacionService {
 
@@ -24,10 +27,27 @@ public class ExportacionService {
             fuente.setBold(true);
             negrita.setFont(fuente);
 
+            Sheet h0 = hoja(libro, "Resumen", negrita, "Dato", "Valor");
+            Metricas.ResumenCitas r = m.resumen();
+            Object[][] resumen = {
+                {"Desde", m.desde().toString()}, {"Hasta", m.hasta().toString()},
+                {"Médico", m.filtroMedico() != null ? m.filtroMedico() : "Todos"},
+                {"Especialidad", m.filtroEspecialidad() != null ? m.filtroEspecialidad() : "Todas"},
+                {"Citas", r.total()}, {"Realizadas", r.realizadas()}, {"No asistió", r.noAsistio()},
+                {"Canceló el paciente", r.canceladasPaciente()}, {"Canceló el consultorio", r.canceladasClinica()},
+                {"Reprogramadas (al menos una vez)", r.reprogramadas()}, {"Por atender", r.porAtender()},
+                {"En atención", r.enAtencion()},
+                {"Horarios soltados", m.horariosSoltados()}, {"Horarios recuperados", m.horariosRecuperados()},
+                {"Minutos soltados", m.minutosSoltados()}, {"Minutos recuperados", m.minutosRecuperados()}};
+            for (int k = 0; k < resumen.length; k++) {
+                fila(h0, k + 1, resumen[k]);
+            }
+
             Sheet h1 = hoja(libro, "Horarios recuperados", negrita, "Cubiertos", "Expirados", "% recuperado",
-                "Minutos recuperados", "Abiertos ahora");
+                "Minutos recuperados", "Horarios recuperados", "Horarios soltados", "Minutos soltados",
+                "Abiertos ahora");
             fila(h1, 1, m.cubiertas(), m.expiradas(), texto(m.recuperadosPct()), m.minutosRecuperados(),
-                m.abiertasAhora());
+                m.horariosRecuperados(), m.horariosSoltados(), m.minutosSoltados(), m.abiertasAhora());
 
             Sheet h2 = hoja(libro, "No asistencia", negrita, "Médico", "Especialidad", "Realizadas", "No asistió", "%");
             int i = 1;
@@ -45,6 +65,17 @@ public class ExportacionService {
                 "Con 2", "Con 3 o más");
             long[] d = m.citasPorReprogramaciones();
             fila(h4, 1, m.citasConEventos(), m.reprogramacionesPromedio(), m.reprogramacionesMax(), d[0], d[1], d[2], d[3]);
+
+            Sheet h5 = hoja(libro, "Por médico", negrita, "Médico", "Especialidad", "Citas", "Realizadas",
+                "No asistió", "Canceló el paciente", "Canceló el consultorio", "Reprogramadas", "Por atender",
+                "Horarios recuperados", "Minutos recuperados");
+            i = 1;
+            for (Metricas.DetalleMedico x : m.detalleMedicos()) {
+                Metricas.ResumenCitas y = x.resumen();
+                fila(h5, i++, x.medico(), x.especialidades(), y.total(), y.realizadas(), y.noAsistio(),
+                    y.canceladasPaciente(), y.canceladasClinica(), y.reprogramadas(), y.porAtender() + y.enAtencion(),
+                    x.horariosRecuperados(), x.minutosRecuperados());
+            }
 
             for (Sheet h : libro) {
                 for (int c = 0; c < h.getRow(0).getLastCellNum(); c++) {

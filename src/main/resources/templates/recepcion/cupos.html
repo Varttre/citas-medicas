@@ -22,19 +22,24 @@
             <a th:each="cu : ${cupos}" th:href="@{/recepcion/cupos/{id}(id=${cu.id})}" class="list-group-item list-group-item-action"
                th:classappend="${actual != null and actual.id == cu.id} ? 'active'">
               <div class="fw-semibold" th:text="${cu.medico}">Médico</div>
-              <div class="small" th:text="|${#temporals.format(cu.inicio, 'EEE d')} · ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}|">Hoy · 11:15 a 12:00</div>
+              <div class="small" th:if="${cu.liberadoInicio != null}"><span class="fw-semibold" th:text="|${#temporals.format(cu.liberadoInicio, 'EEE d')} · liberado ${#temporals.format(cu.liberadoInicio, 'HH:mm')} a ${#temporals.format(cu.liberadoFin, 'HH:mm')}|">Hoy · liberado 08:15 a 08:45</span></div>
+              <div class="small" th:classappend="${cu.liberadoInicio != null} ? 'opacity-75'" th:text="${cu.liberadoInicio != null} ? |Bloque libre ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}| : |${#temporals.format(cu.inicio, 'EEE d')} · ${#temporals.format(cu.inicio, 'HH:mm')} a ${#temporals.format(cu.fin, 'HH:mm')}|">Hoy · 11:15 a 12:00</div>
               <div class="d-flex gap-2 mt-1 small"><span class="badge text-bg-light" th:text="|${cu.minutos} min|">45 min</span><span th:text="${cu.empiezaEn()}">Empieza en 1 h 05</span></div>
               <div class="small" th:text="${cu.candidatos == 1} ? '1 candidato' : |${cu.candidatos} candidatos|">4 candidatos</div>
             </a>
           </div>
         </div>
         <div class="col-xl-9" th:if="${actual != null}">
-          <div class="alert alert-light border small" th:text="|Bloque de ${actual.minutos} minutos con ${actual.medico}, ${#temporals.format(actual.inicio, 'EEEE d ''de'' MMMM')} de ${#temporals.format(actual.inicio, 'HH:mm')} a ${#temporals.format(actual.fin, 'HH:mm')}. El sistema une el horario liberado con el tiempo libre de alrededor y ofrece el bloque completo.|">Bloque</div>
+          <div class="alert alert-light border small">
+            <div th:if="${actual.origen != null}" class="fw-semibold mb-1" th:text="|${actual.origen}: se liberó el horario de ${#temporals.format(actual.liberadoInicio, 'HH:mm')} a ${#temporals.format(actual.liberadoFin, 'HH:mm')} del ${#temporals.format(actual.liberadoInicio, 'EEEE d ''de'' MMMM')}.|">Canceló Carmen Ramírez: se liberó 08:15 a 08:45.</div>
+            <span th:text="|Bloque de ${actual.minutos} minutos con ${actual.medico}, ${#temporals.format(actual.inicio, 'EEEE d ''de'' MMMM')} de ${#temporals.format(actual.inicio, 'HH:mm')} a ${#temporals.format(actual.fin, 'HH:mm')}.|">Bloque</span>
+            <span th:if="${actual.bloqueAmpliado()}">El sistema une el horario liberado con el tiempo libre que ya había alrededor, para que quepan más candidatos.</span>
+          </div>
           <div class="card shadow-sm"><div class="table-responsive">
             <table class="table align-middle mb-0 small">
               <thead class="table-light"><tr><th></th><th>Candidato</th><th>Alcance</th><th>Llegada</th><th>Necesita</th><th>Calce</th><th>Inscrito</th><th>Modalidad</th><th>Propuesto</th><th></th></tr></thead>
               <tbody>
-                <tr th:each="ca : ${candidatos}" th:classappend="${ca.postergado} ? 'text-body-secondary'">
+                <tr th:each="ca, caStat : ${candidatos}" th:classappend="${ca.postergado} ? 'text-body-secondary'">
                   <td><span class="badge rounded-pill" th:classappend="${ca.postergado} ? 'text-bg-secondary' : 'text-bg-primary'" th:text="${ca.posicion}">1</span></td>
                   <td><div class="fw-semibold" th:text="${ca.paciente}">Paciente</div>
                     <div class="small text-body-secondary"><span th:text="${ca.telefonoContacto ?: 'Sin teléfono'}">915 223 118</span>
@@ -50,7 +55,7 @@
                   <td class="text-nowrap" th:text="${#temporals.format(ca.inicioPropuesto, 'HH:mm')}">11:15</td>
                   <td class="text-end text-nowrap">
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" th:attr="data-bs-target='#llamada-' + ${ca.idCita}">Registrar</button>
-                    <form th:unless="${ca.postergado}" class="d-inline" method="post" th:action="@{/recepcion/cupos/{id}/candidatos/{c}/postergar(id=${actual.id},c=${ca.idCita})}">
+                    <form th:unless="${caStat.last}" class="d-inline" method="post" th:action="@{/recepcion/cupos/{id}/candidatos/{c}/postergar(id=${actual.id},c=${ca.idCita})}">
                       <button class="btn btn-sm btn-outline-secondary" title="Mover al final"><i class="bi bi-arrow-down"></i><span class="visually-hidden">Mover al final</span></button></form>
                   </td>
                 </tr>
@@ -58,7 +63,7 @@
               </tbody>
             </table>
           </div></div>
-          <p class="small text-body-secondary mt-2">Solo aparecen pacientes que aceptaron adelantar su cita y que llegan a tiempo y caben en el bloque. Si se cubre solo parte del bloque, el resto vuelve a esta cola. «Mover al final» no cambia su fecha real de inscripción.</p>
+          <p class="small text-body-secondary mt-2">Solo aparecen pacientes que aceptaron adelantar su cita y que llegan a tiempo y caben en el bloque. Si se cubre solo parte del bloque, el resto vuelve a esta cola. «Mover al final» solo reordena esta lista: no cambia su fecha real de inscripción, no cuenta como llamada y no entra en ninguna métrica.</p>
 
           <div th:each="ca : ${candidatos}" class="modal fade" th:id="|llamada-${ca.idCita}|" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered"><form class="modal-content" method="post"

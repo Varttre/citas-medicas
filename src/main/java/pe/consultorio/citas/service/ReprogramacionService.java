@@ -11,11 +11,15 @@ import com.google.common.collect.TreeRangeSet;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.consultorio.citas.entity.AlcancePreferencia;
 import pe.consultorio.citas.entity.Cita;
 import pe.consultorio.citas.entity.CitaEvento;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCita;
 import pe.consultorio.citas.entity.EstadoOportunidad;
+import pe.consultorio.citas.entity.Medico;
+import pe.consultorio.citas.entity.MedicoEspecialidadId;
+import pe.consultorio.citas.entity.MedicoTipoConsultaId;
 import pe.consultorio.citas.entity.NombreRol;
 import pe.consultorio.citas.entity.Oportunidad;
 import pe.consultorio.citas.entity.TipoEvento;
@@ -27,6 +31,8 @@ import pe.consultorio.citas.repository.BloqueoTemporalRepository;
 import pe.consultorio.citas.repository.CitaEventoRepository;
 import pe.consultorio.citas.repository.CitaRepository;
 import pe.consultorio.citas.repository.CuentaRepository;
+import pe.consultorio.citas.repository.MedicoEspecialidadRepository;
+import pe.consultorio.citas.repository.MedicoTipoConsultaRepository;
 import pe.consultorio.citas.repository.OportunidadRepository;
 import pe.consultorio.citas.service.disponibilidad.DisponibilidadService;
 import pe.consultorio.citas.service.disponibilidad.Rejilla;
@@ -51,12 +57,17 @@ public class ReprogramacionService {
     private final PreferenciaService preferencias;
     private final OportunidadService oportunidadService;
     private final ConfiguracionService configuracion;
+    private final MedicoEspecialidadRepository medicoEspecialidades;
+    private final MedicoTipoConsultaRepository medicoTipos;
     private final Clock reloj;
 
     public ReprogramacionService(CitaRepository citas, CitaEventoRepository eventos, CuentaRepository cuentas,
             OportunidadRepository oportunidades, BloqueoTemporalRepository bloqueos,
             DisponibilidadService disponibilidad, PreferenciaService preferencias,
-            OportunidadService oportunidadService, ConfiguracionService configuracion, Clock reloj) {
+            OportunidadService oportunidadService, ConfiguracionService configuracion,
+            MedicoEspecialidadRepository medicoEspecialidades, MedicoTipoConsultaRepository medicoTipos, Clock reloj) {
+        this.medicoEspecialidades = medicoEspecialidades;
+        this.medicoTipos = medicoTipos;
         this.citas = citas;
         this.eventos = eventos;
         this.cuentas = cuentas;
@@ -77,7 +88,16 @@ public class ReprogramacionService {
     */
     @Transactional
     public void reprogramar(Long idCita, LocalDateTime nuevoInicio, Long actor) {
-        Cita c = cita(idCita, actor);
+        mover(cita(idCita, actor), nuevoInicio, null, actor, null);
+    }
+
+    /**
+    Mueve la cita a {@code nuevoInicio}; si {@code medicoDestino} no es nulo y es otro médico, la cita pasa a su agenda
+    (adelanto por un cupo de la especialidad). Primero se cubren los horarios liberados que ocupa el horario nuevo y
+    después se libera el anterior: al revés, si ambos son contiguos, el bloque liberado absorbería al que se está
+    cubriendo y este quedaría como reemplazado en vez de cubierto (la recuperación no se contaría).
+    */
+    private void mover(Cita c, LocalDateTime nuevoInicio, Medico medicoDestino, Long actor, String motivo) {
         LocalDateTime ahora = LocalDateTime.now(reloj);
         if (!VIGENTES.contains(c.getEstado()) || !c.getInicio().isAfter(ahora)) {
             throw new ReglaNegocioException("Esta cita ya no se puede reprogramar.");
@@ -95,11 +115,14 @@ public class ReprogramacionService {
         LocalDateTime finAnterior = c.getFin();
         LocalDateTime nuevoFin = nuevoInicio.plusMinutes(java.time.Duration.between(inicioAnterior, finAnterior)
             .toMinutes());
-        Long idMedico = c.getMedico().getIdMedico();
+        Medico medicoAnterior = c.getMedico();
+        Medico destino = medicoDestino != null ? medicoDestino : medicoAnterior;
+        boolean cambiaMedico = !destino.getIdMedico().equals(medicoAnterior.getIdMedico());
+        Long idMedico = destino.getIdMedico();
 
         RangeSet<LocalDateTime> libres = TreeRangeSet.create(
             disponibilidad.bloquesLibresDelDia(idMedico, nuevoInicio.toLocalDate()));
-        if (inicioAnterior.toLocalDate().equals(nuevoInicio.toLocalDate())) {
+        if (!cambiaMedico && inicioAnterior.toLocalDate().equals(nuevoInicio.toLocalDate())) {
             libres.add(Range.closedOpen(inicioAnterior, finAnterior));
         }
         if (!libres.encloses(Range.closedOpen(nuevoInicio, nuevoFin))) {
@@ -112,6 +135,7 @@ public class ReprogramacionService {
         }
 
         EstadoCita estadoAnterior = c.getEstado();
+        c.setMedico(destino);
         c.setInicio(nuevoInicio);
         c.setFin(nuevoFin);
         c.setEstado(EstadoCita.PROGRAMADA);
@@ -134,10 +158,11 @@ public class ReprogramacionService {
         ev.setFinAnterior(finAnterior);
         ev.setInicioNuevo(nuevoInicio);
         ev.setFinNuevo(nuevoFin);
+        ev.setMotivo(motivo);
         ev.setFechaHora(ahora);
         eventos.save(ev);
-        oportunidadService.liberar(c, inicioAnterior, finAnterior);
         oportunidadService.registrarCobertura(c);
+        oportunidadService.liberar(c, medicoAnterior, inicioAnterior, finAnterior);
         if (actor != null) {
             bloqueos.borrarDeCuenta(actor);
         }
@@ -145,7 +170,9 @@ public class ReprogramacionService {
 
     /**
     Adelanta la cita a un horario liberado que el paciente aceptó por teléfono: el horario debe estar dentro de un
-    bloque liberado aún abierto del mismo médico. Su preferencia de disponibilidad inmediata queda consumida.
+    bloque liberado aún abierto. Si el bloque es de otro médico, el paciente tiene que haber aceptado toda la
+    especialidad y ese médico debe atender la especialidad y el tipo de consulta de la cita; la cita pasa a su agenda
+    con la misma duración. Su preferencia de disponibilidad inmediata queda consumida.
     */
     @Transactional
     public void adelantarPorCupo(Long idCita, Long idOportunidad, LocalDateTime nuevoInicio, Long actor) {
@@ -156,11 +183,26 @@ public class ReprogramacionService {
             throw new ReglaNegocioException("Este horario liberado ya no está disponible.");
         }
         long minutos = java.time.Duration.between(c.getInicio(), c.getFin()).toMinutes();
-        if (!o.getMedico().getIdMedico().equals(c.getMedico().getIdMedico()) || nuevoInicio == null
-                || nuevoInicio.isBefore(o.getInicio()) || nuevoInicio.plusMinutes(minutos).isAfter(o.getFin())) {
+        if (nuevoInicio == null || nuevoInicio.isBefore(o.getInicio())
+                || nuevoInicio.plusMinutes(minutos).isAfter(o.getFin())) {
             throw new ReglaNegocioException("La cita no cabe en ese horario liberado.");
         }
-        reprogramar(idCita, nuevoInicio, actor);
+        Medico destino = o.getMedico();
+        String motivo = null;
+        if (!destino.getIdMedico().equals(c.getMedico().getIdMedico())) {
+            boolean aceptaEspecialidad = preferencias.vigenteDe(idCita)
+                .map(p -> p.getAlcance() == AlcancePreferencia.ESPECIALIDAD).orElse(false);
+            if (!aceptaEspecialidad
+                    || !medicoEspecialidades.existsById(new MedicoEspecialidadId(destino.getIdMedico(),
+                        c.getEspecialidad().getIdEspecialidad()))
+                    || !medicoTipos.existsById(new MedicoTipoConsultaId(destino.getIdMedico(),
+                        c.getTipoConsulta().getIdTipoConsulta()))) {
+                throw new ReglaNegocioException("Este paciente no puede pasar a la agenda de ese médico.");
+            }
+            motivo = "Adelantada por cupo liberado: pasa de " + c.getMedico().getNombres() + " "
+                + c.getMedico().getApellidos() + " a " + destino.getNombres() + " " + destino.getApellidos();
+        }
+        mover(c, nuevoInicio, destino, actor, motivo);
         preferencias.consumir(idCita, actor);
     }
 

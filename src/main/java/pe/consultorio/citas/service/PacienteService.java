@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.consultorio.citas.dto.OpcionTitular;
 import pe.consultorio.citas.dto.PacienteFicha;
 import pe.consultorio.citas.dto.PacienteForm;
 import pe.consultorio.citas.dto.PacienteResumen;
@@ -46,7 +47,7 @@ public class PacienteService {
         this.reloj = reloj;
     }
 
-    /** Hasta 50 pacientes cuyo documento, nombre o teléfono contiene el texto. Vacío si no se buscó nada. */
+    /** Hasta 50 pacientes cuyo documento o nombre contiene el texto. Vacío si no se buscó nada. */
     @Transactional(readOnly = true)
     public List<PacienteResumen> buscar(String q) {
         if (q == null || q.isBlank()) {
@@ -78,6 +79,24 @@ public class PacienteService {
         return new PacienteFicha(p.getIdPaciente(), p.getTipoDocumento().name(), p.getNroDocumento(), p.getNombres(),
             p.getApellidos(), p.getFechaNacimiento(), Period.between(p.getFechaNacimiento(), hoy).getYears(),
             p.getTelefono(), p.getCorreo(), propia, terceros, filas, indicadores(historial, hoy));
+    }
+
+    /**
+    Cuentas que pueden quedar como titular de una cita del paciente que agenda recepción: su cuenta propia (si tiene)
+    y las que agendan por él con el vínculo vigente. Con titular, se llama al teléfono del paciente propio de esa
+    cuenta; sin titular, al del paciente.
+    */
+    @Transactional(readOnly = true)
+    public List<OpcionTitular> titulares(Long idPaciente) {
+        List<OpcionTitular> opciones = new java.util.ArrayList<>();
+        cuentas.findByPacientePropioIdPaciente(idPaciente).ifPresent(c ->
+            opciones.add(new OpcionTitular(c.getIdCuenta(), c.getCorreo(), true, c.getPacientePropio().getTelefono())));
+        vinculos.delPaciente(idPaciente).stream()
+            .filter(v -> v.getRevocadoEn() == null)
+            .filter(v -> opciones.stream().noneMatch(o -> o.idCuenta().equals(v.getCuenta().getIdCuenta())))
+            .forEach(v -> opciones.add(new OpcionTitular(v.getCuenta().getIdCuenta(), v.getCuenta().getCorreo(), false,
+                v.getCuenta().getPacientePropio() == null ? null : v.getCuenta().getPacientePropio().getTelefono())));
+        return opciones;
     }
 
     /** Registra un paciente nuevo. El tipo y número de documento no se pueden repetir. */

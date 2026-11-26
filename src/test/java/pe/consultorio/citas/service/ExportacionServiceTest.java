@@ -54,7 +54,7 @@ class ExportacionServiceTest {
         assertThat(r.noAsistenciaPct()).isEqualTo(25);
 
         try (XSSFWorkbook libro = new XSSFWorkbook(new ByteArrayInputStream(exportacion.exportar(r)))) {
-            assertThat(libro.getNumberOfSheets()).isEqualTo(4);
+            assertThat(libro.getNumberOfSheets()).isEqualTo(6);
             assertThat(libro.getSheet("No asistencia").getRow(1).getCell(4).getStringCellValue()).isEqualTo("25 %");
             assertThat(libro.getSheet("Reprogramaciones").getRow(1).getCell(0).getNumericCellValue()).isEqualTo(4.0);
         }

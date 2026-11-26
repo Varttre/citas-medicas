@@ -2,6 +2,8 @@ package pe.consultorio.citas.service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.consultorio.citas.dto.ParaQuien;
 import pe.consultorio.citas.dto.RegistroForm;
 import pe.consultorio.citas.dto.TerceroForm;
+import pe.consultorio.citas.dto.TerceroVista;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.CuentaPaciente;
 import pe.consultorio.citas.entity.EstadoCuenta;
@@ -120,21 +123,35 @@ public class RegistroService {
     */
     @Transactional
     public ParaQuien vincularTercero(Long idCuenta, TerceroForm f) {
-        if (f.tipoDocumento() == null || vacio(f.nroDocumento()) || vacio(f.nombres()) || vacio(f.apellidos())
-                || f.fechaNacimiento() == null) {
-            throw new ReglaNegocioException("Completa el documento, los nombres, los apellidos y la fecha de nacimiento.");
+        java.util.List<String> faltan = new java.util.ArrayList<>();
+        if (f.tipoDocumento() == null) {
+            faltan.add("tipo de documento");
+        }
+        if (vacio(f.nroDocumento())) {
+            faltan.add("número de documento");
+        }
+        if (vacio(f.nombres())) {
+            faltan.add("nombres");
+        }
+        if (vacio(f.apellidos())) {
+            faltan.add("apellidos");
+        }
+        if (f.fechaNacimiento() == null) {
+            faltan.add("fecha de nacimiento");
+        }
+        if (!faltan.isEmpty()) {
+            throw new ReglaNegocioException("Falta completar: " + String.join(", ", faltan) + ".");
         }
         if (f.fechaNacimiento().isAfter(LocalDateTime.now(reloj).toLocalDate())) {
-            throw new ReglaNegocioException("La fecha de nacimiento no puede ser futura.");
+            throw new ReglaNegocioException("Fecha de nacimiento: no puede ser una fecha futura.");
         }
         if (!Boolean.TRUE.equals(f.consentimiento())) {
-            throw new ReglaNegocioException("Declara que tienes el consentimiento del paciente para agendar a su nombre.");
+            throw new ReglaNegocioException(
+                "Consentimiento: marca la casilla que declara que el paciente te autorizó a agendar a su nombre.");
         }
         Cuenta cuenta = cuentas.findById(idCuenta).orElseThrow(() -> new ReglaNegocioException("La cuenta no existe."));
         String nro = f.nroDocumento().trim();
-        Paciente existente = pacientes.findAll().stream()
-            .filter(p -> p.getTipoDocumento() == f.tipoDocumento() && p.getNroDocumento().equals(nro))
-            .findFirst().orElse(null);
+        Paciente existente = pacientes.findByTipoDocumentoAndNroDocumento(f.tipoDocumento(), nro).orElse(null);
         String aviso = null;
         Paciente paciente;
         if (existente == null) {
@@ -146,7 +163,9 @@ public class RegistroService {
             paciente.setFechaNacimiento(f.fechaNacimiento());
             paciente = pacientes.save(paciente);
         } else if (!existente.getFechaNacimiento().equals(f.fechaNacimiento())) {
-            throw new ReglaNegocioException("Revisa los datos o comunícate con el consultorio.");
+            throw new ReglaNegocioException("Documento y fecha de nacimiento: ya hay un paciente registrado con el "
+                + f.tipoDocumento() + " " + nro + " y la fecha de nacimiento no coincide. Revisa ambos datos; si están "
+                + "bien, comunícate con el consultorio.");
         } else {
             paciente = existente;
             if (!vacio(f.telefono()) && !digitos(f.telefono()).equals(digitos(existente.getTelefono()))) {
@@ -173,6 +192,33 @@ public class RegistroService {
                 existente == null ? "paciente nuevo registrado por la cuenta" : "paciente existente", null);
         }
         return new ParaQuien(idPaciente, nombre(paciente), true, aviso);
+    }
+
+    /** Los terceros que la cuenta puede agendar (vínculo sin revocar), del más antiguo al más nuevo. */
+    @Transactional(readOnly = true)
+    public List<TerceroVista> terceros(Long idCuenta) {
+        java.time.LocalDate hoy = LocalDateTime.now(reloj).toLocalDate();
+        return vinculos.vigentesDeCuenta(idCuenta).stream()
+            .map(v -> {
+                Paciente p = v.getPaciente();
+                return new TerceroVista(p.getIdPaciente(), nombre(p), p.getTipoDocumento().name(), p.getNroDocumento(),
+                    Period.between(p.getFechaNacimiento(), hoy).getYears(), v.getConsentimientoEn());
+            })
+            .toList();
+    }
+
+    /**
+    Para otra persona, eligiendo un tercero que la cuenta ya tiene: solo si el vínculo sigue vigente. Si el paciente
+    retiró su consentimiento o no es de la cuenta, no se puede.
+    */
+    @Transactional(readOnly = true)
+    public ParaQuien terceroVinculado(Long idCuenta, Long idPaciente) {
+        return vinculos.vigentesDeCuenta(idCuenta).stream()
+            .filter(v -> v.getPaciente().getIdPaciente().equals(idPaciente))
+            .findFirst()
+            .map(v -> new ParaQuien(idPaciente, nombre(v.getPaciente()), true, null))
+            .orElseThrow(() -> new ReglaNegocioException(
+                "Esa persona ya no está entre tus terceros. Elige otra o añádela de nuevo."));
     }
 
     private static String nombre(Paciente p) {

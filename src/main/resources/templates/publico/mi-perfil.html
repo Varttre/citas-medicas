@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Mi perfil')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('cuenta')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4 pagina-angosta">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+      <h1 class="h3 mb-4">Mi perfil</h1>
+
+      <div class="card shadow-sm mb-3"><div class="card-body">
+        <h2 class="h6 text-uppercase text-body-secondary">Tu cuenta</h2>
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8" th:text="${usuarioSesion.nombreMostrado}">Nombre</dd>
+          <dt class="col-sm-4">Correo</dt><dd class="col-sm-8" th:text="${usuarioSesion.username}">correo</dd>
+          <dt class="col-sm-4">Perfil</dt><dd class="col-sm-8 mb-0" th:text="${rolMostrado}">Rol</dd>
+        </dl>
+        <p class="small text-body-secondary mt-3 mb-0">Para cambiar tu nombre o tu correo, pídeselo al administrador.</p>
+      </div></div>
+
+      <div th:replace="~{fragmentos/base :: selectorFondo}"></div>
+      <div class="card shadow-sm"><div class="card-body">
+        <h2 class="h6 text-uppercase text-body-secondary">Cambiar contraseña</h2>
+        <form class="row g-3" th:action="@{/cuenta/perfil/contrasena}" method="post">
+          <div class="col-12"><label class="form-label" for="actual">Contraseña actual</label>
+            <input type="password" class="form-control" id="actual" name="actual" required autocomplete="current-password"></div>
+          <div class="col-sm-6"><label class="form-label" for="nueva">Nueva contraseña</label>
+            <input type="password" class="form-control" id="nueva" name="nueva" required minlength="8" maxlength="72" autocomplete="new-password"></div>
+          <div class="col-sm-6"><label class="form-label" for="confirmacion">Repite la nueva</label>
+            <input type="password" class="form-control" id="confirmacion" name="confirmacion" required minlength="8" maxlength="72" autocomplete="new-password"></div>
+          <div class="col-12"><button class="btn btn-primary">Cambiar contraseña</button>
+            <span class="small text-body-secondary ms-2">Se cerrarán tus sesiones y entrarás con la nueva.</span></div>
+        </form>
+      </div></div>
+    </main>
+  </div>
+</div>
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

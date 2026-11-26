@@ -48,9 +48,11 @@
             Al elegir uno, queda reservado para ti unos minutos mientras confirmas.</p>
           <div class="d-flex justify-content-between mt-4">
             <a th:href="@{/paciente/cita/nueva/2}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Atrás</a>
+            <button th:replace="~{paciente/pasos :: botonCancelar}"></button>
           </div>
         </div>
       </div>
+      <div th:replace="~{paciente/pasos :: modalCancelar}"></div>
     </main>
   </div>
 </div>

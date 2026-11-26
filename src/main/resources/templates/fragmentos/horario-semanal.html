@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Grilla del horario semanal: un día por fila con su casilla y hasta dos franjas. «v» es un mapa con los valores
+  (dia_{d}, ini_{d}_{n}, fin_{d}_{n}); «error» marca la grilla en rojo cuando el error es del horario.
+-->
+<div th:fragment="grilla(v, error)" class="table-responsive">
+  <table class="table table-sm align-middle small mb-1" aria-label="Horario semanal" th:classappend="${error} ? 'border border-danger'">
+    <thead><tr><th>Día</th><th>Franja 1</th><th>Franja 2 <span class="fw-normal text-body-secondary">(opcional)</span></th></tr></thead>
+    <tbody>
+      <tr th:each="d : ${#numbers.sequence(1, 7)}" th:with="nombre=${ {'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'}[d - 1]}">
+        <td><div class="form-check mb-0 text-nowrap"><input class="form-check-input" type="checkbox" th:name="|dia_${d}|" th:id="|dia_${d}|" value="1" th:checked="${v['dia_' + d] != null}">
+          <label class="form-check-label" th:for="|dia_${d}|" th:text="${nombre}">Lunes</label></div></td>
+        <td th:each="n : ${ {1, 2} }"><div class="d-flex gap-1">
+          <input type="time" step="900" class="form-control form-control-sm" th:name="|ini_${d}_${n}|" th:value="${v['ini_' + d + '_' + n]}" th:aria-label="|Inicio franja ${n} del ${nombre}|">
+          <input type="time" step="900" class="form-control form-control-sm" th:name="|fin_${d}_${n}|" th:value="${v['fin_' + d + '_' + n]}" th:aria-label="|Fin franja ${n} del ${nombre}|"></div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

@@ -10,3 +10,91 @@
     flex-shrink: 0;
   }
 }
+
+/* Modo oscuro: azul marino con letras claras (no negro). Se activa con el botón flotante y se recuerda en el navegador. */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #14213d;
+  --bs-body-bg-rgb: 20, 33, 61;
+  --bs-body-color: #e8eefc;
+  --bs-body-color-rgb: 232, 238, 252;
+  --bs-secondary-bg: #1c2d52;
+  --bs-secondary-bg-rgb: 28, 45, 82;
+  --bs-tertiary-bg: #10192f;
+  --bs-tertiary-bg-rgb: 16, 25, 47;
+  --bs-secondary-color: rgba(232, 238, 252, .7);
+  --bs-border-color: #2c3f6b;
+  --bs-emphasis-color: #ffffff;
+  --bs-link-color: #8fb6ff;
+  --bs-link-hover-color: #b5ceff;
+  --bs-link-color-rgb: 143, 182, 255;
+}
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .list-group-item,
+[data-bs-theme="dark"] .dropdown-menu,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .offcanvas { --bs-card-bg: #1a2a4d; background-color: #1a2a4d; }
+[data-bs-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .bg-light { background-color: var(--bs-secondary-bg) !important; }
+[data-bs-theme="dark"] .text-dark { color: var(--bs-body-color) !important; }
+[data-bs-theme="dark"] .table { --bs-table-bg: transparent; }
+[data-bs-theme="dark"] .table-light { --bs-table-bg: #22355f; --bs-table-color: #e8eefc; --bs-table-border-color: #2c3f6b; }
+[data-bs-theme="dark"] .table-warning { --bs-table-bg: #4a3f1a; --bs-table-color: #fff3cd; }
+
+#cambiar-tema {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1080;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .25);
+}
+
+/* Avisos del paciente plegados en la campana del inicio */
+.avisos-desplegable { width: min(22rem, 90vw); }
+.avisos-lista { max-height: 18rem; overflow-y: auto; }
+
+/* Fondos de patrón, muy tenues: solo para que la pantalla no se vea plana. Se ven entre las tarjetas, que tapan el
+   patrón con su propio fondo. Trazo gris azulado en modo claro y blanco en el oscuro. */
+:root {
+  --fondo-puntos: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='2' cy='2' r='1.1' fill='%2314213d' fill-opacity='.11'/%3E%3C/svg%3E");
+  --fondo-cruces: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 10v8M10 14h8' stroke='%2314213d' stroke-opacity='.09' stroke-width='1.2'/%3E%3C/svg%3E");
+  --fondo-sierra: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12'%3E%3Cpath d='M0 9l6-6 6 6 6-6 6 6' fill='none' stroke='%2314213d' stroke-opacity='.07' stroke-width='1.2'/%3E%3C/svg%3E");
+}
+[data-bs-theme="dark"] {
+  --fondo-puntos: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='2' cy='2' r='1.1' fill='%23ffffff' fill-opacity='.09'/%3E%3C/svg%3E");
+  --fondo-cruces: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 10v8M10 14h8' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1.2'/%3E%3C/svg%3E");
+  --fondo-sierra: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12'%3E%3Cpath d='M0 9l6-6 6 6 6-6 6 6' fill='none' stroke='%23ffffff' stroke-opacity='.06' stroke-width='1.2'/%3E%3C/svg%3E");
+}
+[data-fondo="puntos"] body, .muestra-fondo[data-fondo-muestra="puntos"] .muestra-fondo-cuadro { background-image: var(--fondo-puntos); }
+[data-fondo="cruces"] body, .muestra-fondo[data-fondo-muestra="cruces"] .muestra-fondo-cuadro { background-image: var(--fondo-cruces); }
+[data-fondo="sierra"] body, .muestra-fondo[data-fondo-muestra="sierra"] .muestra-fondo-cuadro { background-image: var(--fondo-sierra); }
+[data-fondo] body { background-attachment: fixed; }
+
+/* Muestras del selector de «Mi perfil» */
+.muestra-fondo { display: inline-flex; flex-direction: column; align-items: center; gap: .35rem; min-width: 5.5rem; }
+.muestra-fondo-cuadro { display: block; width: 4rem; height: 2.5rem; border-radius: .375rem;
+  border: 1px solid var(--bs-border-color); background-color: var(--bs-tertiary-bg); }
+
+/* Contenido centrado: en pantallas muy anchas queda una columna con margen a ambos lados; en pantallas normales ocupa
+   el ancho disponible. Las pantallas de formulario usan una columna más angosta, también centrada. */
+main.container-xl { max-width: 1200px; margin-inline: auto; }
+main.pagina-angosta { max-width: 52rem; }
+
+/* Página pública: icono redondo de cada especialidad */
+.icono-especialidad { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem;
+  border-radius: 50%; background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary); font-size: 1.25rem; }
+
+/* Portada pública: más alta, con la foto de una sala de espera desenfocada y atenuada detrás del texto */
+.portada { position: relative; overflow: hidden; min-height: 70vh; display: flex; align-items: center; }
+.portada::before { content: ""; position: absolute; inset: -20px; background: url("../img/sala-espera.jpg") center / cover no-repeat;
+  filter: blur(6px); opacity: .45; z-index: 0; }
+.portada::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(var(--bs-body-bg-rgb), .85) 0%,
+  rgba(var(--bs-body-bg-rgb), .55) 60%, rgba(var(--bs-body-bg-rgb), .35) 100%); z-index: 0; }
+.portada > .container { position: relative; z-index: 1; width: 100%; }
+
+/* Tarjetas de referencia con foto; en la página pública, más grandes */
+.referencia .card-img-top { height: 9rem; object-fit: cover; }
+.referencias-grandes .referencia .card-img-top { height: 13rem; }
+.referencias-grandes .referencia h3 { font-size: 1.1rem; }

@@ -27,6 +27,7 @@ import pe.consultorio.citas.exception.ReglaNegocioException;
 import pe.consultorio.citas.repository.AvisoRepository;
 import pe.consultorio.citas.repository.CitaRepository;
 import pe.consultorio.citas.repository.EspecialidadRepository;
+import pe.consultorio.citas.repository.MedicoEspecialidadRepository;
 import pe.consultorio.citas.repository.ParametroConsultorioRepository;
 import pe.consultorio.citas.repository.PlazoTransicionRepository;
 import pe.consultorio.citas.repository.TipoConsultaRepository;
@@ -48,18 +49,21 @@ public class ConfiguracionService {
     private final EspecialidadRepository especialidades;
     private final AvisoRepository avisos;
     private final CitaRepository citas;
+    private final MedicoEspecialidadRepository medicoEspecialidades;
     private final AuditoriaService auditoria;
     private final Clock reloj;
 
     public ConfiguracionService(ParametroConsultorioRepository parametros, PlazoTransicionRepository plazos,
             TipoConsultaRepository tipos, EspecialidadRepository especialidades, AvisoRepository avisos,
-            CitaRepository citas, AuditoriaService auditoria, Clock reloj) {
+            CitaRepository citas, MedicoEspecialidadRepository medicoEspecialidades, AuditoriaService auditoria,
+            Clock reloj) {
         this.parametros = parametros;
         this.plazos = plazos;
         this.tipos = tipos;
         this.especialidades = especialidades;
         this.avisos = avisos;
         this.citas = citas;
+        this.medicoEspecialidades = medicoEspecialidades;
         this.auditoria = auditoria;
         this.reloj = reloj;
     }
@@ -132,6 +136,12 @@ public class ConfiguracionService {
     /** Avisos visibles en el portal del paciente. */
     public List<Aviso> avisosActivos() {
         return todosLosAvisos().stream().filter(Aviso::isActivo).toList();
+    }
+
+    /** Un aviso visible en el portal; si no existe o está inactivo, el paciente ve «no encontrado». */
+    public Aviso avisoActivo(Long id) {
+        return avisos.findById(id).filter(Aviso::isActivo)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Aviso " + id + " inexistente o inactivo"));
     }
 
     /** Citas futuras aún vigentes (programadas o confirmadas) del tipo, las más próximas primero. */
@@ -308,6 +318,14 @@ public class ConfiguracionService {
             });
         Especialidad e = id == null ? new Especialidad() : especialidades.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Especialidad inexistente " + id));
+        if (id != null && e.isActivo() && !si(f.activo())) {
+            long activos = medicoEspecialidades.countByEspecialidadIdEspecialidadAndMedicoActivoTrue(id);
+            if (activos > 0) {
+                throw new ReglaNegocioException("No se puede desactivar «" + e.getNombre() + "»: "
+                    + (activos == 1 ? "1 médico activo la atiende" : activos + " médicos activos la atienden")
+                    + ". Mientras tenga médicos activos debe seguir activa (un médico dado de baja en Usuarios deja de contar).");
+            }
+        }
         List<String> cambios = new ArrayList<>();
         cambio(cambios, "nombre", e.getNombre(), nombre);
         cambio(cambios, "descripcion", e.getDescripcion(), descripcion);

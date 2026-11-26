@@ -15,6 +15,7 @@ import pe.consultorio.citas.config.ManejadorLoginFallido;
 import pe.consultorio.citas.config.SeguridadConfig;
 import pe.consultorio.citas.service.ConfiguracionService;
 import pe.consultorio.citas.service.CuentaService;
+import pe.consultorio.citas.service.SitioPublicoService;
 
 /** Prueba de la capa web sin base de datos: la página pública es accesible sin sesión. */
 @WebMvcTest(InicioController.class)
@@ -30,11 +31,25 @@ class InicioControllerTest {
     @MockitoBean
     ConfiguracionService configuracionService;
 
+    @MockitoBean
+    SitioPublicoService sitioPublicoService;
+
     @Test
     void laPaginaPublicaNoPideSesion() throws Exception {
         mvc.perform(get("/"))
             .andExpect(status().isOk())
             .andExpect(view().name("publico/inicio"));
+    }
+
+    /** Las dos subpáginas públicas, a las que llevan los avisos, también se abren sin sesión. */
+    @Test
+    void lasSubpaginasPublicasNoPidenSesion() throws Exception {
+        mvc.perform(get("/especialidades"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("publico/especialidades"));
+        mvc.perform(get("/como-agendar"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("publico/como-agendar"));
     }
 
     @Test

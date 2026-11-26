@@ -11,18 +11,27 @@
     <main class="container-xl p-3 p-lg-4">
       <div th:replace="~{fragmentos/base :: mensajes}"></div>
 
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div><h1 class="h3 mb-0">Mi agenda</h1>
-          <p class="text-body-secondary mb-0" th:text="${#temporals.format(fecha, 'EEEE d ''de'' MMMM ''de'' yyyy')}">Día</p></div>
-        <form class="d-flex gap-2" th:action="@{/medico/agenda}" method="get">
-          <input type="date" class="form-control" name="fecha" th:value="${fecha}">
+          <p class="text-body-secondary mb-0" th:if="${porPaciente}" th:text="|Citas de pacientes que coinciden con «${q}» · todas las fechas · ${#lists.size(citas) == 1 ? '1 cita' : #lists.size(citas) + ' citas'}|">Paciente</p>
+          <p class="text-body-secondary mb-0" th:if="${!porPaciente and unDia}" th:text="${#temporals.format(fecha, 'EEEE d ''de'' MMMM ''de'' yyyy')}">Día</p>
+          <p class="text-body-secondary mb-0" th:if="${!porPaciente and !unDia}" th:text="|Del ${#temporals.format(fecha, 'd ''de'' MMMM')} al ${#temporals.format(hasta, 'd ''de'' MMMM ''de'' yyyy')} · ${#lists.size(citas) == 1 ? '1 cita' : #lists.size(citas) + ' citas'}|">Rango</p></div>
+        <form class="d-flex flex-wrap gap-2 align-items-end" th:action="@{/medico/agenda}" method="get">
+          <div><label class="form-label small mb-1" for="m-fecha">Día o desde</label>
+            <input type="date" class="form-control" id="m-fecha" name="fecha" th:value="${porPaciente} ? '' : ${fecha}"></div>
+          <div><label class="form-label small mb-1" for="m-hasta">Hasta</label>
+            <input type="date" class="form-control" id="m-hasta" name="hasta" th:value="${hasta}"></div>
+          <div><label class="form-label small mb-1" for="m-q">Paciente (DNI o nombre)</label>
+            <input class="form-control" id="m-q" name="q" th:value="${q}" placeholder="Todas las fechas"></div>
           <button class="btn btn-outline-primary">Ver</button>
+          <a th:if="${porPaciente or !unDia}" class="btn btn-outline-secondary" th:href="@{/medico/agenda}">Hoy</a>
         </form>
       </div>
 
       <div class="card shadow-sm mb-3" th:each="c : ${citas}">
         <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
           <div>
+            <div class="small text-body-secondary" th:unless="${unDia}" th:text="${#temporals.format(c.inicio, 'EEEE dd/MM/yyyy')}">lunes 01/12/2026</div>
             <div class="fw-semibold" th:text="|${#temporals.format(c.inicio, 'HH:mm')}–${#temporals.format(c.fin, 'HH:mm')} · ${c.paciente}|">08:00 · Paciente</div>
             <div class="small text-body-secondary" th:text="|${c.tipo} · ${c.duracionMin()} min · ${c.modalidad == 'PRESENCIAL' ? 'Presencial' : 'Teleconsulta'}|">Tipo</div>
           </div>
@@ -39,10 +48,40 @@
               <input type="hidden" name="fecha" th:value="${fecha}">
               <input class="form-control form-control-sm" name="motivo" placeholder="Motivo" style="width:9rem" required>
               <button class="btn btn-sm btn-outline-danger">Cancelar</button></form>
+            <span th:if="${indicadasPorCita[c.idCita] != null}" class="badge text-bg-success" th:text="|Indicada: ${indicadasPorCita[c.idCita]}|">Indicada</span>
+            <button th:if="${(c.estadoCodigo == 'REALIZADA' or (c.asistio() and c.atencionIniciada)) and indicadasPorCita[c.idCita] == null}"
+                    class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" th:data-bs-target="|#indicar${c.idCita}|">
+              <i class="bi bi-calendar-plus me-1"></i>Indicar seguimiento</button>
           </div>
         </div>
+        <div class="border-top px-3 py-2 small bg-success-subtle" th:if="${pendientesPorCita[c.idCita] != null}">
+          <div th:each="p : ${pendientesPorCita[c.idCita]}">
+            <i class="bi bi-clipboard2-pulse me-1"></i><strong>Cita indicada pendiente:</strong>
+            <span th:text="|${p.tipo} · ${p.duracion} min, desde el ${#temporals.format(p.fechaRecomendada, 'dd/MM/yyyy')}, vigente hasta el ${#temporals.format(p.vigenteHasta, 'dd/MM/yyyy')} · indicada por ${p.medico}|">Seguimiento</span><span th:if="${p.indicaciones != null}" th:text="| · «${p.indicaciones}»|"></span>
+          </div>
+          <div class="text-body-secondary">Aún no está agendada. El paciente puede agendarla desde su cuenta o en recepción.</div>
+        </div>
+        <div class="collapse border-top" th:id="|indicar${c.idCita}|" th:if="${c.estadoCodigo == 'REALIZADA' or c.asistio()}">
+          <form class="card-body row g-2 align-items-end" method="post" th:action="@{/medico/citas/{id}/indicar(id=${c.idCita})}">
+            <input type="hidden" name="fecha" th:value="${fecha}">
+            <div class="col-sm-3"><label class="form-label small mb-1">Tipo</label>
+              <select class="form-select form-select-sm" name="idTipo">
+                <option th:each="t : ${tipos}" th:value="${t.idTipoConsulta}" th:selected="${t.nombre == 'Seguimiento'}" th:text="${t.nombre}">Seguimiento</option>
+              </select></div>
+            <div class="col-sm-2"><label class="form-label small mb-1">Duración</label>
+              <select class="form-select form-select-sm" name="duracion">
+                <option value="15">15 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option>
+              </select></div>
+            <div class="col-sm-3"><label class="form-label small mb-1">Desde el</label>
+              <input type="date" class="form-control form-control-sm" name="fechaRecomendada" th:value="${fecha.plusDays(30)}"></div>
+            <div class="col-sm-4"><label class="form-label small mb-1">Indicaciones para el paciente</label>
+              <input class="form-control form-control-sm" name="indicaciones" maxlength="500" placeholder="Ej.: traer resultados"></div>
+            <div class="col-12"><button class="btn btn-sm btn-primary">Guardar indicación</button>
+              <span class="small text-body-secondary ms-2">La vigencia se calcula con el parámetro del consultorio.</span></div>
+          </form>
+        </div>
       </div>
-      <p th:if="${#lists.isEmpty(citas)}" class="text-center text-body-secondary my-4">No tienes citas este día.</p>
+      <p th:if="${#lists.isEmpty(citas)}" class="text-center text-body-secondary my-4" th:text="${unDia} ? 'No tienes citas este día.' : 'No hay citas con estos filtros.'">No tienes citas este día.</p>
       <p class="small text-body-secondary">Para iniciar la atención, recepción debe registrar antes la llegada del paciente.</p>
     </main>
   </div>

@@ -39,6 +39,9 @@ deja un evento en cita_evento dentro de la misma transacción. Un médico solo a
 @Service
 public class CitaEstadoService {
 
+    /** Motivo que acompaña a un estado registrado después del plazo (alguien se olvidó de marcarlo a tiempo). */
+    static final String REGISTRO_TARDIO = "Registro tardío";
+
     private static final Set<EstadoCita> VIGENTES = EnumSet.of(EstadoCita.PROGRAMADA, EstadoCita.CONFIRMADA);
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm 'del' dd/MM");
     private static final int DURACION_MAXIMA_MIN = 240;
@@ -124,14 +127,17 @@ public class CitaEstadoService {
         oportunidades.liberar(c, c.getInicio(), c.getFin());
     }
 
-    /** Recepción registra que el paciente llegó (desde 30 minutos antes hasta el fin del día). */
+    /**
+    Recepción registra que el paciente llegó, desde 30 minutos antes. Pasado el plazo (fin del día) se puede registrar
+    igual, como registro tardío: no se sabe a qué hora llegó, así que se guarda la hora de la cita.
+    */
     @Transactional
     public void marcarLlegada(Long idCita, Long actor) {
         Cita c = cita(idCita, actor);
         exigirEstado(c, VIGENTES, "Solo se registra la llegada de una cita programada o confirmada.");
-        exigirPlazo(c, Transicion.ASISTIO, "registrar la llegada");
-        c.setHoraLlegada(ahora());
-        cambiar(c, EstadoCita.ASISTIO, actor, null);
+        boolean tarde = exigirInicio(c, Transicion.ASISTIO, "registrar la llegada");
+        c.setHoraLlegada(tarde ? c.getInicio() : ahora());
+        cambiar(c, EstadoCita.ASISTIO, actor, tarde ? REGISTRO_TARDIO : null);
         evento(c, TipoEvento.LLEGADA, null, null, actor, null);
     }
 
@@ -143,7 +149,8 @@ public class CitaEstadoService {
             throw new ReglaNegocioException("Recepción aún no registró la llegada del paciente.");
         }
         if (c.getInicioReal() == null) {
-            c.setInicioReal(ahora());
+            // Si se registra después del plazo, la hora real no se conoce: se usa la de la cita.
+            c.setInicioReal(fueraDePlazo(c, Transicion.REALIZADA) ? c.getInicio() : ahora());
             evento(c, TipoEvento.INICIO_ATENCION, null, null, actor, null);
         }
     }
@@ -155,20 +162,20 @@ public class CitaEstadoService {
         if (c.getEstado() != EstadoCita.ASISTIO || c.getInicioReal() == null) {
             throw new ReglaNegocioException("Primero inicia la atención.");
         }
-        exigirPlazo(c, Transicion.REALIZADA, "finalizar la atención");
-        LocalDateTime ahora = ahora();
-        c.setFinReal(ahora.isAfter(c.getInicioReal()) ? ahora : c.getInicioReal().plusMinutes(1));
-        cambiar(c, EstadoCita.REALIZADA, actor, null);
+        boolean tarde = exigirInicio(c, Transicion.REALIZADA, "finalizar la atención");
+        LocalDateTime fin = tarde ? c.getFin() : ahora();
+        c.setFinReal(fin.isAfter(c.getInicioReal()) ? fin : c.getInicioReal().plusMinutes(1));
+        cambiar(c, EstadoCita.REALIZADA, actor, tarde ? REGISTRO_TARDIO : null);
         evento(c, TipoEvento.FIN_ATENCION, null, null, actor, null);
     }
 
-    /** No asistió: desde 5 minutos después del inicio hasta el fin del día. */
+    /** No asistió: desde 5 minutos después del inicio; pasado el fin del día, como registro tardío. */
     @Transactional
     public void marcarNoAsistio(Long idCita, Long actor) {
         Cita c = cita(idCita, actor);
         exigirEstado(c, VIGENTES, "Solo una cita programada o confirmada puede marcarse como no asistida.");
-        exigirPlazo(c, Transicion.NO_ASISTIO, "marcar la inasistencia");
-        cambiar(c, EstadoCita.NO_ASISTIO, actor, null);
+        boolean tarde = exigirInicio(c, Transicion.NO_ASISTIO, "marcar la inasistencia");
+        cambiar(c, EstadoCita.NO_ASISTIO, actor, tarde ? REGISTRO_TARDIO : null);
     }
 
     /** El paciente llegó pero se fue sin ser atendido: ASISTIO → NO_ASISTIO con motivo. */
@@ -181,8 +188,8 @@ public class CitaEstadoService {
         if (c.getEstado() != EstadoCita.ASISTIO || c.getInicioReal() != null) {
             throw new ReglaNegocioException("Solo se registra el retiro de un paciente que llegó y aún no fue atendido.");
         }
-        exigirPlazo(c, Transicion.RETIRO, "registrar el retiro");
-        cambiar(c, EstadoCita.NO_ASISTIO, actor, motivo);
+        boolean tarde = exigirInicio(c, Transicion.RETIRO, "registrar el retiro");
+        cambiar(c, EstadoCita.NO_ASISTIO, actor, tarde ? motivo.trim() + " (" + REGISTRO_TARDIO + ")" : motivo);
     }
 
     /**
@@ -305,6 +312,25 @@ public class CitaEstadoService {
             throw new PlazoVencidoException("Ya pasó el plazo para " + accion + " (hasta las "
                 + v.hasta().format(HORA) + ").");
         }
+    }
+
+    /**
+    Para lo que se registra después de la cita (llegada, inasistencia, retiro y fin de la atención) solo se exige el
+    inicio del plazo: si alguien se olvidó, se puede registrar después del fin del día. Devuelve si es tardío; el
+    momento real del registro queda en la fecha del evento.
+    */
+    private boolean exigirInicio(Cita c, Transicion t, String accion) {
+        VentanaPlazo v = ventana(c, t);
+        if (v.desde() != null && ahora().isBefore(v.desde())) {
+            throw new PlazoVencidoException("Aún no se puede " + accion + ": se habilita a las "
+                + v.desde().format(HORA) + ".");
+        }
+        return v.hasta() != null && !ahora().isBefore(v.hasta());
+    }
+
+    private boolean fueraDePlazo(Cita c, Transicion t) {
+        VentanaPlazo v = ventana(c, t);
+        return v.hasta() != null && !ahora().isBefore(v.hasta());
     }
 
     private void cambiar(Cita c, EstadoCita nuevo, Long actor, String motivo) {

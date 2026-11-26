@@ -11,25 +11,75 @@ Sistema de gestión de citas y recuperación de agenda para un consultorio médi
 
 ## Requisitos
 
-- JDK 21 o superior. No hace falta instalar Maven: se usa el wrapper (`mvnw`).
-- Docker Desktop: para la base de datos local y para las pruebas de integración (Testcontainers).
+- JDK 21 o superior (`java -version` debe decir 21 o más). No hace falta instalar Maven: se usa el wrapper (`mvnw`).
+- Docker Desktop abierto: para la base de datos local y para las pruebas (Testcontainers).
 
-## Base de datos local
+## Levantar el programa (3 pasos)
 
-```bash
-docker run -d --name citas-pg -p 5432:5432 \
-  -e POSTGRES_DB=citas_medicas -e POSTGRES_USER=citas -e POSTGRES_PASSWORD=citas \
-  postgres:16-alpine
-```
+Se usan los puertos **5434** (base de datos) y **18080** (web) para no chocar con un PostgreSQL instalado en Windows
+(que suele ocupar el 5432) ni con otros programas en el 8080.
 
-La aplicación se conecta con esos valores por defecto; se cambian con las variables `DB_URL`, `DB_USER` y `DB_PASSWORD`.
-Flyway crea el esquema al arrancar. Para empezar de cero: `docker rm -f citas-pg` y volver a crear el contenedor.
-
-## Comandos
+**1. Crear la base de datos** (solo la primera vez):
 
 ```bash
-./mvnw test                                                    # compila y ejecuta las pruebas
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev          # arranca en http://localhost:8080 con datos de demostración
+docker run -d --name citas-pg -p 5434:5432 -e POSTGRES_DB=citas_medicas -e POSTGRES_USER=citas -e POSTGRES_PASSWORD=citas postgres:16-alpine
 ```
 
-En Windows se usa `mvnw.cmd` en lugar de `./mvnw`. Los usuarios de prueba del perfil `dev` están en `PLAN-MVP.md` (sección 13.6).
+Las veces siguientes basta con `docker start citas-pg` (o encenderlo desde Docker Desktop).
+
+**2. Arrancar la aplicación** desde la carpeta del proyecto (la que tiene `pom.xml`).
+
+En PowerShell (Windows):
+
+```powershell
+$env:DB_URL="jdbc:postgresql://localhost:5434/citas_medicas"
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev" "-Dspring-boot.run.arguments=--server.port=18080"
+```
+
+En CMD (Windows):
+
+```bat
+set DB_URL=jdbc:postgresql://localhost:5434/citas_medicas
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--server.port=18080
+```
+
+En Linux o macOS:
+
+```bash
+DB_URL=jdbc:postgresql://localhost:5434/citas_medicas ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--server.port=18080
+```
+
+Está listo cuando la consola dice `Started CitasMedicasApplication`. La primera vez tarda más porque descarga las
+dependencias. Flyway crea las tablas solo, y el perfil `dev` carga usuarios y datos de demostración.
+
+**3. Abrir** <http://localhost:18080> y entrar con una de estas cuentas (contraseña de todas: `Demo2026!`):
+
+| Perfil | Correo |
+| --- | --- |
+| Administrador | `admin@consultorio.pe` |
+| Recepción | `recepcion@consultorio.pe` |
+| Médico | `medico1@consultorio.pe` · `medico2@consultorio.pe` · `medico3@consultorio.pe` |
+| Paciente | `paciente@consultorio.pe` |
+
+Para detener la aplicación: `Ctrl + C` en la consola.
+
+## Pruebas
+
+```bash
+.\mvnw.cmd test        # Windows  (en Linux o macOS: ./mvnw test)
+```
+
+Las pruebas levantan su propia base de datos con Testcontainers: solo necesitan Docker abierto, no `citas-pg`.
+
+## Problemas frecuentes
+
+| Lo que aparece | Por qué | Qué hacer |
+| --- | --- | --- |
+| `la autentificación password falló para el usuario «citas»` | La aplicación se conectó a otro PostgreSQL (el de Windows, en el 5432), no al contenedor | Revisar que `DB_URL` apunte al puerto **5434** y que se haya puesto en la **misma** consola donde se arranca |
+| `Connection refused` o `Unable to obtain connection` | El contenedor está apagado | `docker start citas-pg` |
+| `Port 18080 was already in use` | La aplicación ya está abierta en otra consola | Cerrar la otra o cambiar `--server.port` por otro número |
+| `port is already allocated` al crear el contenedor | Ya existe algo en el 5434 | Usar otro puerto en ambos lados, p. ej. `-p 5435:5432` y `localhost:5435` en `DB_URL` |
+| `release version 21 not supported` | El JDK es anterior al 21 | Instalar JDK 21 y revisar `JAVA_HOME` |
+| Una cuenta de demostración no deja entrar | Se bloquea 15 minutos tras 5 intentos fallidos | Esperar o desbloquearla desde `admin@consultorio.pe` → Usuarios |
+
+**Empezar de cero** (borra todos los datos): `docker rm -f citas-pg` y repetir el paso 1.

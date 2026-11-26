@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pe.consultorio.citas.config.UsuarioSesion;
+import pe.consultorio.citas.dto.Candidato;
 import pe.consultorio.citas.dto.CupoLiberado;
 import pe.consultorio.citas.entity.ResultadoLlamada;
 import pe.consultorio.citas.exception.ReglaNegocioException;
@@ -80,6 +81,8 @@ public class CuposController {
             @RequestParam(required = false) String observacion, @RequestParam(defaultValue = "1") int posicion,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime inicioPropuesto,
             RedirectAttributes flash) {
+        Candidato quien = candidatos.candidatos(id).stream().filter(c -> c.idCita().equals(idCita)).findFirst()
+            .orElse(null);
         try {
             llamadas.registrarCupo(id, idCita, posicion, resultado, observacion, inicioPropuesto, usuario.getIdCuenta());
         } catch (ReglaNegocioException e) {
@@ -87,7 +90,11 @@ public class CuposController {
             return "redirect:/recepcion/cupos/" + id;
         }
         if (resultado == ResultadoLlamada.ACEPTO) {
-            flash.addFlashAttribute("exito", "Cita adelantada al " + inicioPropuesto.format(DIA_HORA) + ".");
+            String anterior = quien == null ? "" : " Su horario anterior (" + quien.citaActual().format(DIA_HORA)
+                + ") quedó libre y, si alguien puede tomarlo, aparece en esta lista como un cupo nuevo.";
+            flash.addFlashAttribute("exito", "Cupo cubierto: la cita de "
+                + (quien == null ? "el paciente" : quien.paciente()) + " se adelantó al "
+                + inicioPropuesto.format(DIA_HORA) + "." + anterior);
             return "redirect:/recepcion/cupos";
         }
         flash.addFlashAttribute("exito", "Llamada registrada: " + RESULTADOS.get(resultado).toLowerCase() + ".");
@@ -98,8 +105,11 @@ public class CuposController {
     @PostMapping("/{id}/candidatos/{idCita}/postergar")
     public String postergar(@AuthenticationPrincipal UsuarioSesion usuario, @PathVariable Long id,
             @PathVariable Long idCita, RedirectAttributes flash) {
-        candidatos.postergar(id, idCita, usuario.getIdCuenta());
-        flash.addFlashAttribute("exito", "Candidato movido al final de la lista.");
+        if (candidatos.postergar(id, idCita, usuario.getIdCuenta())) {
+            flash.addFlashAttribute("exito", "Candidato movido al final de la lista.");
+        } else {
+            flash.addFlashAttribute("aviso", "Ese candidato ya es el último de la lista.");
+        }
         return "redirect:/recepcion/cupos/" + id;
     }
 }

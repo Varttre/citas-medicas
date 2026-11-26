@@ -17,6 +17,7 @@ import pe.consultorio.citas.entity.CandidatoPostergado;
 import pe.consultorio.citas.entity.CandidatoPostergadoId;
 import pe.consultorio.citas.entity.Cita;
 import pe.consultorio.citas.entity.MedicoEspecialidadId;
+import pe.consultorio.citas.entity.MedicoTipoConsultaId;
 import pe.consultorio.citas.entity.Modalidad;
 import pe.consultorio.citas.entity.Oportunidad;
 import pe.consultorio.citas.entity.PreferenciaDisponibilidad;
@@ -25,6 +26,7 @@ import pe.consultorio.citas.repository.CandidatoPostergadoRepository;
 import pe.consultorio.citas.repository.CitaRepository;
 import pe.consultorio.citas.repository.CuentaRepository;
 import pe.consultorio.citas.repository.MedicoEspecialidadRepository;
+import pe.consultorio.citas.repository.MedicoTipoConsultaRepository;
 import pe.consultorio.citas.repository.OportunidadRepository;
 import pe.consultorio.citas.repository.PreferenciaDisponibilidadRepository;
 import pe.consultorio.citas.repository.RegistroLlamadaRepository;
@@ -34,7 +36,8 @@ import pe.consultorio.citas.service.disponibilidad.Rejilla;
 Para un horario liberado, la lista ordenada de pacientes a quienes recepción debe llamar.
 
 Un paciente es candidato si aceptó que lo llamen (preferencia sin revocar), su cita sigue vigente y es posterior al
-bloque, el bloque es con su médico (o con su especialidad, según lo que eligió), cae dentro de los días que aceptó
+bloque, el bloque es con su médico (o con su especialidad, según lo que eligió; si es otro médico, este debe atender su
+tipo de consulta), cae dentro de los días que aceptó
 adelantar, llega a tiempo con su margen de llegada, no tiene otra cita que se cruce y no aceptó ya otro cupo hoy.
 Se ordenan por puntaje; los que recepción postergó van al final.
 */
@@ -60,12 +63,14 @@ public class CandidatoService {
     private final CuentaRepository cuentas;
     private final ContactoService contacto;
     private final ConfiguracionService configuracion;
+    private final MedicoTipoConsultaRepository medicoTipos;
     private final Clock reloj;
 
     public CandidatoService(OportunidadRepository oportunidades, PreferenciaDisponibilidadRepository preferencias,
             CitaRepository citas, MedicoEspecialidadRepository medicoEspecialidades, RegistroLlamadaRepository llamadas,
             CandidatoPostergadoRepository postergados, CuentaRepository cuentas, ContactoService contacto,
-            ConfiguracionService configuracion, Clock reloj) {
+            ConfiguracionService configuracion, MedicoTipoConsultaRepository medicoTipos, Clock reloj) {
+        this.medicoTipos = medicoTipos;
         this.oportunidades = oportunidades;
         this.preferencias = preferencias;
         this.citas = citas;
@@ -100,6 +105,10 @@ public class CandidatoService {
                     : !medicoEspecialidades.existsById(new MedicoEspecialidadId(idMedico,
                         c.getEspecialidad().getIdEspecialidad()))) {
                 continue;                                                          // 3. alcance
+            }
+            if (!mismoMedico && !medicoTipos.existsById(new MedicoTipoConsultaId(idMedico,
+                    c.getTipoConsulta().getIdTipoConsulta()))) {
+                continue;                                                          // 3b. otro médico: su tipo
             }
             if (op.getInicio().toLocalDate().isBefore(c.getInicio().toLocalDate().minusDays(p.getDiasPrevios()))) {
                 continue;                                                          // 4. días que acepta adelantar
@@ -149,9 +158,17 @@ public class CandidatoService {
         return conPosicion;
     }
 
-    /** Recepción deja a un candidato para el final de la lista de ese bloque. No cuenta como llamada. */
+    /**
+    Recepción deja a un candidato para el final de la lista de ese bloque. Se puede repetir sobre el mismo candidato
+    (vuelve a quedar último); si ya es el último, no cambia nada y devuelve false. Solo ordena la lista: no cuenta como llamada ni entra
+    en ninguna métrica.
+    */
     @Transactional
-    public void postergar(Long idOportunidad, Long idCita, Long actor) {
+    public boolean postergar(Long idOportunidad, Long idCita, Long actor) {
+        List<Candidato> lista = candidatos(idOportunidad);
+        if (lista.isEmpty() || lista.get(lista.size() - 1).idCita().equals(idCita)) {
+            return false;
+        }
         CandidatoPostergadoId id = new CandidatoPostergadoId();
         id.setIdOportunidad(idOportunidad);
         id.setIdCita(idCita);
@@ -164,6 +181,7 @@ public class CandidatoService {
         p.setCuentaOperador(cuentas.getReferenceById(actor));
         p.setPostergadoEn(LocalDateTime.now(reloj));
         postergados.save(p);
+        return true;
     }
 
     /**

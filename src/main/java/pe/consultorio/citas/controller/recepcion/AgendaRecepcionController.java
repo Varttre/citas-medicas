@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 import pe.consultorio.citas.config.UsuarioSesion;
 import pe.consultorio.citas.dto.CitaAgenda;
+import pe.consultorio.citas.dto.OpcionFiltroMedico;
 import pe.consultorio.citas.entity.EstadoCita;
 import pe.consultorio.citas.exception.ReglaNegocioException;
 import pe.consultorio.citas.service.AgendaService;
@@ -29,8 +31,9 @@ import pe.consultorio.citas.service.ReprogramacionService;
 import pe.consultorio.citas.service.disponibilidad.DisponibilidadService;
 
 /**
-Agenda del día de recepción: citas de todos los médicos, llegada, inasistencia, retiro, cancelación, reprogramación
-y ajuste de duración.
+Agenda de recepción: citas de todos los médicos por día, por rango de días o por paciente, con filtros de médico,
+especialidad y estado; llegada, inasistencia, retiro, cancelación, reprogramación y ajuste de duración. Tras cada
+acción se vuelve a la misma vista, con los mismos filtros.
 */
 @Controller
 @RequestMapping("/recepcion")
@@ -60,12 +63,38 @@ public class AgendaRecepcionController {
 
     @GetMapping("/agenda")
     public String agenda(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam(required = false) Long medico, Model model) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Long medico, @RequestParam(required = false) Short especialidad,
+            @RequestParam(required = false) String estado, @RequestParam(required = false) String q, Model model) {
+        boolean porPaciente = q != null && !q.isBlank();
         LocalDate dia = fecha != null ? fecha : LocalDate.now(reloj);
+        LocalDate fin = hasta != null ? hasta : dia;
         model.addAttribute("fecha", dia);
+        model.addAttribute("hasta", hasta);
         model.addAttribute("medico", medico);
-        model.addAttribute("medicos", portal.medicos(null));
-        model.addAttribute("citas", agenda.delDia(dia, medico));
+        model.addAttribute("especialidad", especialidad);
+        model.addAttribute("estado", estado);
+        model.addAttribute("q", porPaciente ? q.trim() : null);
+        model.addAttribute("porPaciente", porPaciente);
+        model.addAttribute("unDia", !porPaciente && fin.equals(dia));
+        model.addAttribute("medicos", OpcionFiltroMedico.de(portal.medicos(null)));
+        model.addAttribute("especialidades", configuracion.especialidadesActivas());
+        model.addAttribute("filtros", UriComponentsBuilder.newInstance()
+            .queryParamIfPresent("fecha", java.util.Optional.ofNullable(porPaciente ? null : dia))
+            .queryParamIfPresent("hasta", java.util.Optional.ofNullable(porPaciente ? null : hasta))
+            .queryParamIfPresent("medico", java.util.Optional.ofNullable(medico))
+            .queryParamIfPresent("especialidad", java.util.Optional.ofNullable(especialidad))
+            .queryParamIfPresent("estado", java.util.Optional.ofNullable(estado == null || estado.isBlank() ? null : estado))
+            .queryParamIfPresent("q", java.util.Optional.ofNullable(porPaciente ? q.trim() : null))
+            .build().encode().getQuery());
+        List<CitaAgenda> lista;
+        try {
+            lista = agenda.buscar(porPaciente ? null : dia, porPaciente ? null : fin, medico, especialidad, estado, q);
+        } catch (ReglaNegocioException e) {
+            model.addAttribute("error", e.getMessage());
+            lista = List.of();
+        }
+        model.addAttribute("citas", lista);
         model.addAttribute("duraciones", duraciones());
         return "recepcion/agenda";
     }
@@ -107,14 +136,14 @@ public class AgendaRecepcionController {
     @PostMapping("/citas/{id}/duracion")
     public String duracion(@AuthenticationPrincipal UsuarioSesion usuario, @PathVariable Long id,
             @RequestParam int nuevaDuracion, @RequestParam(required = false) String fecha,
-            RedirectAttributes flash) {
+            @RequestParam(required = false) String filtros, RedirectAttributes flash) {
         try {
             estados.ajustarDuracion(id, nuevaDuracion, usuario.getIdCuenta());
             flash.addFlashAttribute("exito", "Duración cambiada a " + nuevaDuracion + " minutos.");
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
-        return volver(fecha);
+        return volver(fecha, filtros);
     }
 
     private List<Integer> duraciones() {
@@ -124,14 +153,15 @@ public class AgendaRecepcionController {
 
     @PostMapping("/citas/{id}/llegada")
     public String llegada(@AuthenticationPrincipal UsuarioSesion usuario, @PathVariable Long id,
-            @RequestParam(required = false) String fecha, RedirectAttributes flash) {
+            @RequestParam(required = false) String fecha, @RequestParam(required = false) String filtros,
+            RedirectAttributes flash) {
         try {
             estados.marcarLlegada(id, usuario.getIdCuenta());
             flash.addFlashAttribute("exito", "Llegada registrada.");
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
-        return volver(fecha);
+        return volver(fecha, filtros);
     }
 
     /** Cancelar (por paciente o por el consultorio) o marcar inasistencia; desde «Asistió», inasistencia = retiro. */
@@ -139,7 +169,7 @@ public class AgendaRecepcionController {
     public String cambiarEstado(@AuthenticationPrincipal UsuarioSesion usuario, @PathVariable Long id,
             @RequestParam EstadoCita nuevoEstado, @RequestParam(required = false) String motivo,
             @RequestParam(defaultValue = "false") boolean asistio, @RequestParam(required = false) String fecha,
-            RedirectAttributes flash) {
+            @RequestParam(required = false) String filtros, RedirectAttributes flash) {
         try {
             switch (nuevoEstado) {
                 case CANCELADA_POR_PACIENTE -> estados.cancelarPorPaciente(id, usuario.getIdCuenta(), motivo);
@@ -157,10 +187,21 @@ public class AgendaRecepcionController {
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
-        return volver(fecha);
+        return volver(fecha, filtros);
     }
 
     private static String volver(String fecha) {
+        return volver(fecha, null);
+    }
+
+    /**
+    Vuelve a la agenda con los filtros que tenía. Solo se aceptan caracteres de una cadena de consulta ya codificada:
+    la ruta es siempre la de la agenda.
+    */
+    private static String volver(String fecha, String filtros) {
+        if (filtros != null && !filtros.isBlank() && filtros.matches("[A-Za-z0-9=&%._+-]+")) {
+            return "redirect:/recepcion/agenda?" + filtros;
+        }
         return "redirect:/recepcion/agenda" + (fecha == null || fecha.isBlank() ? "" : "?fecha=" + fecha);
     }
 }

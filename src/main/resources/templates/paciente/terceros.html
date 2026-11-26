@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragmentos/base :: head('Mis terceros')}"></head>
+<body class="bg-body-tertiary">
+<div class="d-lg-flex">
+  <aside th:replace="~{fragmentos/barra :: barra('terceros')}"></aside>
+
+  <div class="flex-grow-1">
+    <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
+
+    <main class="container-xl p-3 p-lg-4">
+      <div th:replace="~{fragmentos/base :: mensajes}"></div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="h3 mb-0">Mis terceros</h1>
+          <p class="text-body-secondary mb-0">Las personas para las que puedes agendar citas: un familiar o alguien a tu cargo</p></div>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#anadir-tercero"
+                th:attr="aria-expanded=${tercero != null}"><i class="bi bi-person-plus me-1"></i>Añadir persona</button>
+      </div>
+
+      <!-- Añadir una persona sin agendar todavía: mismos datos y reglas que «Para otra persona» -->
+      <form id="anadir-tercero" class="card shadow-sm mb-4 collapse" th:classappend="${tercero != null} ? 'show'"
+            th:action="@{/paciente/terceros}" method="post" th:with="t=${tercero}">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-3">Añadir persona</h2>
+          <div class="row g-3">
+            <div class="col-sm-5 col-lg-3"><label class="form-label" for="t-tipo">Tipo de documento</label>
+              <select class="form-select" id="t-tipo" name="tipoDocumento">
+                <option th:each="d : ${tiposDocumento}" th:value="${d}" th:selected="${t != null and t.tipoDocumento() == d}"
+                        th:text="${d.name() == 'DNI'} ? 'DNI' : (${d.name() == 'CE'} ? 'Carné de extranjería' : 'Pasaporte')">DNI</option>
+              </select></div>
+            <div class="col-sm-7 col-lg-3"><label class="form-label" for="t-nro">Número de documento</label><input class="form-control" id="t-nro" name="nroDocumento" maxlength="20" th:value="${t?.nroDocumento()}"></div>
+            <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-nom">Nombres</label><input class="form-control" id="t-nom" name="nombres" maxlength="80" th:value="${t?.nombres()}"></div>
+            <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-ape">Apellidos</label><input class="form-control" id="t-ape" name="apellidos" maxlength="80" th:value="${t?.apellidos()}"></div>
+            <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-nac">Fecha de nacimiento</label><input type="date" class="form-control" id="t-nac" name="fechaNacimiento" th:value="${t?.fechaNacimiento()}"></div>
+            <div class="col-sm-6 col-lg-3"><label class="form-label" for="t-tel">Teléfono <span class="text-body-secondary">(opcional)</span></label><input type="tel" class="form-control" id="t-tel" name="telefono" maxlength="20" th:value="${t?.telefono()}"></div>
+          </div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="consentimiento" name="consentimiento" value="true">
+            <label class="form-check-label" for="consentimiento">Declaro tener el consentimiento del paciente para agendar citas a su nombre.</label>
+          </div>
+          <p class="small text-body-secondary mt-2 mb-3"><i class="bi bi-telephone me-1"></i>Por las citas que agendes para esta persona, el consultorio te llamará a ti.</p>
+          <button class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+
+      <div class="list-group shadow-sm">
+        <div class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-3 py-3" th:each="x : ${terceros}">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-person-circle fs-3 text-primary"></i>
+            <div><div class="fw-semibold" th:text="${x.nombre}">Nombre</div>
+              <div class="small text-body-secondary" th:text="|${x.tipoDocumento} ${x.nroDocumento} · ${x.edad} años · desde el ${#temporals.format(x.vinculadoEn, 'dd/MM/yyyy')}|">DNI</div></div>
+          </div>
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/paciente/cita/nueva(tercero=${x.idPaciente})}">
+            <i class="bi bi-calendar-plus me-1"></i>Agendar cita</a>
+        </div>
+        <div th:if="${#lists.isEmpty(terceros)}" class="list-group-item text-body-secondary py-4 text-center">
+          Aún no tienes terceros. Se añaden aquí o al agendar «Para otra persona».
+        </div>
+      </div>
+      <p class="small text-body-secondary mt-3 mb-0">Solo ves las citas que tú agendas para ellos. Si una persona retira su consentimiento, lo hace en recepción y deja de aparecer aquí.</p>
+    </main>
+  </div>
+</div>
+
+<th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+</body>
+</html>

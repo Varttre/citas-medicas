@@ -1,6 +1,7 @@
 package pe.consultorio.citas.service;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.consultorio.citas.dto.FranjaDatos;
 import pe.consultorio.citas.dto.UsuarioFila;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCuenta;
@@ -39,13 +41,14 @@ public class UsuarioService {
     private final ConfiguracionService configuracion;
     private final CuentaService cuentaService;
     private final AuditoriaService auditoria;
+    private final HorarioService horarios;
     private final PasswordEncoder encoder;
     private final Clock reloj;
 
     public UsuarioService(CuentaRepository cuentas, RolRepository roles, MedicoRepository medicos,
             EspecialidadRepository especialidades, MedicoEspecialidadRepository medicoEspecialidades,
             MedicoTipoConsultaRepository medicoTipos, ConfiguracionService configuracion, CuentaService cuentaService,
-            AuditoriaService auditoria, PasswordEncoder encoder, Clock reloj) {
+            AuditoriaService auditoria, HorarioService horarios, PasswordEncoder encoder, Clock reloj) {
         this.cuentas = cuentas;
         this.roles = roles;
         this.medicos = medicos;
@@ -55,6 +58,7 @@ public class UsuarioService {
         this.configuracion = configuracion;
         this.cuentaService = cuentaService;
         this.auditoria = auditoria;
+        this.horarios = horarios;
         this.encoder = encoder;
         this.reloj = reloj;
     }
@@ -100,17 +104,29 @@ public class UsuarioService {
     @Transactional
     public Long crearMedico(String correo, String contrasena, String nombres, String apellidos, Short idEspecialidad,
             Map<Short, Integer> duraciones, Long idActor) {
+        return crearMedico(correo, contrasena, nombres, apellidos, idEspecialidad, duraciones, null, List.of(), idActor);
+    }
+
+    /**
+    Igual que el alta anterior, y además el primer horario semanal del médico desde {@code desde} (hoy si es nulo),
+    en la misma transacción: si el horario no es válido, no se crea nada.
+    */
+    @Transactional
+    public Long crearMedico(String correo, String contrasena, String nombres, String apellidos, Short idEspecialidad,
+            Map<Short, Integer> duraciones, LocalDate desde, List<FranjaDatos> franjas, Long idActor) {
         if (nombres == null || nombres.isBlank() || apellidos == null || apellidos.isBlank()) {
-            throw new ReglaNegocioException("Ingresa los nombres y apellidos del médico.");
+            throw new ReglaNegocioException("Ingresa los nombres y apellidos del médico.",
+                nombres == null || nombres.isBlank() ? "nombres" : "apellidos");
         }
         if (idEspecialidad == null) {
-            throw new ReglaNegocioException("Elige la especialidad del médico.");
+            throw new ReglaNegocioException("Elige la especialidad del médico.", "idEspecialidad");
         }
         List<TipoConsulta> tipos = configuracion.tiposActivos();
         for (TipoConsulta t : tipos) {
             Integer min = duraciones.get(t.getIdTipoConsulta());
             if (min == null || min <= 0 || min % 15 != 0) {
-                throw new ReglaNegocioException("Falta la duración de «" + t.getNombre() + "» (múltiplo de 15).");
+                throw new ReglaNegocioException("Falta la duración de «" + t.getNombre() + "» (múltiplo de 15).",
+                    "dur_" + t.getIdTipoConsulta());
             }
         }
         Cuenta c = cuentas.save(nuevaCuenta(correo, contrasena, NombreRol.MEDICO));
@@ -133,8 +149,15 @@ public class UsuarioService {
             mt.setDuracionConfigurada(duraciones.get(t.getIdTipoConsulta()).shortValue());
             medicoTipos.save(mt);
         }
+        if (franjas != null && !franjas.isEmpty()) {
+            try {
+                horarios.crearVersionInicial(m.getIdMedico(), desde != null ? desde : LocalDate.now(reloj), franjas);
+            } catch (ReglaNegocioException e) {
+                throw new ReglaNegocioException(e.getMessage(), "horario");
+            }
+        }
         auditoria.registrar(idActor, AccionAuditoria.CONFIG_CAMBIO, "CUENTA", String.valueOf(c.getIdCuenta()),
-            "alta MEDICO: " + c.getCorreo(), null);
+            "alta MEDICO: " + c.getCorreo() + (franjas == null || franjas.isEmpty() ? "" : ", con horario"), null);
         return c.getIdCuenta();
     }
 
@@ -176,13 +199,13 @@ public class UsuarioService {
     private Cuenta nuevaCuenta(String correo, String contrasena, NombreRol rol) {
         String normalizado = UsuarioDetallesService.normalizar(correo);
         if (normalizado.isEmpty() || !normalizado.contains("@")) {
-            throw new ReglaNegocioException("Ingresa un correo válido.");
+            throw new ReglaNegocioException("Ingresa un correo válido.", "correo");
         }
         if (cuentas.findByCorreo(normalizado).isPresent()) {
-            throw new ReglaNegocioException("Ya existe una cuenta con ese correo.");
+            throw new ReglaNegocioException("Ya existe una cuenta con ese correo.", "correo");
         }
         if (contrasena == null || contrasena.length() < 8) {
-            throw new ReglaNegocioException("La contraseña inicial debe tener al menos 8 caracteres.");
+            throw new ReglaNegocioException("La contraseña inicial debe tener al menos 8 caracteres.", "contrasena");
         }
         Cuenta c = new Cuenta();
         c.setCorreo(normalizado);

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import pe.consultorio.citas.entity.Cita;
 import pe.consultorio.citas.entity.EstadoOportunidad;
+import pe.consultorio.citas.entity.Medico;
 import pe.consultorio.citas.entity.Oportunidad;
 import pe.consultorio.citas.repository.OportunidadRepository;
 import pe.consultorio.citas.service.disponibilidad.DisponibilidadService;
@@ -47,13 +48,21 @@ public class OportunidadService {
     dentro de la misma transacción, cuando la cita ya dejó ese horario.
     */
     public void liberar(Cita cita, LocalDateTime inicio, LocalDateTime fin) {
+        liberar(cita, cita.getMedico(), inicio, fin);
+    }
+
+    /**
+    Igual que {@link #liberar(Cita, LocalDateTime, LocalDateTime)}, pero en la agenda de {@code medico}: se usa cuando
+    la cita acaba de cambiar de médico (adelanto por un cupo de su especialidad) y el horario soltado es del anterior.
+    */
+    public void liberar(Cita cita, Medico medico, LocalDateTime inicio, LocalDateTime fin) {
         LocalDateTime ahora = LocalDateTime.now(reloj);
         if (!fin.isAfter(ahora)) {
             return;
         }
         LocalDateTime desdeAhora = Rejilla.redondearArriba(ahora, configuracion.incremento());
         LocalDateTime punto = inicio.isAfter(desdeAhora) ? inicio : desdeAhora;
-        Long idMedico = cita.getMedico().getIdMedico();
+        Long idMedico = medico.getIdMedico();
         RangeSet<LocalDateTime> libres = disponibilidad.bloquesLibresDelDia(idMedico, inicio.toLocalDate());
         Range<LocalDateTime> contiene = libres.rangeContaining(punto);
         if (contiene == null) {
@@ -72,7 +81,7 @@ public class OportunidadService {
                 padre = o;
             }
         }
-        oportunidades.save(nueva(cita, bInicio, bFin, padre, ahora));
+        oportunidades.save(nueva(cita, medico, bInicio, bFin, padre, ahora));
     }
 
     /** Marca como cubiertos los bloques abiertos que ocupa la cita nueva y vuelve a ofrecer lo que sobra. */
@@ -86,18 +95,23 @@ public class OportunidadService {
             o.setCitaCobertura(nueva);
             oportunidades.saveAndFlush(o);
             if (minutos(o.getInicio(), nueva.getInicio()) >= hueco) {
-                oportunidades.save(nueva(o.getCitaOrigen(), o.getInicio(), nueva.getInicio(), o, ahora));
+                oportunidades.save(nueva(o.getCitaOrigen(), o.getMedico(), o.getInicio(), nueva.getInicio(), o,
+                    ahora));
             }
             if (minutos(nueva.getFin(), o.getFin()) >= hueco) {
-                oportunidades.save(nueva(o.getCitaOrigen(), nueva.getFin(), o.getFin(), o, ahora));
+                oportunidades.save(nueva(o.getCitaOrigen(), o.getMedico(), nueva.getFin(), o.getFin(), o, ahora));
             }
         }
     }
 
-    /** Bloques abiertos, los más próximos primero. */
+    /**
+    Bloques abiertos que aún no empiezan, los más próximos primero. La tarea programada los marca como expirados cada
+    pocos minutos; mientras tanto (o justo después de arrancar la aplicación) no se deben ofrecer horarios pasados.
+    */
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public List<Oportunidad> abiertas() {
-        return oportunidades.abiertas();
+        LocalDateTime ahora = LocalDateTime.now(reloj);
+        return oportunidades.abiertas().stream().filter(o -> o.getInicio().isAfter(ahora)).toList();
     }
 
     /** Las abiertas cuya hora ya llegó dejan de ofrecerse. Devuelve cuántas expiraron. */
@@ -106,11 +120,11 @@ public class OportunidadService {
         return oportunidades.expirar(LocalDateTime.now(reloj));
     }
 
-    private static Oportunidad nueva(Cita origen, LocalDateTime inicio, LocalDateTime fin, Oportunidad padre,
-            LocalDateTime ahora) {
+    private static Oportunidad nueva(Cita origen, Medico medico, LocalDateTime inicio, LocalDateTime fin,
+            Oportunidad padre, LocalDateTime ahora) {
         Oportunidad o = new Oportunidad();
         o.setCitaOrigen(origen);
-        o.setMedico(origen.getMedico());
+        o.setMedico(medico);
         o.setOportunidadPadre(padre);
         o.setInicio(inicio);
         o.setFin(fin);

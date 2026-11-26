@@ -15,11 +15,36 @@
           <h1 class="h3 mb-0" th:text="|Hola, ${usuarioSesion?.nombreMostrado}|">Hola</h1>
           <p class="text-body-secondary mb-0" th:text="${fechaHoy}">Hoy</p>
         </div>
-        <a th:href="@{/paciente/cita/nueva}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+        <div class="d-flex align-items-center gap-2">
+          <!-- Avisos plegados: no ocupan espacio; al desplegarlos se ve cada uno y se entra a su detalle -->
+          <div class="dropdown">
+            <button type="button" class="btn btn-outline-secondary" id="botonAvisos"
+                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Avisos del consultorio">
+              <i class="bi bi-bell"></i><span class="d-none d-sm-inline ms-1">Avisos</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end shadow p-0 avisos-desplegable" aria-labelledby="botonAvisos">
+              <div class="px-3 py-2 border-bottom fw-semibold small">Avisos del consultorio</div>
+              <div class="list-group list-group-flush avisos-lista">
+                <a th:each="a : ${avisos}" th:href="@{/paciente/avisos/{id}(id=${a.idAviso})}"
+                   class="list-group-item list-group-item-action py-2">
+                  <div class="fw-semibold small" th:text="${a.titulo}">Aviso</div>
+                  <div class="small text-body-secondary text-truncate" th:text="${a.texto}">Texto</div>
+                </a>
+                <div th:if="${#lists.isEmpty(avisos)}" class="list-group-item small text-body-secondary py-3">
+                  El consultorio no tiene avisos por ahora.
+                </div>
+              </div>
+              <a th:href="@{/paciente/avisos}" class="d-block text-center small py-2 border-top">Ver todos los avisos</a>
+            </div>
+          </div>
+          <a th:href="@{/paciente/cita/nueva}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+        </div>
       </div>
 
+      <section th:replace="~{paciente/indicadas :: tarjetas(${indicadas})}"></section>
+
       <div class="row g-4">
-        <section class="col-lg-7">
+        <section class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h2 class="h5 mb-0">Próximas citas</h2>
             <a th:href="@{/paciente/citas}" class="small">Ver todas</a>
@@ -44,21 +69,10 @@
             Ves todas tus citas, también las que agendó recepción, y las que agendaste para otras personas.
           </p>
         </section>
+        <div class="col-12">
+          <section th:replace="~{fragmentos/referencias :: referencias('Para cuidar tu salud', false)}"></section>
+        </div>
 
-        <section class="col-lg-5">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2 class="h5 mb-0">Avisos</h2>
-            <a th:href="@{/paciente/avisos}" class="small">Ver todos</a>
-          </div>
-          <div class="card shadow-sm mb-3" th:each="a : ${avisos}">
-            <div class="card-body">
-              <h3 class="h6 card-title" th:text="${a.titulo}">Aviso</h3>
-              <p class="card-text small text-body-secondary" th:text="${a.texto}">Texto</p>
-              <a th:href="@{/paciente/avisos}" class="btn btn-sm btn-outline-primary">Conocer más</a>
-            </div>
-          </div>
-          <p th:if="${#lists.isEmpty(avisos)}" class="small text-body-secondary">El consultorio no tiene avisos por ahora.</p>
-        </section>
       </div>
     </main>
   </div>

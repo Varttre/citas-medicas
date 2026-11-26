@@ -46,6 +46,8 @@
                     <button class="btn btn-sm btn-outline-secondary">Bloquear</button></form>
                   <form th:unless="${u.estado == 'ACTIVA' and !u.bloqueadaTemporalmente(ahora)}" class="d-inline" method="post" th:action="@{/admin/usuarios/{id}/desbloquear(id=${u.idCuenta})}">
                     <button class="btn btn-sm btn-outline-success">Desbloquear</button></form>
+                  <form class="d-inline" method="post" th:action="@{/admin/usuarios/{id}/enlace-recuperacion(id=${u.idCuenta})}">
+                    <button class="btn btn-sm btn-outline-primary" title="Enlace de un solo uso para crear una contraseña nueva">Enlace de contraseña</button></form>
                   <form class="d-inline" method="post" th:action="@{/admin/usuarios/{id}/baja(id=${u.idCuenta})}">
                     <button class="btn btn-sm btn-outline-danger">Dar de baja</button></form>
                 </th:block>
@@ -57,7 +59,7 @@
       </div></div>
       <p class="small text-body-secondary mt-2">Un médico que además administra usa dos cuentas: los permisos de cada rol están definidos en el sistema y no se editan aquí.</p>
 
-      <div class="offcanvas offcanvas-end" tabindex="-1" id="alta" style="--bs-offcanvas-width: 30rem">
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="alta" style="--bs-offcanvas-width: 38rem">
         <div class="offcanvas-header border-bottom"><h2 class="offcanvas-title h5">Nuevo usuario</h2>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button></div>
         <div class="offcanvas-body">
@@ -66,30 +68,40 @@
             <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#alta-personal" type="button">Recepción o administración</button></li>
           </ul>
           <div class="tab-content">
-            <form class="tab-pane fade show active" id="alta-medico" method="post" th:action="@{/admin/usuarios/medicos}">
+            <form class="tab-pane fade show active" id="alta-medico" method="post" th:action="@{/admin/usuarios/medicos}" th:with="a=${altaMedico}, ce=${campoError}">
+              <div th:if="${errorAlta}" class="alert alert-danger py-2 small" role="alert"><i class="bi bi-exclamation-octagon me-1"></i><span th:text="${errorAlta}">Error</span>
+                <div class="mt-1">Corrige el campo marcado; lo demás se conserva.</div></div>
               <div class="row g-2 mb-3">
-                <div class="col-6"><label class="form-label">Nombres</label><input class="form-control" name="nombres" required></div>
-                <div class="col-6"><label class="form-label">Apellidos</label><input class="form-control" name="apellidos" required></div>
+                <div class="col-6"><label class="form-label" for="am-nombres">Nombres</label><input class="form-control" id="am-nombres" name="nombres" required th:value="${a['nombres']}" th:classappend="${ce == 'nombres'} ? 'is-invalid'"></div>
+                <div class="col-6"><label class="form-label" for="am-apellidos">Apellidos</label><input class="form-control" id="am-apellidos" name="apellidos" required th:value="${a['apellidos']}" th:classappend="${ce == 'apellidos'} ? 'is-invalid'"></div>
               </div>
-              <div class="mb-3"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" required></div>
-              <div class="mb-3"><label class="form-label">Contraseña inicial</label><input type="password" class="form-control" name="contrasena" minlength="8" required></div>
-              <div class="mb-3"><label class="form-label">Especialidad</label>
-                <select class="form-select" name="idEspecialidad" required>
-                  <option th:each="e : ${especialidades}" th:value="${e.idEspecialidad}" th:text="${e.nombre}">Cardiología</option>
+              <div class="mb-3"><label class="form-label" for="am-correo">Correo</label><input type="email" class="form-control" id="am-correo" name="correo" required th:value="${a['correo']}" th:classappend="${ce == 'correo'} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${ce == 'correo'}" th:text="${errorAlta}">Error</div></div>
+              <div class="mb-3"><label class="form-label" for="am-contrasena">Contraseña inicial</label><input type="password" class="form-control" id="am-contrasena" name="contrasena" minlength="8" required th:classappend="${ce == 'contrasena'} ? 'is-invalid'">
+                <div class="form-text" th:if="${errorAlta}">Por seguridad, la contraseña no se conserva: vuelve a escribirla.</div></div>
+              <div class="mb-3"><label class="form-label" for="am-esp">Especialidad</label>
+                <select class="form-select" id="am-esp" name="idEspecialidad" required th:classappend="${ce == 'idEspecialidad'} ? 'is-invalid'">
+                  <option th:each="e : ${especialidades}" th:value="${e.idEspecialidad}" th:text="${e.nombre}" th:selected="${a['idEspecialidad'] == '' + e.idEspecialidad}">Cardiología</option>
                 </select></div>
               <h3 class="h6 mt-4">Duraciones por tipo de consulta <span class="text-danger">*</span></h3>
               <p class="small text-body-secondary">Obligatorias: sin ellas el sistema no puede calcular sus horarios.</p>
               <table class="table table-sm align-middle">
                 <tbody>
-                  <tr th:each="t : ${tipos}">
+                  <tr th:each="t : ${tipos}" th:with="campo=|dur_${t.idTipoConsulta}|">
                     <td th:text="${t.nombre}">Consulta</td>
-                    <td><select class="form-select form-select-sm" th:name="|dur_${t.idTipoConsulta}|">
+                    <td><select class="form-select form-select-sm" th:name="${campo}" th:classappend="${ce == campo} ? 'is-invalid'">
                       <option th:each="m : ${#numbers.sequence(15, 240, 15)}" th:value="${m}" th:text="|${m} min|"
-                              th:selected="${m == t.duracionDefecto}">30 min</option>
+                              th:selected="${a[campo] != null} ? ${a[campo] == '' + m} : ${m == t.duracionDefecto}">30 min</option>
                     </select></td>
                   </tr>
                 </tbody>
               </table>
+              <h3 class="h6 mt-4">Horario semanal <span class="text-danger">*</span></h3>
+              <p class="small text-body-secondary">Marca los días que atiende. La segunda franja es opcional (p. ej., mañana y tarde). Horas en múltiplos de 15 minutos.</p>
+              <div th:if="${ce == 'horario'}" class="text-danger small mb-2"><i class="bi bi-arrow-down-circle me-1"></i><span th:text="${errorAlta}">Error</span></div>
+              <div class="mb-2"><label class="form-label small mb-1" for="horarioDesde">Vigente desde</label>
+                <input type="date" class="form-control form-control-sm" id="horarioDesde" name="horarioDesde" th:value="${a['horarioDesde'] != null} ? ${a['horarioDesde']} : ${#temporals.format(ahora, 'yyyy-MM-dd')}" th:min="${#temporals.format(ahora, 'yyyy-MM-dd')}" style="max-width:11rem"></div>
+              <div th:replace="~{fragmentos/horario-semanal :: grilla(${grillaAlta}, ${ce == 'horario'})}"></div>
               <button class="btn btn-primary w-100 mt-2">Guardar médico</button>
             </form>
             <form class="tab-pane fade" id="alta-personal" method="post" th:action="@{/admin/usuarios/personal}">
@@ -109,5 +121,13 @@
 </div>
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
+<script th:if="${errorAlta}">
+  // El alta falló: se vuelve a abrir con lo escrito y se lleva la vista al campo marcado.
+  document.addEventListener('DOMContentLoaded', function () {
+    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('alta')).show();
+    var marcado = document.querySelector('#alta-medico .is-invalid, #alta-medico .border-danger');
+    if (marcado) { setTimeout(function () { marcado.scrollIntoView({block: 'center'}); if (marcado.focus) marcado.focus(); }, 350); }
+  });
+</script>
 </body>
 </html>

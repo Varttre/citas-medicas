@@ -17,7 +17,7 @@
       </div>
       <form th:action="@{/recepcion/pacientes}" method="get" class="input-group mb-3" style="max-width: 36rem">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input class="form-control" name="q" th:value="${q}" placeholder="Documento, nombre o teléfono">
+        <input class="form-control" name="q" th:value="${q}" placeholder="Documento o nombre">
         <button class="btn btn-outline-primary">Buscar</button>
       </form>
       <div class="list-group shadow-sm mb-4" style="max-width: 36rem" th:if="${!#lists.isEmpty(resultados)}">
@@ -34,7 +34,7 @@
           <span class="fs-5 fw-semibold" th:text="${ficha.nombreCompleto()}">Paciente</span>
           <div class="d-flex gap-2">
             <a th:href="@{/recepcion/pacientes/{id}/editar(id=${ficha.idPaciente})}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil me-1"></i>Editar</a>
-            <a th:href="@{/recepcion/cita/nueva}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+            <a th:href="@{/recepcion/cita/nueva(idPaciente=${ficha.idPaciente})}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
           </div>
         </div>
         <div class="card-body">
@@ -48,6 +48,9 @@
                 <dt class="col-5">Correo</dt><dd class="col-7" th:text="${ficha.correo ?: 'No registrado'}">correo</dd>
                 <dt class="col-5">Cuenta propia</dt><dd class="col-7" th:text="${ficha.cuentaPropia ?: 'No tiene'}">No tiene</dd>
               </dl>
+              <form th:if="${ficha.cuentaPropia != null}" method="post" th:action="@{/recepcion/pacientes/{id}/enlace-recuperacion(id=${ficha.idPaciente})}" class="mt-2">
+                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-key me-1"></i>Olvidó su contraseña: generar enlace</button>
+              </form>
             </div>
             <div class="col-lg-6">
               <h2 class="h6">Cuentas que agendan en su nombre</h2>
@@ -62,6 +65,17 @@
                 </li>
                 <li th:if="${#lists.isEmpty(ficha.cuentas)}" class="text-body-secondary">Ninguna.</li>
               </ul>
+            </div>
+            <div class="col-12" th:if="${!#lists.isEmpty(indicadas)}">
+              <h2 class="h6"><i class="bi bi-clipboard2-pulse me-1 text-success"></i>Citas indicadas pendientes por agendar</h2>
+              <div class="border border-success-subtle rounded p-2 mb-2 d-flex flex-wrap justify-content-between align-items-center gap-2 small" th:each="i : ${indicadas}">
+                <div>
+                  <div class="fw-semibold" th:text="|${i.tipo} · ${i.duracion} min · indicada por ${i.medico}|">Seguimiento</div>
+                  <div class="text-body-secondary" th:text="|Desde el ${#temporals.format(i.fechaRecomendada, 'dd/MM/yyyy')} · vigente hasta el ${#temporals.format(i.vigenteHasta, 'dd/MM/yyyy')} (${i.diasRestantes} días)|">ventana</div>
+                  <div th:if="${i.indicaciones != null}" th:text="|«${i.indicaciones}»|"></div>
+                </div>
+                <a class="btn btn-sm btn-success" th:href="@{/recepcion/cita/nueva(indicacion=${i.idIndicacion})}"><i class="bi bi-calendar-plus me-1"></i>Agendar</a>
+              </div>
             </div>
             <div class="col-12">
               <h2 class="h6">Indicadores</h2>

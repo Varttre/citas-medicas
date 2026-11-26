@@ -8,13 +8,15 @@
   <div class="flex-grow-1">
     <nav th:replace="~{fragmentos/base :: navbarMovil}"></nav>
 
-    <main class="container-xl p-3 p-lg-4">
+    <main class="container-xl p-3 p-lg-4 pagina-angosta">
       <div th:replace="~{fragmentos/base :: mensajes}"></div>
 
-      <h1 class="h3 mb-4" th:text="${idPaciente == null} ? 'Registrar paciente' : 'Editar paciente'">Paciente</h1>
+      <h1 class="h3" th:classappend="${volver == null} ? 'mb-4' : 'mb-1'" th:text="${idPaciente == null} ? 'Registrar paciente' : 'Editar paciente'">Paciente</h1>
+      <p th:if="${volver != null}" class="text-body-secondary mb-4"><i class="bi bi-arrow-return-left me-1"></i>Al guardar vuelves a la nueva cita con este paciente ya elegido. Se crea la ficha del paciente, no una cuenta web.</p>
 
-      <form class="card shadow-sm" style="max-width: 48rem" method="post" th:object="${form}"
+      <form class="card shadow-sm" method="post" th:object="${form}"
             th:action="${idPaciente == null} ? @{/recepcion/pacientes} : @{/recepcion/pacientes/{id}(id=${idPaciente})}">
+        <input type="hidden" name="volver" th:if="${volver != null}" th:value="${volver}">
         <div class="card-body row g-3">
           <div class="col-md-4">
             <label class="form-label" for="tipoDocumento">Tipo de documento</label>
@@ -54,8 +56,8 @@
           </div>
         </div>
         <div class="card-footer d-flex gap-2">
-          <button class="btn btn-primary">Guardar</button>
-          <a class="btn btn-outline-secondary" th:href="${idPaciente == null} ? @{/recepcion/pacientes} : @{/recepcion/pacientes/{id}(id=${idPaciente})}">Cancelar</a>
+          <button class="btn btn-primary" th:text="${volver != null} ? 'Guardar y volver a la cita' : 'Guardar'">Guardar</button>
+          <a class="btn btn-outline-secondary" th:href="${volver != null} ? @{/recepcion/cita/nueva} : (${idPaciente == null} ? @{/recepcion/pacientes} : @{/recepcion/pacientes/{id}(id=${idPaciente})})">Cancelar</a>
         </div>
       </form>
     </main>

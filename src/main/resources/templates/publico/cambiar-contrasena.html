@@ -12,12 +12,20 @@
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <h1 class="h4 mb-1">Crear una nueva contraseña</h1>
-          <p class="text-body-secondary small mb-4">Cuenta: l•••••@correo.com</p>
-          <form th:action="@{/login}">
-            <div class="mb-3"><label class="form-label">Nueva contraseña</label><input type="password" class="form-control"></div>
-            <div class="mb-3"><label class="form-label">Repetir contraseña</label><input type="password" class="form-control"></div>
+          <div th:replace="~{fragmentos/base :: mensajes}"></div>
+          <div th:if="${correo == null}">
+            <div class="alert alert-warning small mt-3">Este enlace ya no es válido: caducó, ya se usó o se generó uno más nuevo. Pide otro en recepción.</div>
+            <a class="btn btn-outline-secondary w-100" th:href="@{/login}">Volver a iniciar sesión</a>
+          </div>
+          <th:block th:if="${correo != null}">
+          <p class="text-body-secondary small mb-4" th:text="|Cuenta: ${correo}|">Cuenta</p>
+          <form th:action="@{/recuperar/cambiar}" method="post">
+            <input type="hidden" name="codigo" th:value="${codigo}">
+            <div class="mb-3"><label class="form-label" for="nueva">Nueva contraseña</label><input type="password" class="form-control" id="nueva" name="nueva" required minlength="8" maxlength="72" autocomplete="new-password"></div>
+            <div class="mb-3"><label class="form-label" for="confirmacion">Repetir contraseña</label><input type="password" class="form-control" id="confirmacion" name="confirmacion" required minlength="8" maxlength="72" autocomplete="new-password"></div>
             <button type="submit" class="btn btn-primary w-100">Guardar contraseña</button>
           </form>
+          </th:block>
           <div class="alert alert-light border small mt-3 mb-0">
             <i class="bi bi-shield-lock me-1"></i>Este enlace solo permite cambiar la contraseña: no inicia sesión. Al guardar se cerrarán las sesiones abiertas de tu cuenta y deberás ingresar de nuevo.
           </div>

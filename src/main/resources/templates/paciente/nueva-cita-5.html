@@ -76,11 +76,15 @@
                 <label class="form-check-label small" for="tyc">Acepto los términos y condiciones del servicio.</label>
               </div>
               <button class="btn btn-primary w-100">Agendar cita</button>
-              <a th:href="@{/paciente/cita/nueva/4}" class="btn btn-outline-secondary w-100 mt-2">Cambiar horario</a>
+              <div class="d-flex gap-2 mt-2">
+                <a th:href="@{/paciente/cita/nueva/4}" class="btn btn-outline-secondary flex-fill"><i class="bi bi-arrow-left me-1"></i>Atrás</a>
+                <button th:replace="~{paciente/pasos :: botonCancelar}"></button>
+              </div>
             </div>
           </div>
         </div>
       </form>
+      <div th:replace="~{paciente/pasos :: modalCancelar}"></div>
     </main>
   </div>
 </div>

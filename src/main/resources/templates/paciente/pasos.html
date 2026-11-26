@@ -10,5 +10,28 @@
     <li th:if="${i.count > actual}" class="d-flex align-items-center gap-1 text-body-secondary"><span class="badge rounded-pill text-bg-light border" th:text="${i.count}"></span><span class="small" th:text="${p}"></span></li>
   </th:block>
 </ol>
+
+<!-- Botón «Cancelar» de la nueva cita: abre la confirmación. Va dentro del paso; la ventana, fuera de los formularios -->
+<button th:fragment="botonCancelar" type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelar-nueva-cita">
+  <i class="bi bi-x-lg me-1"></i>Cancelar
+</button>
+
+<div th:fragment="modalCancelar" class="modal fade" id="cancelar-nueva-cita" tabindex="-1" aria-labelledby="titulo-cancelar-cita" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="titulo-cancelar-cita">¿Cancelar la nueva cita?</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">Se perderá lo que elegiste y, si reservaste un horario, quedará libre para otros pacientes.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir agendando</button>
+        <form th:action="@{/paciente/cita/nueva/cancelar}" method="post" class="m-0">
+          <button class="btn btn-danger">Sí, cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

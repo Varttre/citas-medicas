@@ -83,6 +83,8 @@ class UsuariosCrudTest {
         for (TipoConsulta t : configuracion.tiposActivos()) {
             alta.param("dur_" + t.getIdTipoConsulta(), String.valueOf(t.getDuracionDefecto()));
         }
+        // Desde el bloque 4 el alta exige el horario semanal (al menos un día).
+        alta.param("dia_1", "1").param("ini_1_1", "08:00").param("fin_1_1", "12:00");
         mvc.perform(alta).andExpect(flash().attributeExists("exito"));
         Long idCuenta = cuentas.findByCorreo("patricia.nunez@prueba.pe").orElseThrow().getIdCuenta();
         assertThat(medicos.findByCuentaIdCuenta(idCuenta)).isPresent();

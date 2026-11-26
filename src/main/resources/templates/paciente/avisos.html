@@ -22,7 +22,11 @@
               <h2 class="h5 card-title" th:text="${a.titulo}">Aviso</h2>
               <p class="card-text" th:text="${a.texto}">Texto</p>
             </div>
-            <div class="card-footer bg-body border-0 pb-3"><a th:href="${a.enlace}" target="_blank" rel="noopener" class="btn btn-outline-primary">Conocer más <i class="bi bi-box-arrow-up-right ms-1"></i></a></div>
+            <div class="card-footer bg-body border-0 pb-3 d-flex flex-wrap gap-2">
+              <a th:href="@{/paciente/avisos/{id}(id=${a.idAviso})}" class="btn btn-outline-primary">Ver aviso</a>
+              <a th:if="${#strings.startsWith(a.enlace, '/')}" th:href="@{${a.enlace}}" class="btn btn-link">Conocer más</a>
+              <a th:unless="${#strings.startsWith(a.enlace, '/')}" th:href="${a.enlace}" target="_blank" rel="noopener" class="btn btn-link">Conocer más <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+            </div>
           </div>
         </div>
       </div>

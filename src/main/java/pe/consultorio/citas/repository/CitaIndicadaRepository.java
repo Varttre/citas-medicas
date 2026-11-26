@@ -18,4 +18,9 @@ public interface CitaIndicadaRepository extends JpaRepository<CitaIndicada, Long
     @Query("select i from CitaIndicada i join fetch i.citaOrigen c join fetch c.paciente join fetch i.tipoConsulta "
         + "where c.medico.idMedico = :idMedico and i.estado = 'PENDIENTE' order by i.vigenteHasta")
     List<CitaIndicada> pendientesDeMedico(@Param("idMedico") Long idMedico);
+
+    /** Todas las indicaciones pendientes, las que vencen antes primero. */
+    @Query("select i from CitaIndicada i join fetch i.citaOrigen c join fetch c.paciente join fetch c.medico "
+        + "join fetch i.tipoConsulta where i.estado = 'PENDIENTE' order by i.vigenteHasta")
+    List<CitaIndicada> pendientes();
 }

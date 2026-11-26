@@ -32,9 +32,27 @@
                 </div>
                 <div th:if="${#lists.isEmpty(horario.versiones)}" class="list-group-item text-body-secondary">Aún no tienes horario.</div>
               </div>
-              <p class="small text-body-secondary mt-3">Una versión cambia tu horario de forma permanente desde una fecha. Para ausencias puntuales usa Excepciones.</p>
+              <p class="small text-body-secondary mt-3">Cada cambio de horario crea una versión que rige desde su fecha; las anteriores quedan como historial. Para ausencias puntuales usa Excepciones.</p>
             </div>
             <div class="col-lg-8">
+              <form class="card shadow-sm mb-4" th:action="@{/medico/horario/versiones}" method="post" id="cambiar-horario">
+                <div class="card-header fw-semibold"><i class="bi bi-pencil-square me-1"></i>Cambiar mi horario</div>
+                <div class="card-body">
+                  <div th:if="${errorHorario}" class="alert alert-danger py-2 small" role="alert">
+                    <i class="bi bi-exclamation-octagon me-1"></i><span th:text="${errorHorario}">Error</span>
+                    <ul th:if="${afectadas}" class="mb-0 mt-1">
+                      <li th:each="c : ${afectadas}" th:text="|${#temporals.format(c.inicio, 'EEE dd/MM HH:mm')}–${#temporals.format(c.fin, 'HH:mm')} · ${c.paciente}|">Cita</li>
+                    </ul>
+                    <div class="mt-1">Tu propuesta se conserva abajo: corrígela y vuelve a guardar.</div>
+                  </div>
+                  <p class="small text-body-secondary">Ya viene con tu horario actual: amplíalo, redúcelo o cámbialo por completo. Ampliar siempre se puede; reducir solo si ninguna cita agendada queda fuera. Si eliges hoy, el cambio rige desde este momento.</p>
+                  <div class="mb-2"><label class="form-label small mb-1" for="h-desde">Rige desde</label>
+                    <input type="date" class="form-control form-control-sm" id="h-desde" name="desde" required th:value="${desdeHorario}" th:min="${hoy}" style="max-width:11rem"></div>
+                  <div th:replace="~{fragmentos/horario-semanal :: grilla(${grillaHorario}, ${errorHorario != null})}"></div>
+                  <button class="btn btn-primary mt-2">Guardar horario</button>
+                  <span class="small text-body-secondary ms-2">Reemplaza cualquier horario ya programado desde esa fecha.</span>
+                </div>
+              </form>
               <div th:each="v : ${horario.versiones}" th:if="${v.estado != 'ANTERIOR'}" class="card shadow-sm mb-3">
                 <div class="card-header fw-semibold" th:text="|Horario ${v.estado == 'VIGENTE' ? 'vigente' : 'programado'} desde el ${#temporals.format(v.vigenteDesde, 'dd/MM/yyyy')}|">Horario</div>
                 <div class="table-responsive"><table class="table align-middle mb-0">
@@ -88,6 +106,7 @@
 
         <!-- Duraciones -->
         <div class="tab-pane fade" id="duraciones">
+          <p class="small text-body-secondary">Cambiar una duración solo afecta a las citas que se reserven desde ese momento; las citas ya agendadas conservan la duración con la que se reservaron.</p>
           <table class="table bg-body shadow-sm align-middle">
             <thead class="table-light"><tr><th>Tipo de consulta</th><th>Del consultorio</th><th>Tu duración</th></tr></thead>
             <tbody>

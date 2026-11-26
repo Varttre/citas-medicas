@@ -22,9 +22,29 @@ import pe.consultorio.citas.service.PacienteService;
 public class FichaPacienteController {
 
     private final PacienteService pacienteService;
+    private final pe.consultorio.citas.service.RecuperacionService recuperacion;
+    private final pe.consultorio.citas.service.CitaIndicadaService indicadas;
 
-    public FichaPacienteController(PacienteService pacienteService) {
+    public FichaPacienteController(PacienteService pacienteService,
+            pe.consultorio.citas.service.RecuperacionService recuperacion,
+            pe.consultorio.citas.service.CitaIndicadaService indicadas) {
         this.pacienteService = pacienteService;
+        this.recuperacion = recuperacion;
+        this.indicadas = indicadas;
+    }
+
+    /** El paciente olvidó su contraseña: enlace de un solo uso para su cuenta web propia (sin correo). */
+    @PostMapping("/{id}/enlace-recuperacion")
+    public String enlaceRecuperacion(@org.springframework.security.core.annotation.AuthenticationPrincipal
+            pe.consultorio.citas.config.UsuarioSesion usuario, @PathVariable Long id, RedirectAttributes flash) {
+        try {
+            String codigo = recuperacion.generarParaPaciente(id, usuario.getIdCuenta());
+            flash.addFlashAttribute("enlace", org.springframework.web.servlet.support.ServletUriComponentsBuilder
+                .fromCurrentContextPath().path("/recuperar/cambiar").queryParam("codigo", codigo).toUriString());
+        } catch (pe.consultorio.citas.exception.ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/recepcion/pacientes/" + id;
     }
 
     @ModelAttribute("tiposDocumento")
@@ -44,24 +64,43 @@ public class FichaPacienteController {
         model.addAttribute("q", q);
         model.addAttribute("resultados", pacienteService.buscar(q));
         model.addAttribute("ficha", pacienteService.ficha(id));
+        model.addAttribute("indicadas", indicadas.pendientesVistaDePaciente(id));
         return "recepcion/pacientes";
     }
 
+    /**
+    Registrar paciente. {@code volver=cita}: se abrió desde la nueva cita; al guardar vuelve a ella con el paciente ya
+    elegido. {@code q}: lo que se buscó, para no escribirlo dos veces (número → documento; texto → nombres).
+    */
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
-        model.addAttribute("form", new PacienteForm());
+    public String nuevo(@RequestParam(required = false) String volver, @RequestParam(required = false) String q,
+            Model model) {
+        PacienteForm form = new PacienteForm();
+        if (q != null && !q.isBlank()) {
+            if (q.trim().matches("[0-9A-Za-z]*\\d[0-9A-Za-z]*")) {
+                form.setNroDocumento(q.trim());
+            } else {
+                form.setNombres(q.trim());
+            }
+        }
+        model.addAttribute("form", form);
+        model.addAttribute("volver", "cita".equals(volver) ? "cita" : null);
         return "recepcion/paciente-form";
     }
 
     @PostMapping
-    public String registrar(@Valid @ModelAttribute("form") PacienteForm form, BindingResult errores, Model model,
-            RedirectAttributes flash) {
+    public String registrar(@Valid @ModelAttribute("form") PacienteForm form, BindingResult errores,
+            @RequestParam(required = false) String volver, Model model, RedirectAttributes flash) {
+        model.addAttribute("volver", "cita".equals(volver) ? "cita" : null);
         if (errores.hasErrors()) {
             return "recepcion/paciente-form";
         }
         try {
             Long id = pacienteService.registrar(form);
             flash.addFlashAttribute("exito", "Paciente registrado.");
+            if ("cita".equals(volver)) {
+                return "redirect:/recepcion/cita/nueva?idPaciente=" + id;
+            }
             return "redirect:/recepcion/pacientes/" + id;
         } catch (ReglaNegocioException e) {
             model.addAttribute("error", e.getMessage());

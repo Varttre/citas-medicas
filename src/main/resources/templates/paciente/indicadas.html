@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+Citas indicadas por un médico que faltan agendar, siempre a la vista (inicio y «Mis citas»), no como aviso.
+Parámetro: lista = indicaciones pendientes y vigentes que ve la cuenta (las suyas y las de sus terceros).
+-->
+<section th:fragment="tarjetas(lista)" th:if="${!#lists.isEmpty(lista)}" class="mb-4" aria-labelledby="titulo-indicadas">
+  <h2 class="h5 mb-2" id="titulo-indicadas"><i class="bi bi-clipboard2-pulse me-1 text-success"></i>Citas indicadas por tu médico</h2>
+  <div class="card shadow-sm border-success-subtle mb-2" th:each="i : ${lista}">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div class="fw-semibold" th:text="|${i.tipo} · ${i.duracion} min|">Seguimiento · 30 min</div>
+        <div class="small" th:text="|Paciente: ${i.paciente} · indicada por ${i.medico}|">Paciente · médico</div>
+        <div class="small text-body-secondary"
+             th:text="|Agéndala a partir del ${#temporals.format(i.fechaRecomendada, 'dd/MM/yyyy')} · vigente hasta el ${#temporals.format(i.vigenteHasta, 'dd/MM/yyyy')}${i.diasRestantes <= 7 ? ' (quedan ' + i.diasRestantes + ' días)' : ''}|">Ventana</div>
+        <div class="small mt-1" th:if="${i.indicaciones != null}"><i class="bi bi-chat-left-text me-1"></i><span th:text="${i.indicaciones}">Indicaciones</span></div>
+      </div>
+      <a class="btn btn-success" th:href="@{/paciente/cita/nueva/seguimiento/{id}(id=${i.idIndicacion})}">
+        <i class="bi bi-calendar-plus me-1"></i>Agendar seguimiento</a>
+    </div>
+  </div>
+  <p class="small text-body-secondary mb-0">La cita indicada es solo para el paciente que la recibió. Puede atenderla cualquier médico que ofrezca ese tipo de consulta.</p>
+</section>
+</body>
+</html>

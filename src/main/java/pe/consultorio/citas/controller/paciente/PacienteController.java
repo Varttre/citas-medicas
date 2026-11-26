@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,16 +18,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pe.consultorio.citas.config.UsuarioSesion;
 import pe.consultorio.citas.dto.CitaPaciente;
+import pe.consultorio.citas.dto.ParaQuien;
 import pe.consultorio.citas.dto.PreferenciaDatos;
+import pe.consultorio.citas.dto.TerceroForm;
 import pe.consultorio.citas.entity.AlcancePreferencia;
 import pe.consultorio.citas.entity.ParametroConsultorio;
+import pe.consultorio.citas.entity.TipoDocumento;
+import pe.consultorio.citas.exception.ReglaNegocioException;
+import pe.consultorio.citas.service.CitaIndicadaService;
 import pe.consultorio.citas.service.ConfiguracionService;
+import pe.consultorio.citas.service.RegistroService;
 import pe.consultorio.citas.service.PortalPacienteService;
 import pe.consultorio.citas.service.PreferenciaService;
 
 /**
 Pantallas del portal del paciente: inicio, Mis citas (con las agendadas para otras personas y la disponibilidad
-inmediata de cada cita), citas pasadas, avisos y WhatsApp. La reprogramación la atiende ReprogramarController, la
+inmediata de cada cita), las citas indicadas por el médico pendientes de agendar, «Mis terceros», citas pasadas,
+avisos y WhatsApp. La reprogramación la atiende ReprogramarController, la
 nueva cita NuevaCitaController y el perfil, PerfilController.
 */
 @Controller
@@ -40,35 +48,66 @@ public class PacienteController {
     private final PortalPacienteService portal;
     private final PreferenciaService preferencias;
     private final ConfiguracionService configuracion;
+    private final CitaIndicadaService indicadas;
+    private final RegistroService registro;
 
     public PacienteController(Clock reloj, PortalPacienteService portal, PreferenciaService preferencias,
-            ConfiguracionService configuracion) {
+            ConfiguracionService configuracion, CitaIndicadaService indicadas, RegistroService registro) {
+        this.indicadas = indicadas;
+        this.registro = registro;
         this.reloj = reloj;
         this.portal = portal;
         this.preferencias = preferencias;
         this.configuracion = configuracion;
     }
 
-    /** Saludo, las tres próximas citas que ve la cuenta y los avisos vigentes del consultorio. */
+    /**
+    Saludo, las citas indicadas por el médico que faltan agendar (siempre a la vista, no como aviso), las tres próximas
+    citas que ve la cuenta y los avisos vigentes, plegados en la campana del encabezado.
+    */
     @GetMapping("/inicio")
     public String inicio(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
         String fecha = LocalDate.now(reloj).format(FECHA_LARGA);
         model.addAttribute("fechaHoy", Character.toUpperCase(fecha.charAt(0)) + fecha.substring(1));
         model.addAttribute("proximas", usuario == null ? List.of()
             : portal.proximas(usuario.getIdCuenta()).stream().limit(3).toList());
-        model.addAttribute("avisos", configuracion.avisosActivos().stream().limit(2).toList());
+        model.addAttribute("avisos", configuracion.avisosActivos());
+        model.addAttribute("indicadas", usuario == null ? List.of() : indicadas.pendientesDeCuenta(usuario.getIdCuenta()));
         return "paciente/inicio";
     }
 
-    /** Nueva cita, paso 3 (cita indicada): diseño; los demás pasos los atiende NuevaCitaController. */
-    @GetMapping("/cita/nueva/3")
-    public String nuevaCitaIndicada() {
-        return "paciente/nueva-cita-3";
+    /** «Mis terceros»: las personas para las que la cuenta puede agendar, y añadir una nueva sin agendar todavía. */
+    @GetMapping("/terceros")
+    public String terceros(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
+        model.addAttribute("terceros", usuario == null ? List.of() : registro.terceros(usuario.getIdCuenta()));
+        model.addAttribute("tiposDocumento", TipoDocumento.values());
+        return "paciente/terceros";
+    }
+
+    @PostMapping("/terceros")
+    public String anadirTercero(@AuthenticationPrincipal UsuarioSesion usuario, @ModelAttribute TerceroForm tercero,
+            RedirectAttributes flash) {
+        try {
+            ParaQuien p = registro.vincularTercero(usuario.getIdCuenta(), tercero);
+            if (!p.tercero()) {
+                flash.addFlashAttribute("aviso", "Ese documento es el tuyo: tus citas ya están en «Mis citas».");
+            } else {
+                flash.addFlashAttribute("exito", p.nombre() + " ya está entre tus terceros. Puedes agendarle una cita.");
+                if (p.aviso() != null) {
+                    flash.addFlashAttribute("aviso", p.aviso());
+                }
+            }
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            flash.addFlashAttribute("tercero", tercero);
+        }
+        return "redirect:/paciente/terceros";
     }
 
     @GetMapping("/citas")
     public String misCitas(@AuthenticationPrincipal UsuarioSesion usuario, Model model) {
         model.addAttribute("citas", usuario == null ? List.of() : portal.proximas(usuario.getIdCuenta()));
+        model.addAttribute("indicadas", usuario == null ? List.of() : indicadas.pendientesDeCuenta(usuario.getIdCuenta()));
         ParametroConsultorio p = configuracion.parametros();
         model.addAttribute("penalizacion", p.isMostrarPenalizacion() ? p.getTextoPenalizacion() : null);
         return "paciente/mis-citas";
@@ -124,6 +163,13 @@ public class PacienteController {
     public String avisos(Model model) {
         model.addAttribute("avisos", configuracion.avisosActivos());
         return "paciente/avisos";
+    }
+
+    /** Detalle de un aviso: se entra desde la campana del inicio o desde la lista de avisos. */
+    @GetMapping("/avisos/{id}")
+    public String aviso(@PathVariable Long id, Model model) {
+        model.addAttribute("avisoDetalle", configuracion.avisoActivo(id));
+        return "paciente/aviso";
     }
 
     @GetMapping("/whatsapp")

@@ -99,12 +99,12 @@ class CuposFlujoTest {
                 .param("inicioPropuesto", manana + "T09:00"))
             .andExpect(redirectedUrl(base));
         mvc.perform(post(base + "/candidatos/" + lejana.getIdCita() + "/postergar").with(user(recepcion)).with(csrf()))
-            .andExpect(flash().attribute("exito", "Candidato movido al final de la lista."));
+            .andExpect(flash().attribute("aviso", "Ese candidato ya es el último de la lista."));
 
         mvc.perform(post(base + "/candidatos/" + lejana.getIdCita() + "/resultado").with(user(recepcion)).with(csrf())
                 .param("resultado", "ACEPTO").param("posicion", "1").param("inicioPropuesto", manana + "T09:00"))
             .andExpect(redirectedUrl("/recepcion/cupos"))
-            .andExpect(flash().attribute("exito", containsString("Cita adelantada al")));
+            .andExpect(flash().attribute("exito", containsString("Cupo cubierto")));
 
         assertThat(citas.findById(lejana.getIdCita()).orElseThrow().getInicio()).isEqualTo(manana.atTime(9, 0));
         assertThat(oportunidades.findById(op.getIdOportunidad()).orElseThrow().getEstado())

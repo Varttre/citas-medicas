@@ -22,7 +22,7 @@ public class SeguridadConfig {
             throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/registro", "/recuperar/**", "/error", "/css/**", "/js/**", "/img/**")
+                .requestMatchers("/", "/especialidades", "/como-agendar", "/login", "/registro", "/recuperar/**", "/error", "/css/**", "/js/**", "/img/**")
                     .permitAll()
                 .requestMatchers("/paciente/**").hasRole("PACIENTE")
                 .requestMatchers("/medico/**").hasRole("MEDICO")

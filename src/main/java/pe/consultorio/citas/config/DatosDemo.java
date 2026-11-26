@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,7 @@ En una instalación real no corre: las cuentas las crea el administrador.
 */
 @Component
 @Profile("dev")
+@Order(1)
 public class DatosDemo implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DatosDemo.class);
@@ -120,8 +122,10 @@ public class DatosDemo implements CommandLineRunner {
         vinculo.setConsentimientoEn(ahora());
         cuentaPacientes.save(vinculo);
 
-        aviso("Campaña de chequeo cardiológico", "Durante noviembre, evaluación cardiológica con descuento para mayores de 50 años.");
-        aviso("Nuevo horario de atención", "Atendemos de lunes a viernes de 8:00 a 19:00. Reserva tu cita desde el portal.");
+        aviso("Campaña de chequeo cardiológico", "Durante noviembre, evaluación cardiológica con descuento para mayores de 50 años.",
+            "/especialidades");
+        aviso("Nuevo horario de atención", "Atendemos de lunes a viernes de 8:00 a 19:00. Reserva tu cita desde el portal.",
+            "/como-agendar");
 
         log.info("Datos de prueba creados: 6 usuarios con la contraseña {}", CONTRASENA);
     }
@@ -187,12 +191,13 @@ public class DatosDemo implements CommandLineRunner {
         versiones.save(v);
     }
 
-    private void aviso(String titulo, String texto) {
+    /** Aviso de ejemplo; el enlace lleva a una subpágina pública del consultorio. */
+    private void aviso(String titulo, String texto, String enlace) {
         Aviso a = new Aviso();
         a.setBannerUrl("https://placehold.co/800x200?text=Consultorio");
         a.setTitulo(titulo);
         a.setTexto(texto);
-        a.setEnlace("/paciente/cita/nueva");
+        a.setEnlace(enlace);
         a.setActivo(true);
         avisos.save(a);
     }

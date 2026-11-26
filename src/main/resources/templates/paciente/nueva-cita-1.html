@@ -15,7 +15,10 @@
         <div><h1 class="h3 mb-0">Nueva cita</h1></div>
       </div>
       <ol th:replace="~{paciente/pasos :: pasos(1)}"></ol>
-      <form class="card shadow-sm" th:action="@{/paciente/cita/nueva}" method="post" th:with="t=${tercero}, otra=${tercero != null or para.tercero}">
+      <form class="card shadow-sm" th:action="@{/paciente/cita/nueva}" method="post"
+            th:with="t=${tercero}, otra=${tercero != null or para.tercero or terceroElegido != null},
+                     nuevo=${tercero != null or #lists.isEmpty(terceros)},
+                     sel=${terceroElegido != null ? terceroElegido : (#lists.isEmpty(terceros) ? null : terceros[0].idPaciente)}">
         <div class="card-body p-4">
           <h2 class="h5 mb-3">¿Para quién es la cita?</h2>
           <div class="row g-3 mb-2">
@@ -36,6 +39,27 @@
           </div>
 
           <div id="otra-persona" class="border-top pt-4 mt-4" th:classappend="${!otra} ? 'd-none'">
+            <!-- Primero, las personas que la cuenta ya tiene; si es alguien nuevo, se añade aquí mismo -->
+            <th:block th:if="${!#lists.isEmpty(terceros)}">
+              <h3 class="h6">¿Para cuál de tus terceros?</h3>
+              <div class="list-group mb-3">
+                <label class="list-group-item d-flex gap-3 align-items-center" th:each="x : ${terceros}">
+                  <input class="form-check-input flex-shrink-0" type="radio" name="idTercero" th:value="${x.idPaciente}"
+                         th:checked="${!nuevo and x.idPaciente == sel}" data-oculta="#datos-nuevo">
+                  <span><span class="fw-semibold" th:text="${x.nombre}">Nombre</span>
+                    <span class="d-block small text-body-secondary" th:text="|${x.tipoDocumento} ${x.nroDocumento} · ${x.edad} años|">DNI</span></span>
+                </label>
+                <label class="list-group-item d-flex gap-3 align-items-center">
+                  <input class="form-check-input flex-shrink-0" type="radio" name="idTercero" value="NUEVO" id="tercero-nuevo"
+                         th:checked="${nuevo}" data-muestra="#datos-nuevo">
+                  <span><span class="fw-semibold"><i class="bi bi-person-plus me-1"></i>Otra persona</span>
+                    <span class="d-block small text-body-secondary">Añádela ahora; quedará en «Mis terceros»</span></span>
+                </label>
+              </div>
+            </th:block>
+            <input type="hidden" name="idTercero" value="NUEVO" th:if="${#lists.isEmpty(terceros)}">
+
+            <div id="datos-nuevo" th:classappend="${!nuevo} ? 'd-none'">
             <h3 class="h6">Datos del paciente</h3>
             <div class="row g-3">
               <div class="col-sm-5 col-lg-3"><label class="form-label" for="t-tipo">Tipo de documento</label>
@@ -53,26 +77,22 @@
               <input class="form-check-input" type="checkbox" id="consentimiento" name="consentimiento" value="true">
               <label class="form-check-label" for="consentimiento">Declaro tener el consentimiento del paciente para agendar citas a su nombre.</label>
             </div>
+            </div>
             <p class="small text-body-secondary mt-2 mb-0"><i class="bi bi-telephone me-1"></i>Por las citas que agendes para esta persona, el consultorio te llamará a ti.</p>
           </div>
 
-          <div class="d-flex justify-content-end mt-4">
+          <div class="d-flex justify-content-between mt-4">
+            <button th:replace="~{paciente/pasos :: botonCancelar}"></button>
             <button class="btn btn-primary">Continuar<i class="bi bi-arrow-right ms-1"></i></button>
           </div>
         </div>
       </form>
+      <div th:replace="~{paciente/pasos :: modalCancelar}"></div>
     </main>
   </div>
 </div>
 
 
 <th:block th:replace="~{fragmentos/base :: scripts}"></th:block>
-<script>
-  /* Desde [Agendar seguimiento] el paciente llega fijado: la cita indicada es solo para quien la recibió. */
-  if (new URLSearchParams(location.search).has('seguimiento')) {
-    document.getElementById('elige-paciente').classList.add('d-none');
-    document.getElementById('seguimiento-fijo').classList.remove('d-none');
-  }
-</script>
 </body>
 </html>

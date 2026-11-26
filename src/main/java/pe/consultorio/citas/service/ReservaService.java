@@ -55,6 +55,7 @@ public class ReservaService {
     private final BloqueoTemporalService bloqueos;
     private final AuditoriaService auditoria;
     private final OportunidadService oportunidades;
+    private final CitaIndicadaService indicadas;
     private final Clock reloj;
 
     public ReservaService(CitaRepository citas, CitaEventoRepository eventos, PacienteRepository pacientes,
@@ -62,7 +63,7 @@ public class ReservaService {
             MedicoEspecialidadRepository medicoEspecialidades, CuentaRepository cuentas,
             CuentaPacienteRepository vinculos, ConfiguracionService configuracion, PreferenciaService preferencias,
             BloqueoTemporalService bloqueos, AuditoriaService auditoria, OportunidadService oportunidades,
-            Clock reloj) {
+            CitaIndicadaService indicadas, Clock reloj) {
         this.citas = citas;
         this.eventos = eventos;
         this.pacientes = pacientes;
@@ -77,6 +78,7 @@ public class ReservaService {
         this.bloqueos = bloqueos;
         this.auditoria = auditoria;
         this.oportunidades = oportunidades;
+        this.indicadas = indicadas;
         this.reloj = reloj;
     }
 
@@ -160,6 +162,9 @@ public class ReservaService {
         ev.setFechaHora(ahora);
         eventos.save(ev);
         oportunidades.registrarCobertura(cita);
+        if (c.idIndicacion() != null) {
+            indicadas.marcarAgendada(c.idIndicacion(), cita);
+        }
 
         if (c.preferencia() != null) {
             preferencias.guardar(cita.getIdCita(), c.preferencia(), c.idCuentaActor());

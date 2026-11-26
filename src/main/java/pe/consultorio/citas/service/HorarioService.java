@@ -3,6 +3,7 @@ package pe.consultorio.citas.service;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -102,30 +103,30 @@ public class HorarioService {
     // ---------------------------------------------------------------- Versiones
 
     /**
-    Programa un horario nuevo desde {@code desde}. La versión vigente se cierra el día anterior y la nueva queda sin
-    fecha de fin.
-    
+    Cambia el horario semanal desde {@code desde} (hoy o una fecha futura). Se acepta siempre que todas las citas
+    vigentes desde ese momento sigan cabiendo enteras en el horario nuevo: ampliar el horario nunca se bloquea y
+    reducirlo solo si no deja citas fuera. La versión que rige ese día se cierra el día anterior; las versiones que
+    empezaban en esa fecha o después quedan reemplazadas por la nueva (que no tiene fecha de fin). Si empieza hoy, el
+    horario de hoy cambia al instante.
+
     @throws HorarioConCitasException si alguna cita desde esa fecha no cabe entera en el horario nuevo
     */
     @Transactional
     public void crearVersion(Long idMedico, LocalDate desde, List<FranjaDatos> franjas, Long idCuentaActor) {
         Medico medico = medico(idMedico);
-        if (desde == null || !desde.isAfter(hoy())) {
-            throw new ReglaNegocioException("La nueva versión debe empezar después de hoy.");
+        if (desde == null || desde.isBefore(hoy())) {
+            throw new ReglaNegocioException("El horario nuevo no puede empezar antes de hoy.");
         }
         List<FranjaDatos> nuevas = franjas == null ? List.of() : franjas;
+        if (nuevas.isEmpty()) {
+            throw new ReglaNegocioException("Marca al menos un día de atención con su horario.");
+        }
         validarFranjas(nuevas, incremento());
 
-        List<HorarioVersion> existentes = versiones.findByMedicoIdMedicoOrderByVigenteDesdeDesc(idMedico);
-        existentes.stream()
-            .filter(v -> !v.getVigenteDesde().isBefore(desde))
-            .min(Comparator.comparing(HorarioVersion::getVigenteDesde))
-            .ifPresent(v -> {
-                throw new ReglaNegocioException("Ya hay una versión programada desde el "
-                    + v.getVigenteDesde().format(DIA_MES) + ". Elimínala o cámbiala.");
-            });
-
-        List<Cita> fuera = citas.delMedicoDesde(idMedico, desde.atStartOfDay(), CitaRepository.CANCELADAS).stream()
+        // Solo cuentan las citas que aún no empiezan: lo ya ocurrido hoy no se mueve con un cambio de horario.
+        LocalDateTime ahora = LocalDateTime.now(reloj);
+        LocalDateTime desdeCitas = desde.atStartOfDay().isAfter(ahora) ? desde.atStartOfDay() : ahora;
+        List<Cita> fuera = citas.delMedicoDesde(idMedico, desdeCitas, CitaRepository.CANCELADAS).stream()
             .filter(c -> !cabeEnAlgunaFranja(c, nuevas))
             .toList();
         if (!fuera.isEmpty()) {
@@ -133,24 +134,62 @@ public class HorarioService {
                 String.valueOf(idMedico), "Nueva versión desde " + desde.format(FECHA) + ": " + fuera.size()
                     + " citas quedarían fuera del horario", null);
             throw new HorarioConCitasException("Este cambio deja fuera " + citasAgendadas(fuera.size())
-                + ". Reprográmalas primero.", afectadas(fuera));
+                + ". Reprográmalas primero o amplía esas franjas.", afectadas(fuera));
         }
 
-        // La base no permite dos versiones con vigencias cruzadas: la anterior se cierra y se escribe ya (flush),
-        // antes de insertar la nueva. Si no, Hibernate insertaría primero y PostgreSQL rechazaría el cruce.
+        // La base no permite dos versiones con vigencias cruzadas: primero se quitan las que empiezan desde esa fecha
+        // y se cierra la que la cubre (escritas ya, con flush), y después se inserta la nueva.
+        List<HorarioVersion> existentes = versiones.findByMedicoIdMedicoOrderByVigenteDesdeDesc(idMedico);
+        List<String> reemplazadas = new java.util.ArrayList<>();
         for (HorarioVersion v : existentes) {
-            boolean cubreDesde = v.getVigenteDesde().isBefore(desde)
-                && (v.getVigenteHasta() == null || !v.getVigenteHasta().isBefore(desde));
-            if (cubreDesde) {
+            if (!v.getVigenteDesde().isBefore(desde)) {
+                reemplazadas.add(v.getVigenteDesde().format(FECHA));
+                versiones.delete(v);
+            } else if (v.getVigenteHasta() == null || !v.getVigenteHasta().isBefore(desde)) {
                 v.setVigenteHasta(desde.minusDays(1));
-                versiones.saveAndFlush(v);
+                versiones.save(v);
             }
         }
+        versiones.flush();
 
         HorarioVersion nueva = new HorarioVersion();
         nueva.setMedico(medico);
         nueva.setVigenteDesde(desde);
         for (FranjaDatos f : nuevas) {
+            FranjaHoraria franja = new FranjaHoraria();
+            franja.setDiaSemana((short) f.diaSemana());
+            franja.setHoraInicio(f.inicio());
+            franja.setHoraFin(f.fin());
+            nueva.agregarFranja(franja);
+        }
+        versiones.save(nueva);
+        auditoria.registrar(idCuentaActor, AccionAuditoria.CONFIG_CAMBIO, "HORARIO_VERSION", String.valueOf(idMedico),
+            "Horario nuevo desde " + desde.format(FECHA) + " (" + nuevas.size() + " franjas)"
+                + (reemplazadas.isEmpty() ? "" : "; reemplaza la versión del " + String.join(", ", reemplazadas)),
+            null);
+    }
+
+    /**
+    Primer horario de un médico recién creado (lo arma el administrador en el alta). A diferencia de una versión
+    nueva, puede empezar hoy: el médico aún no tiene horario ni citas que proteger.
+    */
+    @Transactional
+    public void crearVersionInicial(Long idMedico, LocalDate desde, List<FranjaDatos> franjas) {
+        Medico medico = medico(idMedico);
+        if (desde == null || desde.isBefore(hoy())) {
+            throw new ReglaNegocioException("El horario no puede empezar antes de hoy.");
+        }
+        if (franjas == null || franjas.isEmpty()) {
+            throw new ReglaNegocioException("Marca al menos un día de atención con su horario.");
+        }
+        if (!versiones.findByMedicoIdMedicoOrderByVigenteDesdeDesc(idMedico).isEmpty()) {
+            throw new ReglaNegocioException("El médico ya tiene horario.");
+        }
+        validarFranjas(franjas, incremento());
+        HorarioVersion nueva = new HorarioVersion();
+        nueva.setMedico(medico);
+        nueva.setVigenteDesde(desde);
+        for (FranjaDatos f : franjas) {
             FranjaHoraria franja = new FranjaHoraria();
             franja.setDiaSemana((short) f.diaSemana());
             franja.setHoraInicio(f.inicio());

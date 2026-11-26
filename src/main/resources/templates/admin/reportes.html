@@ -11,15 +11,46 @@
     <main class="container-xl p-3 p-lg-4">
       <div th:replace="~{fragmentos/base :: mensajes}"></div>
 
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div><h1 class="h3 mb-0">Reportes del consultorio</h1>
-          <p class="text-body-secondary mb-0" th:text="|Del ${#temporals.format(m.desde, 'd ''de'' MMMM')} al ${#temporals.format(m.hasta, 'd ''de'' MMMM ''de'' yyyy')} · todos los médicos|">Rango</p></div>
-        <form class="d-flex flex-wrap gap-2" th:action="@{/admin/reportes}" method="get">
-          <input type="date" class="form-control" name="desde" th:value="${m.desde}" style="max-width:11rem">
-          <input type="date" class="form-control" name="hasta" th:value="${m.hasta}" style="max-width:11rem">
-          <button class="btn btn-outline-primary">Ver</button>
-          <a class="btn btn-success text-nowrap" th:href="@{/admin/reportes/exportar(desde=${m.desde}, hasta=${m.hasta})}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar a Excel</a>
-        </form>
+      <div class="mb-3">
+        <h1 class="h3 mb-0">Reportes del consultorio</h1>
+        <p class="text-body-secondary mb-0" th:text="|Del ${#temporals.format(m.desde, 'd ''de'' MMMM')} al ${#temporals.format(m.hasta, 'd ''de'' MMMM ''de'' yyyy')} · ${m.descripcionFiltro()}|">Rango</p>
+      </div>
+      <form class="card shadow-sm mb-4" th:action="@{/admin/reportes}" method="get">
+        <div class="card-body row g-2 align-items-end">
+          <div class="col-6 col-md-3 col-xl-2"><label class="form-label small mb-1" for="f-desde">Desde</label>
+            <input type="date" class="form-control" id="f-desde" name="desde" th:value="${m.desde}"></div>
+          <div class="col-6 col-md-3 col-xl-2"><label class="form-label small mb-1" for="f-hasta">Hasta</label>
+            <input type="date" class="form-control" id="f-hasta" name="hasta" th:value="${m.hasta}"></div>
+          <div class="col-md-6 col-xl-3"><label class="form-label small mb-1" for="f-medico">Médico</label>
+            <select class="form-select" id="f-medico" name="medico" data-filtro-especialidad="f-especialidad">
+              <option value="">Todos los médicos</option>
+              <option th:each="o : ${medicos}" th:value="${o.idMedico}" th:text="|${o.nombre} · ${o.especialidades}|" th:attr="data-esp=${o.idsEspecialidad}" th:selected="${o.idMedico == m.idMedico}">Médico</option>
+            </select></div>
+          <div class="col-md-6 col-xl-2"><label class="form-label small mb-1" for="f-especialidad">Especialidad</label>
+            <select class="form-select" id="f-especialidad" name="especialidad">
+              <option value="">Todas</option>
+              <option th:each="e : ${especialidades}" th:value="${e.idEspecialidad}" th:text="${e.nombre}" th:selected="${e.idEspecialidad == m.idEspecialidad}">Esp</option>
+            </select></div>
+          <div class="col-md-6 col-xl-3 d-flex gap-2">
+            <button class="btn btn-outline-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Ver</button>
+            <a class="btn btn-success text-nowrap flex-grow-1" th:href="@{/admin/reportes/exportar(desde=${m.desde}, hasta=${m.hasta}, medico=${m.idMedico}, especialidad=${m.idEspecialidad})}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel</a>
+          </div>
+          <div class="col-12 small text-body-secondary">El Excel lleva exactamente lo que se ve con estos filtros.</div>
+        </div>
+      </form>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Resumen de citas del rango</div>
+        <div class="card-body row g-3 text-center">
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.total}">0</div><div class="small text-body-secondary">Citas</div></div>
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.realizadas}">0</div><div class="small text-body-secondary">Realizadas</div></div>
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.noAsistio}">0</div><div class="small text-body-secondary">No asistió</div></div>
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.canceladasPaciente}">0</div><div class="small text-body-secondary">Canceló el paciente</div></div>
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.canceladasClinica}">0</div><div class="small text-body-secondary">Canceló el consultorio</div></div>
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.reprogramadas}">0</div><div class="small text-body-secondary">Reprogramadas</div></div>
+          <div class="col-6 col-md-3 col-xl"><div class="fs-4 fw-semibold" th:text="${m.resumen.porAtender + m.resumen.enAtencion}">0</div><div class="small text-body-secondary">Por atender o en atención</div></div>
+        </div>
+        <div class="card-footer small text-body-secondary">«Reprogramadas» son las citas que se movieron al menos una vez; también se cuentan en su estado actual.</div>
       </div>
 
       <div class="row g-3 mb-4">
@@ -27,7 +58,8 @@
           <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">1</span>Horarios liberados recuperados</div>
           <div class="fs-2 fw-semibold mt-1" th:text="${m.recuperadosPct != null} ? |${m.recuperadosPct} %| : '—'">—</div>
           <div class="small text-body-secondary" th:text="|${m.cubiertas} de ${m.cubiertas + m.expiradas} horarios liberados|">de</div>
-          <div class="small text-body-secondary" th:text="|${m.minutosRecuperados} min recuperados · ${m.abiertasAhora} esperando ahora|">min</div>
+          <div class="small text-body-secondary" th:text="|${m.horariosRecuperados} de ${m.horariosSoltados} horarios soltados recuperados|">hor</div>
+          <div class="small text-body-secondary" th:text="|${m.minutosRecuperados} de ${m.minutosSoltados} min recuperados · ${m.abiertasAhora} esperando ahora|">min</div>
         </div></div></div>
         <div class="col-sm-6 col-xl-3"><div class="card shadow-sm h-100"><div class="card-body">
           <div class="small text-body-secondary"><span class="badge text-bg-light border me-1">2</span>No asistencia</div>
@@ -96,7 +128,26 @@
           </div>
         </div>
       </div>
-      <p class="small text-body-secondary mt-3">Las métricas se calculan desde el historial de citas, horarios liberados e indicaciones del rango elegido.</p>
+      <div class="card shadow-sm mt-4">
+        <div class="card-header fw-semibold">Detalle por médico</div>
+        <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+          <thead class="table-light"><tr><th>Médico</th><th>Especialidad</th><th class="text-end">Citas</th><th class="text-end">Realizadas</th><th class="text-end">No asistió</th><th class="text-end">Canceladas</th><th class="text-end">Reprogramadas</th><th class="text-end">Horarios recuperados</th><th class="text-end">Min recuperados</th></tr></thead>
+          <tbody>
+            <tr th:each="d : ${m.detalleMedicos}">
+              <td th:text="${d.medico}">Médico</td><td th:text="${d.especialidades}">Esp</td>
+              <td class="text-end" th:text="${d.resumen.total}">0</td>
+              <td class="text-end" th:text="${d.resumen.realizadas}">0</td>
+              <td class="text-end" th:text="${d.resumen.noAsistio}">0</td>
+              <td class="text-end" th:text="${d.resumen.canceladasPaciente + d.resumen.canceladasClinica}">0</td>
+              <td class="text-end" th:text="${d.resumen.reprogramadas}">0</td>
+              <td class="text-end" th:text="${d.horariosRecuperados}">0</td>
+              <td class="text-end fw-semibold" th:text="${d.minutosRecuperados}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(m.detalleMedicos)}"><td colspan="9" class="text-body-secondary text-center">Sin citas en el rango.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="small text-body-secondary mt-3">Las métricas se calculan desde el historial de citas, horarios liberados e indicaciones del rango elegido. Lo recuperado cuenta solo los minutos que caen dentro del horario que realmente se soltó (la cita cancelada, movida o acortada), no todo el bloque libre que se ofreció a su alrededor.</p>
     </main>
   </div>
 </div>

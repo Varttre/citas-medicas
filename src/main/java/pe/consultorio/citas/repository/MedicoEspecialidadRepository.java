@@ -6,4 +6,7 @@ import pe.consultorio.citas.entity.MedicoEspecialidadId;
 
 /** Acceso a la tabla medico_especialidad. */
 public interface MedicoEspecialidadRepository extends JpaRepository<MedicoEspecialidad, MedicoEspecialidadId> {
+
+    /** Médicos activos (no dados de baja) que atienden la especialidad. */
+    long countByEspecialidadIdEspecialidadAndMedicoActivoTrue(Short idEspecialidad);
 }

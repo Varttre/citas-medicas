@@ -14,9 +14,15 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     boolean existsByTipoDocumentoAndNroDocumento(TipoDocumento tipoDocumento, String nroDocumento);
 
-    /** Búsqueda de recepción por documento, nombres, apellidos o teléfono (sin distinguir mayúsculas). */
+    /** Paciente con ese documento, si existe. */
+    java.util.Optional<Paciente> findByTipoDocumentoAndNroDocumento(TipoDocumento tipoDocumento, String nroDocumento);
+
+    /**
+    Búsqueda de recepción solo por documento o nombre (nombres, apellidos o ambos), sin distinguir mayúsculas. El
+    teléfono no entra: cambia con el tiempo y no identifica al paciente.
+    */
     @Query("select p from Paciente p where lower(p.nroDocumento) like :patron or lower(p.nombres) like :patron "
         + "or lower(p.apellidos) like :patron or lower(concat(p.nombres, ' ', p.apellidos)) like :patron "
-        + "or p.telefono like :patron order by p.apellidos, p.nombres")
+        + "or lower(concat(p.apellidos, ' ', p.nombres)) like :patron order by p.apellidos, p.nombres")
     List<Paciente> buscar(@Param("patron") String patron, Pageable pagina);
 }

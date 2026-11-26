@@ -3,7 +3,9 @@ package pe.consultorio.citas.controller.paciente;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
 
@@ -17,6 +19,7 @@ import pe.consultorio.citas.DatosPrueba;
 import pe.consultorio.citas.PostgresTestConfig;
 import pe.consultorio.citas.config.UsuarioSesion;
 import pe.consultorio.citas.dto.AvisoForm;
+import pe.consultorio.citas.entity.Aviso;
 import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.EstadoCita;
 import pe.consultorio.citas.entity.Medico;
@@ -55,6 +58,31 @@ class PortalInicioTest {
         mvc.perform(get("/paciente/avisos").with(user(sesion)))
             .andExpect(content().string(containsString(titulo)))
             .andExpect(content().string(containsString("rel=\"noopener\"")));
+    }
+
+    /** Pedido del docente: los avisos van plegados en el inicio y desde ahí se entra a cada uno. */
+    @Test
+    void losAvisosVanPlegadosEnElInicioYCadaUnoTieneSuDetalle() throws Exception {
+        Cuenta cuenta = datos.crearCuentaPaciente("plegado" + System.nanoTime() + "@prueba.pe");
+        UsuarioSesion sesion = detalles.loadUserByUsername(cuenta.getCorreo());
+        String sufijo = String.valueOf(System.nanoTime());
+        Aviso activo = configuracion.guardarAviso(null, new AvisoForm("https://ejemplo.pe/b.png", "Activo " + sufijo,
+            "Texto completo del aviso " + sufijo, "/paciente/cita/nueva", true), null);
+        Aviso inactivo = configuracion.guardarAviso(null, new AvisoForm("https://ejemplo.pe/b.png", "Inactivo " + sufijo,
+            "No se publica", "https://ejemplo.pe", false), null);
+
+        mvc.perform(get("/paciente/inicio").with(user(sesion)))
+            .andExpect(content().string(containsString("data-bs-toggle=\"dropdown\"")))
+            .andExpect(content().string(containsString("/paciente/avisos/" + activo.getIdAviso())))
+            .andExpect(content().string(not(containsString("Inactivo " + sufijo))))
+            .andExpect(content().string(not(containsString("rounded-pill text-bg-danger"))))
+            .andExpect(content().string(containsString("https://medlineplus.gov/spanish/")));
+        mvc.perform(get("/paciente/avisos/" + activo.getIdAviso()).with(user(sesion)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Texto completo del aviso " + sufijo)))
+            .andExpect(content().string(containsString("href=\"/paciente/cita/nueva\"")));
+        mvc.perform(get("/paciente/avisos/" + inactivo.getIdAviso()).with(user(sesion)))
+            .andExpect(status().isNotFound());
     }
 
     @Test

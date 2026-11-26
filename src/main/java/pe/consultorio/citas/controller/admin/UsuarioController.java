@@ -1,6 +1,9 @@
 package pe.consultorio.citas.controller.admin;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pe.consultorio.citas.config.UsuarioSesion;
+import pe.consultorio.citas.controller.FormularioHorario;
+import pe.consultorio.citas.dto.FranjaDatos;
 import pe.consultorio.citas.entity.NombreRol;
 import pe.consultorio.citas.exception.ReglaNegocioException;
 import pe.consultorio.citas.service.ConfiguracionService;
@@ -23,12 +28,20 @@ import pe.consultorio.citas.service.UsuarioService;
 @RequestMapping("/admin/usuarios")
 public class UsuarioController {
 
+    /** Horario con el que se abre el alta: lunes a viernes de 8:00 a 13:00. */
+    private static final Map<String, String> HORARIO_SUGERIDO = FormularioHorario.valores(
+        java.util.stream.IntStream.rangeClosed(1, 5)
+            .mapToObj(d -> new FranjaDatos(d, LocalTime.of(8, 0), LocalTime.of(13, 0))).toList());
+
     private final UsuarioService usuarioService;
     private final ConfiguracionService configuracion;
+    private final pe.consultorio.citas.service.RecuperacionService recuperacion;
 
-    public UsuarioController(UsuarioService usuarioService, ConfiguracionService configuracion) {
+    public UsuarioController(UsuarioService usuarioService, ConfiguracionService configuracion,
+            pe.consultorio.citas.service.RecuperacionService recuperacion) {
         this.usuarioService = usuarioService;
         this.configuracion = configuracion;
+        this.recuperacion = recuperacion;
     }
 
     @GetMapping
@@ -41,6 +54,11 @@ public class UsuarioController {
         model.addAttribute("ahora", usuarioService.ahora());
         model.addAttribute("tipos", configuracion.tiposActivos());
         model.addAttribute("especialidades", configuracion.especialidadesActivas());
+        // Tras un error del alta, el formulario vuelve abierto con lo escrito (llega como atributo flash).
+        @SuppressWarnings("unchecked")
+        Map<String, String> enviado = (Map<String, String>) model.getAttribute("altaMedico");
+        model.addAttribute("altaMedico", enviado != null ? enviado : Map.of());
+        model.addAttribute("grillaAlta", enviado != null ? FormularioHorario.soloGrilla(enviado) : HORARIO_SUGERIDO);
         return "admin/usuarios";
     }
 
@@ -57,7 +75,10 @@ public class UsuarioController {
         return "redirect:/admin/usuarios";
     }
 
-    /** Las duraciones llegan como campos «dur_{idTipo}». */
+    /**
+    Las duraciones llegan como campos «dur_{idTipo}». El horario semanal, como «dia_{d}» (casilla del día, 1 = lunes)
+    con hasta dos franjas «ini_{d}_{n}» / «fin_{d}_{n}»; una franja con las dos horas vacías se ignora.
+    */
     @PostMapping("/medicos")
     public String altaMedico(@AuthenticationPrincipal UsuarioSesion usuario, @RequestParam String correo,
             @RequestParam String contrasena, @RequestParam String nombres, @RequestParam String apellidos,
@@ -70,11 +91,22 @@ public class UsuarioController {
             }
         });
         try {
+            List<FranjaDatos> franjas = FormularioHorario.leer(campos);
+            if (franjas.isEmpty()) {
+                throw new ReglaNegocioException("Marca al menos un día de atención con su horario.", "horario");
+            }
+            String desde = campos.get("horarioDesde");
             usuarioService.crearMedico(correo, contrasena, nombres, apellidos, idEspecialidad, duraciones,
-                usuario.getIdCuenta());
-            flash.addFlashAttribute("exito", "Médico creado. Ya puede definir su horario en «Mi horario».");
+                desde == null || desde.isBlank() ? null : LocalDate.parse(desde), franjas, usuario.getIdCuenta());
+            flash.addFlashAttribute("exito", "Médico creado con su horario. Ya se le pueden agendar citas.");
         } catch (ReglaNegocioException e) {
-            flash.addFlashAttribute("error", e.getMessage());
+            // Vuelve con el formulario abierto, lo escrito (menos la contraseña) y el campo a corregir marcado.
+            Map<String, String> enviado = new HashMap<>(campos);
+            enviado.remove("contrasena");
+            enviado.remove("_csrf");
+            flash.addFlashAttribute("altaMedico", enviado);
+            flash.addFlashAttribute("campoError", e.getCampo() != null ? e.getCampo() : "general");
+            flash.addFlashAttribute("errorAlta", e.getMessage());
         }
         return "redirect:/admin/usuarios";
     }
@@ -92,6 +124,20 @@ public class UsuarioController {
             RedirectAttributes flash) {
         usuarioService.desbloquear(id, usuario.getIdCuenta());
         flash.addFlashAttribute("exito", "Cuenta desbloqueada.");
+        return "redirect:/admin/usuarios";
+    }
+
+    /** Enlace de un solo uso para que la persona cree una contraseña nueva (sin correo). */
+    @PostMapping("/{id}/enlace-recuperacion")
+    public String enlaceRecuperacion(@AuthenticationPrincipal UsuarioSesion usuario, @PathVariable Long id,
+            RedirectAttributes flash) {
+        try {
+            String codigo = recuperacion.generarParaCuenta(id, usuario.getIdCuenta());
+            flash.addFlashAttribute("enlace", org.springframework.web.servlet.support.ServletUriComponentsBuilder
+                .fromCurrentContextPath().path("/recuperar/cambiar").queryParam("codigo", codigo).toUriString());
+        } catch (pe.consultorio.citas.exception.ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/usuarios";
     }
 

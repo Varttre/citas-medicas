@@ -29,6 +29,7 @@ import pe.consultorio.citas.entity.Cuenta;
 import pe.consultorio.citas.entity.Especialidad;
 import pe.consultorio.citas.entity.Medico;
 import pe.consultorio.citas.service.UsuarioDetallesService;
+import pe.consultorio.citas.service.disponibilidad.BloqueoTemporalService;
 import pe.consultorio.citas.service.disponibilidad.DisponibilidadService;
 import pe.consultorio.citas.service.disponibilidad.OfertaDia;
 
@@ -49,6 +50,9 @@ class NuevaCitaFlujoTest {
 
     @Autowired
     DisponibilidadService disponibilidad;
+
+    @Autowired
+    BloqueoTemporalService bloqueos;
 
     @Test
     void agendaUnaCitaYLaVeEnMisCitas() throws Exception {
@@ -83,5 +87,36 @@ class NuevaCitaFlujoTest {
         String misCitas = mvc.perform(get("/paciente/citas").with(user(paciente)))
             .andReturn().getResponse().getContentAsString();
         assertThat(misCitas).contains("Oftalmología").contains("Flujo Prueba");
+    }
+
+    /** Pedido del docente: «Cancelar» con confirmación en todos los pasos; al cancelar se suelta el horario retenido. */
+    @Test
+    void cancelarLaNuevaCitaSueltaElHorarioRetenidoYVuelveAlInicio() throws Exception {
+        Especialidad e = datos.crearEspecialidad("Urología");
+        Medico m = datos.crearMedico("Cancela", e);
+        for (int dia = 1; dia <= 7; dia++) {
+            datos.crearHorario(m, LocalDate.now().minusDays(1), dia, LocalTime.of(8, 0), LocalTime.of(12, 0));
+        }
+        Cuenta c = datos.crearCuentaPaciente("cancela" + System.nanoTime() + "@prueba.pe");
+        UsuarioSesion paciente = detalles.loadUserByUsername(c.getCorreo());
+        Cookie sesion = mvc.perform(get("/paciente/cita/nueva/4").param("medico", m.getIdMedico().toString())
+                .param("especialidad", e.getIdEspecialidad().toString()).with(user(paciente)))
+            .andReturn().getResponse().getCookie("SESSION");
+        LocalDateTime inicio = disponibilidad.ofertasProximas(m.getIdMedico(), 30, LocalDate.now().plusDays(1), null)
+            .get(0).ofertas().get(0).inicio();
+        mvc.perform(post("/paciente/cita/nueva/4").with(user(paciente)).with(csrf()).cookie(sesion)
+                .param("inicio", inicio.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))))
+            .andExpect(redirectedUrl("/paciente/cita/nueva/5"));
+        mvc.perform(get("/paciente/cita/nueva/5").with(user(paciente)).cookie(sesion))
+            .andExpect(content().string(containsString("Sí, cancelar")))
+            .andExpect(content().string(containsString("bi-arrow-left")));
+        assertThat(bloqueos.vigenteDe(c.getIdCuenta())).isPresent();
+
+        mvc.perform(post("/paciente/cita/nueva/cancelar").with(user(paciente)).with(csrf()).cookie(sesion))
+            .andExpect(redirectedUrl("/paciente/inicio"));
+
+        assertThat(bloqueos.vigenteDe(c.getIdCuenta())).isEmpty();
+        mvc.perform(get("/paciente/cita/nueva/5").with(user(paciente)).cookie(sesion))
+            .andExpect(redirectedUrl("/paciente/cita/nueva/2"));
     }
 }

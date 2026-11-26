@@ -21,11 +21,14 @@ public class TareasProgramadas {
 
     private final OportunidadService oportunidades;
     private final BloqueoTemporalRepository bloqueos;
+    private final CitaIndicadaService indicadas;
     private final Clock reloj;
 
-    public TareasProgramadas(OportunidadService oportunidades, BloqueoTemporalRepository bloqueos, Clock reloj) {
+    public TareasProgramadas(OportunidadService oportunidades, BloqueoTemporalRepository bloqueos,
+            CitaIndicadaService indicadas, Clock reloj) {
         this.oportunidades = oportunidades;
         this.bloqueos = bloqueos;
+        this.indicadas = indicadas;
         this.reloj = reloj;
     }
 
@@ -34,9 +37,10 @@ public class TareasProgramadas {
     public void limpiar() {
         int expiradas = oportunidades.expirarVencidas();
         int borrados = bloqueos.borrarVencidos(LocalDateTime.now(reloj));
-        if (expiradas > 0 || borrados > 0) {
-            log.info("Tareas programadas: {} horarios liberados expirados, {} retenciones vencidas borradas",
-                expiradas, borrados);
+        int vencidas = indicadas.vencerVencidas();
+        if (expiradas > 0 || borrados > 0 || vencidas > 0) {
+            log.info("Tareas programadas: {} horarios liberados expirados, {} retenciones vencidas borradas, "
+                + "{} citas indicadas vencidas", expiradas, borrados, vencidas);
         }
     }
 }

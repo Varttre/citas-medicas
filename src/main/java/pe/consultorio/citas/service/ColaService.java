@@ -48,11 +48,14 @@ public class ColaService {
     private final CandidatoService candidatos;
     private final ContactoService contacto;
     private final ConfiguracionService configuracion;
+    private final HorarioSoltadoService soltados;
     private final Clock reloj;
 
-    public ColaService(CitaRepository citas, RegistroLlamadaRepository llamadas, OportunidadService oportunidades,
-            CandidatoService candidatos, ContactoService contacto, ConfiguracionService configuracion, Clock reloj) {
+    public ColaService(CitaRepository citas, RegistroLlamadaRepository llamadas,
+            OportunidadService oportunidades, CandidatoService candidatos, ContactoService contacto,
+            ConfiguracionService configuracion, HorarioSoltadoService soltados, Clock reloj) {
         this.citas = citas;
+        this.soltados = soltados;
         this.llamadas = llamadas;
         this.oportunidades = oportunidades;
         this.candidatos = candidatos;
@@ -86,11 +89,15 @@ public class ColaService {
     public List<CupoLiberado> cuposLiberados() {
         LocalDateTime ahora = LocalDateTime.now(reloj);
         return oportunidades.abiertas().stream()
-            .map(o -> new CupoLiberado(o.getIdOportunidad(),
-                nombre(o.getMedico().getNombres(), o.getMedico().getApellidos()), o.getInicio(), o.getFin(),
-                Duration.between(o.getInicio(), o.getFin()).toMinutes(),
-                Duration.between(ahora, o.getInicio()).toMinutes(),
-                candidatos.candidatos(o.getIdOportunidad()).size()))
+            .map(o -> {
+                HorarioSoltadoService.Soltado l = soltados.de(o).orElse(null);
+                return new CupoLiberado(o.getIdOportunidad(),
+                    nombre(o.getMedico().getNombres(), o.getMedico().getApellidos()), o.getInicio(), o.getFin(),
+                    Duration.between(o.getInicio(), o.getFin()).toMinutes(),
+                    Duration.between(ahora, o.getInicio()).toMinutes(),
+                    candidatos.candidatos(o.getIdOportunidad()).size(),
+                    l == null ? null : l.inicio(), l == null ? null : l.fin(), l == null ? null : l.origen());
+            })
             .toList();
     }
 

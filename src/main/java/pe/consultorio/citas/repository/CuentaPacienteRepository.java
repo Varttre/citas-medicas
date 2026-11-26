@@ -14,4 +14,9 @@ public interface CuentaPacienteRepository extends JpaRepository<CuentaPaciente, 
     @Query("select cp from CuentaPaciente cp join fetch cp.cuenta where cp.paciente.idPaciente = :idPaciente "
         + "order by cp.consentimientoEn")
     List<CuentaPaciente> delPaciente(@Param("idPaciente") Long idPaciente);
+
+    /** Terceros que la cuenta puede agendar (vínculo sin revocar), con el paciente cargado, del más antiguo al más nuevo. */
+    @Query("select cp from CuentaPaciente cp join fetch cp.paciente where cp.cuenta.idCuenta = :idCuenta "
+        + "and cp.revocadoEn is null order by cp.consentimientoEn")
+    List<CuentaPaciente> vigentesDeCuenta(@Param("idCuenta") Long idCuenta);
 }

@@ -81,6 +81,24 @@ class PerfilTest {
             .isTrue();
     }
 
+    /** Pedido del docente: un patrón tenue de fondo, elegible en «Mi perfil» del paciente y del personal. */
+    @Test
+    void miPerfilOfreceLosFondosDePatronYLaCabeceraAplicaUnoPorDefecto() throws Exception {
+        UsuarioSesion p = paciente("fondo" + System.nanoTime() + "@prueba.pe");
+        UsuarioSesion recepcion = detalles.loadUserByUsername(
+            datos.crearCuentaPersonal(pe.consultorio.citas.entity.NombreRol.RECEPCION).getCorreo());
+        for (var peticion : new Object[][] {{"/paciente/perfil", p}, {"/cuenta/perfil", recepcion}}) {
+            mvc.perform(get((String) peticion[0]).with(user((UsuarioSesion) peticion[1])))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Fondo de las pantallas")))
+                .andExpect(content().string(containsString("value=\"liso\"")))
+                .andExpect(content().string(containsString("value=\"puntos\"")))
+                .andExpect(content().string(containsString("value=\"cruces\"")))
+                .andExpect(content().string(containsString("value=\"sierra\"")))
+                .andExpect(content().string(containsString("'data-fondo'")));
+        }
+    }
+
     @Test
     void cancelaSuCitaPeroNoLaDeOtro() throws Exception {
         UsuarioSesion p = paciente("cancela" + System.nanoTime() + "@prueba.pe");
